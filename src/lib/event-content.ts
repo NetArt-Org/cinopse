@@ -1,0 +1,130 @@
+export const eventContent = {
+  name: "CINOPSE INDIA 2026",
+  title: "CINOPSE 2026",
+  theme: "The Beginning",
+  tagline: "One Place, One Agenda, One Vision, Infinite Possibilities",
+  description:
+    "CINOPSE INDIA 2026 brings together leading experts for a comprehensive, multidisciplinary conference case based discussions, innovations, and hands on workshops.",
+  mission:
+    "Together, we aim to exchange knowledge, inspire collaboration, and drive innovations transforming the future of health care.",
+  conferenceType: "A Comprehensive Multidisciplinary Medical Conference",
+  date: "27th September 2026 (Sunday)",
+  city: "Bengaluru, India",
+  cityLine: "Bengaluru - The Garden City of India's Innovation",
+  venue: "Jawaharlal Nehru Planetarium, Sankey Road, Bengaluru",
+  venueFull:
+    "Jawaharlal Nehru Planetarium, Sri T, Sankey Road, High Grounds, Bengaluru - 560001, Karnataka, India",
+  cmeSummit:
+    "CME Summit for Cardio • Renal • Obesity Pulmonary • Sleep Medicine",
+  registrationStatus: "Registration Opening Soon",
+  enquiryPhone: "+91 63817 86183",
+  alternatePhone: "+91 9902340225",
+  email: "cinopseindiamedical@gmail.com",
+  website: "www.cinopse.com",
+  pillars: [
+    {
+      title: "Comprehensive",
+      body: "All key areas of healthcare under one roof",
+    },
+    {
+      title: "Multidisciplinary",
+      body: "Experts from diverse fields working together",
+    },
+    {
+      title: "Case Based Discussions",
+      body: "Real cases. Real insights. Real impact.",
+    },
+    {
+      title: "Innovations",
+      body: "Latest advances shaping the future of medicine",
+    },
+    {
+      title: "Hands On Workshops",
+      body: "Learn. Practice. Excel.",
+    },
+  ],
+  focusAreas: [
+    "Cardiology",
+    "Diabetes",
+    "Obesity",
+    "Pulmonology",
+    "Sleep Medicine",
+    "Nephrology",
+    "Fatty Liver Disease",
+    "Dyslipidemia",
+    "Osteoporosis",
+  ],
+  expandedSpecialties: [
+    "Cardiology",
+    "Neurology",
+    "Nephrology",
+    "Pulmonology",
+    "Metabolic Medicine",
+    "Sleep Medicine",
+  ],
+  highlights: [
+    "Latest Updates: ADA 2026, Easd, ESC, Ace, AHA, AASM & IOF Guidelines",
+    "Artificial Intelligence in Clinical Practice",
+    "Obstructive Sleep Apnea & Cardiometabolic Risk",
+    "GLP-1, Fatty & Triple Agonist The Future of Obesity & Diabetes Care",
+    "MASLD / Fatty Liver Disease: From Screening to Management",
+    "Osteoporosis, Sarcopenia & Healthy Aging",
+    "Cardio-Renal-Metabolic Syndrome",
+    "Dyslipidemia: Beyond LDL",
+    "Interactive Case Discussions & Panel Debate",
+    "Continuous Glucose Monitoring & Diabetes Technology",
+    "Hypertension: From Guidelines to Real-World Practice",
+    "Workshops, Young Investigator Awards & Networking",
+  ],
+  whyAttend: [
+    "International & National Faculty",
+    "Interactive Case Discussions",
+    "Guideline Updates",
+    "Evidence-Based Practice",
+    "Hands-On Learning",
+    "Networking Opportunities",
+  ],
+  committee: [
+    {
+      role: "President",
+      name: "Dr Murali Mohan BV",
+      affiliation: "Narayana Health City",
+    },
+    {
+      role: "Organising Chairman",
+      name: "Dr Santosh KM",
+      affiliation: "Narayana Health City",
+    },
+    {
+      role: "Organising Co-Chairperson",
+      name: "Dr Vinod Babu Veerapalli",
+      affiliation: "Dr Mohan's Diabetes Centre",
+    },
+    {
+      role: "Organising Secretary",
+      name: "Dr Sheetal Kamat",
+      affiliation: "Apollo Hospitals",
+    },
+    {
+      role: "Organising Treasurer",
+      name: "Dr Karthik SM",
+      affiliation: "Apollo Hospitals",
+    },
+    {
+      role: "Scientific Committee",
+      name: "Dr Usha Humbi",
+      affiliation: "Narayana Health City",
+    },
+    {
+      role: "Scientific Committee",
+      name: "Dr Soumya M S",
+      affiliation: "Narayana Health City",
+    },
+    {
+      role: "Scientific Committee",
+      name: "Dr Praveen Gangadhara",
+      affiliation: "Dr Mohan's Diabetes Centre",
+    },
+  ],
+  logistics: ["Mr Vishnu", "Mr Stephen", "Mr Akash", "Ms Bhavishya"],
+} as const

@@ -1,65 +1,348 @@
-import Image from "next/image";
+import Image from "next/image"
+import type React from "react"
+import {
+  Activity,
+  Bone,
+  BookOpenCheck,
+  CalendarDays,
+  Hand,
+  HeartPulse,
+  Mail,
+  MapPin,
+  Moon,
+  Network,
+  Phone,
+  ShieldCheck,
+  Stethoscope,
+  TabletSmartphone,
+  Users,
+} from "lucide-react"
+
+import { MobileRegistrationDrawer } from "@/components/event/mobile-registration-drawer"
+import { RegistrationForm } from "@/components/event/registration-form"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { eventContent } from "@/lib/event-content"
+
+const focusIcons = [
+  HeartPulse,
+  Activity,
+  Users,
+  Stethoscope,
+  Moon,
+  Activity,
+  Stethoscope,
+  Activity,
+  Bone,
+]
+
+const highlightIcons = [
+  Users,
+  BookOpenCheck,
+  ShieldCheck,
+  Hand,
+  TabletSmartphone,
+  Network,
+]
+
+const pillarIcons = [Users, Network, BookOpenCheck, Activity, Hand]
+
+const conferenceHighlightIcons = [
+  BookOpenCheck,
+  Activity,
+  Moon,
+  Stethoscope,
+  Activity,
+  Bone,
+  HeartPulse,
+  Activity,
+  Users,
+  TabletSmartphone,
+  ShieldCheck,
+  Network,
+]
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <div className="min-h-dvh bg-gradient-to-b from-blue-50/80 via-white to-white text-slate-950">
+      <Header />
+      <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 pb-28 pt-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-8 lg:pb-16 lg:pt-14">
+        <div className="space-y-12">
+          <HeroSection />
+          <OverviewSection />
+          <FocusAreasSection />
+          <ConferenceHighlightsSection />
+          <CommitteeSection />
+          <ContactSection />
+        </div>
+        <aside className="hidden lg:block">
+          <div className="sticky top-24">
+            <RegistrationForm />
+          </div>
+        </aside>
+      </main>
+      <Footer />
+      <MobileRegistrationDrawer />
+    </div>
+  )
+}
+
+function Header() {
+  return (
+    <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex h-20 max-w-7xl items-center px-4 sm:px-6 lg:px-8">
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
+          src="/logo.jpg"
+          alt="CINOPSE"
+          width={168}
+          height={68}
           priority
+          className="h-14 w-auto object-contain"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+      </div>
+    </header>
+  )
+}
+
+function HeroSection() {
+  return (
+    <section className="space-y-7 py-4 lg:py-8">
+      <div className="max-w-4xl space-y-6">
+        <div className="space-y-2">
+          <p className="text-sm font-semibold tracking-[0.14em] text-blue-800 uppercase">
+            {eventContent.cmeSummit}
+          </p>
+          <h1 className="text-5xl font-semibold tracking-tight text-slate-950 sm:text-6xl lg:text-7xl">
+            {eventContent.name}
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-3xl font-medium text-blue-800">
+            {eventContent.theme}
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <p className="max-w-3xl text-2xl font-semibold leading-snug text-slate-800">
+          {eventContent.tagline}
+        </p>
+        <div className="grid gap-3 text-sm text-slate-700 sm:grid-cols-3">
+          <InfoPill icon={CalendarDays} text={eventContent.date} />
+          <InfoPill icon={MapPin} text={eventContent.city} />
+          <InfoPill icon={MapPin} text={eventContent.venue} />
         </div>
-      </main>
+      </div>
+    </section>
+  )
+}
+
+function OverviewSection() {
+  return (
+    <section className="space-y-5">
+      <SectionHeading
+        title={eventContent.conferenceType}
+        body={eventContent.description}
+      />
+      <div className="grid gap-4 md:grid-cols-3">
+        {eventContent.pillars.map((pillar, index) => {
+          const Icon = pillarIcons[index] ?? Activity
+
+          return (
+            <Card key={pillar.title} className="shadow-none">
+              <CardHeader className="space-y-4">
+                <Icon className="size-7 text-blue-800" aria-hidden="true" />
+                <CardTitle className="text-base text-blue-900">
+                  {pillar.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm leading-6 text-slate-600">
+                  {pillar.body}
+                </p>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+      <Card className="bg-slate-50 shadow-none">
+        <CardContent className="p-5">
+          <p className="text-base leading-7 text-slate-700">
+            {eventContent.mission}
+          </p>
+        </CardContent>
+      </Card>
+    </section>
+  )
+}
+
+function FocusAreasSection() {
+  return (
+    <section className="space-y-5">
+      <SectionHeading title="Focus Areas" body={eventContent.cityLine} />
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+        {eventContent.focusAreas.map((area, index) => {
+          const Icon = focusIcons[index] ?? Activity
+
+          return (
+            <Card key={area} className="shadow-none">
+              <CardContent className="flex min-h-32 flex-col justify-center gap-5 p-5">
+                <Icon className="size-6 text-blue-800" aria-hidden="true" />
+                <p className="text-sm font-semibold text-slate-800">{area}</p>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
+function ConferenceHighlightsSection() {
+  return (
+    <section className="space-y-5">
+      <SectionHeading
+        title="Conference Highlights"
+        body="One Conference. Multiple Specialties. Limitless Collaboration."
+      />
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {eventContent.highlights.map((highlight, index) => {
+          const Icon = conferenceHighlightIcons[index] ?? ShieldCheck
+
+          return (
+            <div
+              key={highlight}
+              className="flex gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700"
+            >
+              <Icon
+                className="mt-0.5 size-5 shrink-0 text-blue-800"
+                aria-hidden="true"
+              />
+              <span>{highlight}</span>
+            </div>
+          )
+        })}
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {eventContent.whyAttend.map((item, index) => {
+          const Icon = highlightIcons[index] ?? ShieldCheck
+
+          return (
+            <Card key={item} className="shadow-none">
+              <CardContent className="flex items-center gap-3 p-4">
+                <Icon className="size-5 text-blue-800" aria-hidden="true" />
+                <p className="text-sm font-medium text-slate-800">{item}</p>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
+function CommitteeSection() {
+  return (
+    <section className="space-y-5">
+      <SectionHeading title="Organising Committee" />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {eventContent.committee.map((member) => (
+          <Card key={`${member.role}-${member.name}`} className="shadow-none">
+            <CardHeader>
+              <p className="text-xs font-semibold tracking-[0.12em] text-blue-800 uppercase">
+                {member.role}
+              </p>
+              <CardTitle className="text-base">{member.name}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-slate-600">{member.affiliation}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      <Card className="shadow-none">
+        <CardHeader>
+          <CardTitle className="text-base">Hospitality & Logistics</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          {eventContent.logistics.map((person) => (
+            <span
+              key={person}
+              className="rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-900"
+            >
+              {person}
+            </span>
+          ))}
+        </CardContent>
+      </Card>
+    </section>
+  )
+}
+
+function ContactSection() {
+  return (
+    <section className="space-y-5">
+      <SectionHeading title="For Enquiries, Contact" />
+      <div className="grid gap-4 md:grid-cols-2">
+        <ContactCard icon={Phone} text={eventContent.enquiryPhone} />
+        <ContactCard icon={Phone} text={eventContent.alternatePhone} />
+        <ContactCard icon={Mail} text={eventContent.email} />
+        <ContactCard icon={Network} text={eventContent.website} />
+      </div>
+    </section>
+  )
+}
+
+function Footer() {
+  return (
+    <footer className="border-t border-slate-100 bg-white">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+        <Image
+          src="/logo.jpg"
+          alt="CINOPSE"
+          width={132}
+          height={54}
+          className="h-11 w-auto object-contain"
+        />
+        <p className="text-sm text-slate-500">© CINOPSE 2026</p>
+      </div>
+    </footer>
+  )
+}
+
+function SectionHeading({ title, body }: { title: string; body?: string }) {
+  return (
+    <div className="space-y-2">
+      <h2 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+        {title}
+      </h2>
+      {body ? <p className="max-w-3xl leading-7 text-slate-600">{body}</p> : null}
     </div>
-  );
+  )
+}
+
+function InfoPill({
+  icon: Icon,
+  text,
+}: {
+  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>
+  text: string
+}) {
+  return (
+    <div className="flex items-start gap-3 rounded-2xl border border-blue-200 bg-white/85 px-4 py-3">
+      <Icon className="mt-0.5 size-4 shrink-0 text-blue-800" aria-hidden={true} />
+      <span className="leading-6">{text}</span>
+    </div>
+  )
+}
+
+function ContactCard({
+  icon: Icon,
+  text,
+}: {
+  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>
+  text: string
+}) {
+  return (
+    <Card className="shadow-none">
+      <CardContent className="flex items-center gap-3 p-4">
+        <Icon className="size-5 text-blue-800" aria-hidden={true} />
+        <p className="text-sm font-medium text-slate-800">{text}</p>
+      </CardContent>
+    </Card>
+  )
 }
