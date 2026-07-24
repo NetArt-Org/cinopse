@@ -111,14 +111,14 @@ function HeroSection() {
           <p className="text-sm font-semibold tracking-[0.14em] text-blue-800 uppercase">
             {eventContent.cmeSummit}
           </p>
-          <h1 className="text-5xl font-semibold tracking-tight text-slate-950 sm:text-6xl lg:text-7xl">
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
             {eventContent.name}
           </h1>
-          <p className="text-3xl font-medium text-blue-800">
+          <p className="text-xl font-medium text-blue-800">
             {eventContent.theme}
           </p>
         </div>
-        <p className="max-w-3xl text-2xl font-semibold leading-snug text-slate-800">
+        <p className="max-w-3xl text-lg font-semibold leading-snug text-slate-800">
           {eventContent.tagline}
         </p>
         <div className="grid gap-3 text-sm text-slate-700 sm:grid-cols-3">

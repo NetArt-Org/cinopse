@@ -1,4 +1,12 @@
+"use client"
+
 import { Headphones, ShieldCheck } from "lucide-react"
+import { useState } from "react"
+import PhoneInput, {
+  isValidPhoneNumber,
+  type Value,
+} from "react-phone-number-input"
+import flags from "react-phone-number-input/flags"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -7,6 +15,9 @@ import { eventContent } from "@/lib/event-content"
 import { PaymentSection } from "./payment-section"
 
 export function RegistrationForm() {
+  const [phone, setPhone] = useState<Value>()
+  const [phoneError, setPhoneError] = useState("")
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="border-b border-slate-100 bg-blue-50/60">
@@ -16,10 +27,34 @@ export function RegistrationForm() {
         <CardTitle>{eventContent.title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5 p-5">
-        <form className="space-y-4">
+        <form
+          className="space-y-4"
+          onSubmit={(event) => {
+            if (!phone || !isValidPhoneNumber(phone)) {
+              event.preventDefault()
+              setPhoneError("Enter a valid phone number")
+            }
+          }}
+        >
           <Field id="name" label="Name" autoComplete="name" />
-          <Field id="email" label="Email" type="email" autoComplete="email" />
-          <Field id="phone" label="Phone" type="tel" autoComplete="tel" />
+          <Field
+            id="email"
+            label="Email"
+            type="email"
+            autoComplete="email"
+            pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
+            title="Enter a valid email address"
+          />
+          <PhoneField
+            value={phone}
+            error={phoneError}
+            onChange={(value) => {
+              setPhone(value)
+              if (value && isValidPhoneNumber(value)) {
+                setPhoneError("")
+              }
+            }}
+          />
           <PaymentSection />
           <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 text-sm leading-5 text-slate-700">
             <input
@@ -63,11 +98,15 @@ function Field({
   label,
   type = "text",
   autoComplete,
+  pattern,
+  title,
 }: {
   id: string
   label: string
   type?: string
   autoComplete?: string
+  pattern?: string
+  title?: string
 }) {
   return (
     <div className="space-y-2">
@@ -83,7 +122,52 @@ function Field({
         name={id}
         type={type}
         autoComplete={autoComplete}
+        pattern={pattern}
+        title={title}
       />
+    </div>
+  )
+}
+
+function PhoneField({
+  value,
+  error,
+  onChange,
+}: {
+  value?: Value
+  error: string
+  onChange: (value?: Value) => void
+}) {
+  return (
+    <div className="space-y-2">
+      <Label>
+        Phone{" "}
+        <span className="text-red-600" aria-hidden="true">
+          *
+        </span>
+      </Label>
+      <PhoneInput
+        required
+        international
+        countryCallingCodeEditable={false}
+        defaultCountry="IN"
+        flags={flags}
+        name="phone"
+        value={value}
+        onChange={onChange}
+        className="phone-input-control"
+        numberInputProps={{
+          id: "phone",
+          autoComplete: "tel",
+          "aria-invalid": error ? "true" : undefined,
+          "aria-describedby": error ? "phone-error" : undefined,
+        }}
+      />
+      {error ? (
+        <p id="phone-error" className="text-sm text-red-600">
+          {error}
+        </p>
+      ) : null}
     </div>
   )
 }
