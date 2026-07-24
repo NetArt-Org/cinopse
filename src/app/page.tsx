@@ -65,7 +65,7 @@ export default function Home() {
   return (
     <div className="min-h-dvh bg-gradient-to-b from-blue-50/80 via-white to-white text-slate-950">
       <Header />
-      <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 pb-28 pt-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-8 lg:pb-16 lg:pt-14">
+      <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 pb-8 pt-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-8 lg:pb-16 lg:pt-14">
         <div className="space-y-12">
           <HeroSection />
           <OverviewSection />
@@ -289,8 +289,8 @@ function ContactSection() {
 
 function Footer() {
   return (
-    <footer className="border-t border-slate-100 bg-white">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+    <footer className="border-t border-slate-100 bg-white pb-24 lg:pb-0">
+      <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-6 sm:flex-row sm:justify-between sm:px-6 lg:px-8">
         <Image
           src="/logo.jpg"
           alt="CINOPSE"
