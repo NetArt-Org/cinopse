@@ -1,22 +1,19 @@
 import Image from "next/image"
 import Link from "next/link"
 import type { ReactNode } from "react"
+import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTwitter } from "react-icons/fa"
 import {
   CalendarDays,
-  Camera,
   ChevronDown,
-  AtSign,
   Mail,
   MapPin,
   Phone,
-  Send,
-  Share2,
-  X,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { MobileNavigation } from "@/components/layout/mobile-navigation"
+import { ScrollReveal } from "@/components/layout/scroll-reveal"
 
 const committee = [
   ["Founder & CEO", "Dr. Santosh K M"],
@@ -48,19 +45,21 @@ const navItems = [
 
 export default function Home() {
   return (
-    <div className="min-h-dvh bg-white text-[color:var(--cinopse-text)]">
-      <SiteHeader />
-      <main>
-        <Hero />
-        <About />
-        <OrganizingCommittee />
-        <Venue />
-        <Registration />
-        <PopularDestination />
-        <AssociatePartners />
-      </main>
-      <Footer />
-    </div>
+    <ScrollReveal>
+      <div className="min-h-dvh bg-white text-[color:var(--cinopse-text)]">
+        <SiteHeader />
+        <main>
+          <Hero />
+          <About />
+          <OrganizingCommittee />
+          <Venue />
+          <Registration />
+          <PopularDestination />
+          <AssociatePartners />
+        </main>
+        <Footer />
+      </div>
+    </ScrollReveal>
   )
 }
 
@@ -68,9 +67,8 @@ function SiteHeader() {
   return <header className="sticky top-0 z-50 shadow-sm">
     <nav className="bg-[color:var(--cinopse-primary)]" aria-label="Main navigation">
       <div className="mx-auto flex min-h-[72px] max-w-[1440px] items-center px-6 lg:px-10">
-        <Link href="#home" className="flex items-center gap-3 text-white" aria-label="CiNOPSE India 2026 home">
-          <Image src="/logo.jpg" alt="CiNOPSE" width={58} height={58} className="size-13 rounded-full border-2 border-white/80 object-cover" priority />
-          <span className="hidden text-sm font-bold tracking-[0.08em] uppercase sm:block">CiNOPSE India 2026</span>
+        <Link href="#home" className="flex items-center text-white" aria-label="CiNOPSE India 2026 home">
+          <Image src="/logo.jpg" alt="CiNOPSE" width={64} height={64} className="size-16 rounded-full border-2 border-white/80 object-cover" priority />
         </Link>
         <div className="ml-auto hidden items-center gap-1 xl:flex">
           {navItems.map(({ label, hasDropdown }) => hasDropdown ? <div key={label} className="group relative"><span className="flex cursor-default items-center gap-1 px-3 py-7 text-[11px] font-semibold tracking-[0.03em] text-white uppercase transition-colors group-hover:bg-white/10 group-focus-within:bg-white/10">{label}<ChevronDown className="size-3" /></span><div className="invisible absolute right-0 top-full min-w-52 translate-y-2 border-t-2 border-[color:var(--cinopse-accent)] bg-white py-2 opacity-0 shadow-lg transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100"><Link href="#" className="block px-4 py-2.5 text-sm text-[color:var(--cinopse-text)] hover:bg-[color:var(--cinopse-surface)]">Lorem ipsum</Link><Link href="#" className="block px-4 py-2.5 text-sm text-[color:var(--cinopse-text)] hover:bg-[color:var(--cinopse-surface)]">Lorem ipsum</Link></div></div> : <Link key={label} href="#" className="px-3 py-7 text-[11px] font-semibold tracking-[0.03em] text-white uppercase hover:bg-white/10">{label}</Link>)}
@@ -113,7 +111,7 @@ function AssociatePartners() {
 }
 
 function Footer() {
-  return <footer className="bg-[color:var(--cinopse-text)] text-white"><div className="mx-auto grid max-w-[1440px] gap-10 px-6 py-14 md:grid-cols-2 lg:grid-cols-3 lg:px-10"><FooterBlock title="Conference Secretariat"><Image src="/logo.jpg" alt="CiNOPSE" width={76} height={76} className="mt-3 size-16 rounded-full object-cover" /><p className="mt-4 text-sm leading-6 text-white/70">Lorem ipsum dolor sit amet,<br />consectetur adipiscing elit.</p><p className="mt-4 text-sm leading-6 text-white/70">Phone: +91 00000 00000<br />Email: contact@cinopse.org</p></FooterBlock><FooterBlock title="Professional Conference Organizer"><div className="mt-3 flex size-16 items-center justify-center rounded-full bg-white/10"><Send className="size-7 text-[color:var(--cinopse-accent)]" /></div><p className="mt-4 text-sm leading-6 text-white/70">Lorem ipsum dolor sit amet,<br />consectetur adipiscing elit.</p><p className="mt-4 text-sm leading-6 text-white/70">Phone: +91 00000 00000<br />Email: info@example.com</p></FooterBlock><FooterBlock title="Useful Links"><div className="mt-4 grid grid-cols-2 gap-2 text-sm text-white/70"><Link href="#home">Home</Link><Link href="#">Privacy Policy</Link><Link href="#">Faculty</Link><Link href="#">Terms & Conditions</Link><Link href="#">Organizing Committee</Link><Link href="#">Registration</Link></div></FooterBlock></div><div className="border-t border-white/20 py-5 text-center"><div className="flex justify-center gap-4"><Camera className="size-4" /><Share2 className="size-4" /><X className="size-4" /><AtSign className="size-4" /></div><p className="mt-4 text-xs text-white/60">© Copyright CiNOPSE India 2026. All Rights Reserved.</p></div></footer>
+  return <footer className="bg-[color:var(--cinopse-text)] text-white"><div className="mx-auto grid max-w-[1440px] gap-10 px-6 py-14 md:grid-cols-2 lg:grid-cols-3 lg:px-10"><FooterBlock title="Conference Secretariat"><Image src="/logo.jpg" alt="CiNOPSE" width={76} height={76} className="mt-3 size-16 rounded-full object-cover" /><p className="mt-4 text-sm leading-6 text-white/70">Lorem ipsum dolor sit amet,<br />consectetur adipiscing elit.</p><p className="mt-4 text-sm leading-6 text-white/70">Phone: +91 00000 00000<br />Email: contact@cinopse.org</p></FooterBlock><FooterBlock title="Professional Conference Organizer"><p className="mt-4 text-sm leading-6 text-white/70">Lorem ipsum dolor sit amet,<br />consectetur adipiscing elit.</p><p className="mt-4 text-sm leading-6 text-white/70">Phone: +91 00000 00000<br />Email: info@example.com</p></FooterBlock><FooterBlock title="Useful Links"><div className="mt-4 grid grid-cols-2 gap-2 text-sm text-white/70"><Link href="#home">Home</Link><Link href="#">Privacy Policy</Link><Link href="#">Faculty</Link><Link href="#">Terms & Conditions</Link><Link href="#">Organizing Committee</Link><Link href="#">Registration</Link></div></FooterBlock></div><div className="border-t border-white/20 py-5 text-center"><div className="flex justify-center gap-4"><a href="#" aria-label="Facebook" className="transition-colors hover:text-[color:var(--cinopse-accent)]"><FaFacebookF className="size-4" /></a><a href="#" aria-label="Instagram" className="transition-colors hover:text-[color:var(--cinopse-accent)]"><FaInstagram className="size-4" /></a><a href="#" aria-label="Twitter" className="transition-colors hover:text-[color:var(--cinopse-accent)]"><FaTwitter className="size-4" /></a><a href="#" aria-label="LinkedIn" className="transition-colors hover:text-[color:var(--cinopse-accent)]"><FaLinkedinIn className="size-4" /></a></div><p className="mt-4 text-xs text-white/60">© Copyright CiNOPSE India 2026. All Rights Reserved.</p></div></footer>
 }
 
 function SectionTitle({ title, dark = false }: { title: string; dark?: boolean }) {
