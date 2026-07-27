@@ -53,11 +53,12 @@ export function DestinationCoverflow() {
       const startAutoRotation = () => {
         if (prefersReducedMotion) return
         autoRotate?.kill()
-        autoRotate = gsap.timeline({ repeat: -1 })
-        autoRotate.to({}, { duration: 2.8 })
+        const rotationTimeline = gsap.timeline({ repeat: -1 })
+        autoRotate = rotationTimeline
+        rotationTimeline.to({}, { duration: 2.8 })
 
         cards.forEach(() => {
-          autoRotate
+          rotationTimeline
             .to(ring, {
               duration: 1.25,
               ease: "power2.inOut",
