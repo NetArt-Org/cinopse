@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { SiteHeader } from "@/components/layout/site-header"
 import { GsapProvider } from "@/components/layout/gsap-provider"
 import { RegistrationPriceComparison } from "@/components/sections/registration-price-comparison"
+import { DestinationCoverflow } from "@/components/sections/destination-coverflow"
 
 const committee = [
   ["Founder & CEO", "Dr. Santosh K M"],
@@ -278,21 +279,7 @@ function PopularDestination() {
       <div className="mx-auto max-w-6xl px-6 lg:px-10">
         <SectionHeading eyebrow="Explore" title="Popular Destination" />
         <div className="mt-14 grid items-center gap-12 md:grid-cols-2">
-          <div data-reveal="left" className="relative mx-auto w-full max-w-sm">
-            <div className="absolute -inset-4 -z-10 rounded-[2rem] bg-[color:var(--cinopse-secondary)]/10" />
-            <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-[1.75rem] bg-[color:var(--cinopse-surface)] shadow-[var(--cinopse-shadow-lg)]">
-              <div className="absolute inset-6 rounded-[1.25rem] border border-[color:var(--cinopse-secondary)]/25" />
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(47,111,203,0.12),transparent_60%)]" />
-              <div className="relative text-center">
-                <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-white shadow-md">
-                  <MapPin className="size-8 text-[color:var(--cinopse-secondary)]" />
-                </div>
-                <p className="mt-4 text-sm font-semibold text-[color:var(--cinopse-primary)]">
-                  Host city visual coming soon
-                </p>
-              </div>
-            </div>
-          </div>
+          <div data-reveal="left"><DestinationCoverflow /></div>
           <div data-reveal="right">
             <h3 className="font-display text-[clamp(22px,2.4vw,30px)] font-semibold text-[color:var(--cinopse-primary)]">
               Discover our host city
