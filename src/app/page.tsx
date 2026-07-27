@@ -15,6 +15,7 @@ import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SiteHeader } from "@/components/layout/site-header"
 import { GsapProvider } from "@/components/layout/gsap-provider"
+import { RegistrationPriceComparison } from "@/components/sections/registration-price-comparison"
 
 const committee = [
   ["Founder & CEO", "Dr. Santosh K M"],
@@ -30,8 +31,6 @@ const committee = [
   ["Organizing Committee", "Lorem Ipsum"],
   ["Conference Secretariat", "Lorem Ipsum"],
 ]
-
-const registrationTiers = ["Early Registration", "Standard Registration", "Late Registration", "On-site Registration"]
 
 const navItems = [
   { label: "Congress Information", hasDropdown: true },
@@ -51,12 +50,12 @@ export default function Home() {
       <GsapProvider>
         <main>
           <Hero />
-          <About />
           <OrganizingCommittee />
           <Venue />
           <Registration />
           <PopularDestination />
           <AssociatePartners />
+          <About />
         </main>
         <Footer />
       </GsapProvider>
@@ -184,7 +183,7 @@ function OrganizingCommittee() {
               key={`${role}-${index}`}
               data-reveal="scale"
               data-card
-              className="relative flex flex-col items-center overflow-hidden rounded-2xl border border-white/12 bg-white/[0.07] p-6 text-center text-white shadow-[0_12px_34px_-20px_rgba(0,0,0,0.6)] backdrop-blur-sm"
+              className="relative flex flex-col items-center overflow-hidden rounded-2xl border border-white/12 bg-white/[0.07] py-6 text-center text-white shadow-[0_12px_34px_-20px_rgba(0,0,0,0.6)] backdrop-blur-sm"
             >
               <span
                 data-card-fill
@@ -264,48 +263,10 @@ function Venue() {
 function Registration() {
   return (
     <section className="relative overflow-hidden bg-[image:var(--cinopse-gradient-blue)] py-20 lg:py-28">
-      <div className="absolute -right-20 -top-16 size-80 rounded-full bg-[color:var(--cinopse-accent)]/10 blur-3xl" />
+      <div className="absolute -right-20 -top-16 size-80 roundfed-full bg-[color:var(--cinopse-accent)]/10 blur-3xl" />
       <div className="relative mx-auto max-w-6xl px-6 lg:px-10">
         <SectionHeading eyebrow="Join Us" title="Registration" dark />
-        <div
-          data-reveal-group
-          className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
-        >
-          {registrationTiers.map((tier) => (
-            <article
-              key={tier}
-              data-reveal="scale"
-              data-card
-              className="relative flex flex-col overflow-hidden rounded-2xl border border-[color:var(--cinopse-border)] bg-white p-6 shadow-[var(--cinopse-shadow-sm)]"
-            >
-              <span
-                data-card-fill
-                className="absolute inset-0 rounded-[inherit] bg-[image:var(--cinopse-gradient-deep)]"
-              />
-              <div className="relative z-10 flex flex-col">
-                <div
-                  data-icon-tile
-                  className="mx-auto flex size-11 items-center justify-center rounded-xl bg-[color:var(--cinopse-surface)] text-[color:var(--cinopse-secondary)]"
-                >
-                  <CalendarDays className="size-5" />
-                </div>
-                <h3 className="mt-4 text-center font-display text-lg font-semibold text-[color:var(--cinopse-primary)]">
-                  {tier}
-                </h3>
-                <div className="mt-5 divide-y divide-[color:var(--cinopse-border)] text-sm">
-                  <PriceItem label="Delegate" value="TBA" />
-                  <PriceItem label="Student / Other HCPs" value="TBA" />
-                  <PriceItem label="International Delegate" value="TBA" />
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-        <div data-reveal className="mt-12 text-center">
-          <Button variant="onBlue" className="h-12 px-8">
-            Register Now <ArrowRight className="size-4" />
-          </Button>
-        </div>
+        <RegistrationPriceComparison />
       </div>
     </section>
   )
@@ -513,15 +474,6 @@ function InfoChip({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
       </span>
       <p>{text}</p>
     </div>
-  )
-}
-
-function PriceItem({ label, value }: { label: string; value: string }) {
-  return (
-    <p className="flex justify-between gap-2 py-3 text-[color:var(--cinopse-text-secondary)]">
-      <span>{label}</span>
-      <strong className="text-[color:var(--cinopse-primary)]">{value}</strong>
-    </p>
   )
 }
 
