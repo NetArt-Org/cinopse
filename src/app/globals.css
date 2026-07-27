@@ -203,6 +203,30 @@
     );
     background-size: 26px 26px;
   }
+
+  /* ---- Unified card hover system (fill + lift are GSAP-driven) ---- */
+  [data-card] {
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  }
+  [data-card] [data-card-fill] {
+    opacity: 0;
+    visibility: hidden;
+  }
+  [data-card] :is(h3, p, strong, span) {
+    transition: color 0.35s ease;
+  }
+}
+
+/* The hover-state overrides live UNLAYERED so they win over Tailwind's
+   `utilities` layer (which otherwise beats layered rules regardless of
+   specificity — e.g. text-[color:...] on the card titles and prices).
+   Icons intentionally keep their original color on their white tile. */
+[data-card].is-hovering {
+  border-color: color-mix(in oklch, var(--cinopse-accent), transparent 30%);
+  box-shadow: var(--cinopse-shadow-lg);
+}
+[data-card].is-hovering :is(h3, p, strong, span) {
+  color: #fff;
 }
 
 @media (prefers-reduced-motion: reduce) {

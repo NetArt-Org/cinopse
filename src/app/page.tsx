@@ -105,7 +105,7 @@ function Hero() {
               India&apos;s Independent Multidisciplinary Medical Conference Bringing Together Healthcare Professionals Across Specialties.
             </p>
             <div data-reveal className="mt-9 flex flex-wrap items-center gap-4">
-              <Button variant="gold" className="h-12 px-8 text-[13px]">
+              <Button className="h-12 px-8 text-[13px]">
                 Register Now <ArrowRight className="size-4" />
               </Button>
               <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/5 px-4 py-2.5 text-xs text-white/75 backdrop-blur-sm">
@@ -183,14 +183,18 @@ function OrganizingCommittee() {
             <article
               key={`${role}-${index}`}
               data-reveal="scale"
-              className="group relative flex flex-col items-center rounded-2xl border border-white/12 bg-white/[0.07] p-6 text-center text-white shadow-[0_12px_34px_-20px_rgba(0,0,0,0.7)] backdrop-blur-sm transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-2 hover:border-[color:var(--cinopse-accent)]/55 hover:bg-white/[0.12] hover:shadow-[0_28px_54px_-24px_rgba(0,0,0,0.8)]"
+              data-card
+              className="relative flex flex-col items-center overflow-hidden rounded-2xl border border-white/12 bg-white/[0.07] p-6 text-center text-white shadow-[0_12px_34px_-20px_rgba(0,0,0,0.6)] backdrop-blur-sm"
             >
-              {/* Gold accent bar that grows on hover */}
-              <span className="absolute inset-x-6 top-0 h-0.5 origin-center scale-x-0 rounded-full bg-[image:var(--cinopse-gradient-gold)] transition-transform duration-500 group-hover:scale-x-100" />
-              <div className="relative">
-                <span className="absolute -inset-1 rounded-full bg-[image:var(--cinopse-gradient-gold)] opacity-0 blur-[3px] transition-opacity duration-500 group-hover:opacity-80" />
-                <div className="relative flex size-24 items-center justify-center rounded-full border border-white/25 bg-white/10 backdrop-blur-sm">
-                  <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/20 transition-colors duration-500 group-hover:ring-[color:var(--cinopse-accent)]/70" />
+              <span
+                data-card-fill
+                className="absolute inset-0 rounded-[inherit] bg-[image:var(--cinopse-gradient-deep)]"
+              />
+              <div className="relative z-10 flex flex-col items-center">
+                <div
+                  data-icon-tile
+                  className="flex size-24 items-center justify-center rounded-full border border-white/25 bg-white/10 backdrop-blur-sm"
+                >
                   <Image
                     src="/logo.jpg"
                     alt="Committee profile placeholder"
@@ -199,13 +203,13 @@ function OrganizingCommittee() {
                     className="size-[72px] rounded-full object-cover opacity-95"
                   />
                 </div>
+                <h3 className="mt-5 font-display text-base font-semibold">{name}</h3>
+                <p className="mt-1.5 text-xs leading-5 text-white/70">
+                  {role}
+                  <br />
+                  CiNOPSE India 2026
+                </p>
               </div>
-              <h3 className="mt-5 font-display text-base font-semibold">{name}</h3>
-              <p className="mt-1.5 text-xs leading-5 text-white/70">
-                {role}
-                <br />
-                CiNOPSE India 2026
-              </p>
             </article>
           ))}
         </div>
@@ -267,24 +271,21 @@ function Registration() {
           data-reveal-group
           className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
         >
-          {registrationTiers.map((tier, index) => {
-            const featured = index === 0
-            return (
-              <article
-                key={tier}
-                data-reveal="scale"
-                className={`group relative flex flex-col rounded-2xl p-6 transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-2 ${
-                  featured
-                    ? "bg-white shadow-[var(--cinopse-shadow-lg)] ring-2 ring-[color:var(--cinopse-accent)]"
-                    : "bg-white/95 shadow-[var(--cinopse-shadow-md)] hover:shadow-[var(--cinopse-shadow-lg)]"
-                }`}
-              >
+          {registrationTiers.map((tier) => (
+            <article
+              key={tier}
+              data-reveal="scale"
+              data-card
+              className="relative flex flex-col overflow-hidden rounded-2xl border border-[color:var(--cinopse-border)] bg-white p-6 shadow-[var(--cinopse-shadow-sm)]"
+            >
+              <span
+                data-card-fill
+                className="absolute inset-0 rounded-[inherit] bg-[image:var(--cinopse-gradient-deep)]"
+              />
+              <div className="relative z-10 flex flex-col">
                 <div
-                  className={`mx-auto flex size-11 items-center justify-center rounded-xl ${
-                    featured
-                      ? "bg-[image:var(--cinopse-gradient-gold)] text-[color:var(--cinopse-primary-deep)]"
-                      : "bg-[color:var(--cinopse-surface)] text-[color:var(--cinopse-secondary)]"
-                  }`}
+                  data-icon-tile
+                  className="mx-auto flex size-11 items-center justify-center rounded-xl bg-[color:var(--cinopse-surface)] text-[color:var(--cinopse-secondary)]"
                 >
                   <CalendarDays className="size-5" />
                 </div>
@@ -296,12 +297,12 @@ function Registration() {
                   <PriceItem label="Student / Other HCPs" value="TBA" />
                   <PriceItem label="International Delegate" value="TBA" />
                 </div>
-              </article>
-            )
-          })}
+              </div>
+            </article>
+          ))}
         </div>
         <div data-reveal className="mt-12 text-center">
-          <Button variant="gold" className="h-12 px-8">
+          <Button variant="onBlue" className="h-12 px-8">
             Register Now <ArrowRight className="size-4" />
           </Button>
         </div>
@@ -368,9 +369,16 @@ function AssociatePartners() {
               <div
                 key={`${partner}-${index}`}
                 data-reveal="scale"
-                className="group flex h-28 items-center justify-center rounded-xl border border-[color:var(--cinopse-border)] bg-white px-4 text-center text-xs font-bold uppercase tracking-[0.08em] text-slate-400 shadow-[var(--cinopse-shadow-sm)] transition-all duration-500 hover:-translate-y-1 hover:border-[color:var(--cinopse-accent)]/40 hover:text-[color:var(--cinopse-primary)] hover:shadow-[var(--cinopse-shadow-md)]"
+                data-card
+                className="relative flex h-28 items-center justify-center overflow-hidden rounded-xl border border-[color:var(--cinopse-border)] bg-white px-4 text-center shadow-[var(--cinopse-shadow-sm)]"
               >
-                {partner}
+                <span
+                  data-card-fill
+                  className="absolute inset-0 rounded-[inherit] bg-[image:var(--cinopse-gradient-deep)]"
+                />
+                <span className="relative z-10 text-xs font-bold uppercase tracking-[0.08em] text-slate-400">
+                  {partner}
+                </span>
               </div>
             )
           )}
@@ -384,7 +392,10 @@ function Footer() {
   return (
     <footer className="relative overflow-hidden bg-[image:var(--cinopse-gradient-deep)] text-white">
       <div className="h-1 w-full bg-[image:var(--cinopse-gradient-gold)]" />
-      <div className="mx-auto grid max-w-[1440px] gap-10 px-6 py-16 md:grid-cols-2 lg:grid-cols-3 lg:px-10">
+      <div
+        data-reveal-group
+        className="mx-auto grid max-w-[1440px] gap-10 px-6 py-16 md:grid-cols-2 lg:grid-cols-3 lg:px-10"
+      >
         <FooterBlock title="Conference Secretariat">
           <Image
             src="/logo.jpg"
@@ -438,7 +449,7 @@ function Footer() {
           </div>
         </FooterBlock>
       </div>
-      <div className="border-t border-white/12 py-6 text-center">
+      <div data-reveal className="border-t border-white/12 py-6 text-center">
         <div className="flex justify-center gap-3">
           {[
             { icon: FaFacebookF, label: "Facebook" },
@@ -516,7 +527,7 @@ function PriceItem({ label, value }: { label: string; value: string }) {
 
 function FooterBlock({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div>
+    <div data-reveal>
       <h3 className="font-display text-lg font-semibold text-[color:var(--cinopse-accent)]">
         {title}
       </h3>
