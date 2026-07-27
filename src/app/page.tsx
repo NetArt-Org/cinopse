@@ -66,17 +66,6 @@ export default function Home() {
 
 function SiteHeader() {
   return <header className="sticky top-0 z-50 shadow-sm">
-    <div className="bg-[color:var(--cinopse-surface)]">
-      <div className="mx-auto flex min-h-11 max-w-[1440px] flex-wrap items-center justify-between gap-x-6 gap-y-2 px-6 py-2 lg:px-10">
-        <div className="hidden items-center gap-5 text-xs text-[color:var(--cinopse-text-secondary)] md:flex">
-          <a href="mailto:contact@example.com" className="flex items-center gap-1.5 hover:text-[color:var(--cinopse-primary)]"><Mail className="size-3.5" />contact@cinopse.org</a>
-          <a href="tel:+910000000000" className="flex items-center gap-1.5 hover:text-[color:var(--cinopse-primary)]"><Phone className="size-3.5" />+91 00000 00000</a>
-        </div>
-        <div className="ml-auto flex items-center gap-3 text-[color:var(--cinopse-primary)]">
-          <a href="#" aria-label="Facebook"><Share2 className="size-4" /></a><a href="#" aria-label="X"><X className="size-4" /></a><a href="#" aria-label="Instagram"><Camera className="size-4" /></a><a href="#" aria-label="LinkedIn"><AtSign className="size-4" /></a>
-        </div>
-      </div>
-    </div>
     <nav className="bg-[color:var(--cinopse-primary)]" aria-label="Main navigation">
       <div className="mx-auto flex min-h-[72px] max-w-[1440px] items-center px-6 lg:px-10">
         <Link href="#home" className="flex items-center gap-3 text-white" aria-label="CiNOPSE India 2026 home">
