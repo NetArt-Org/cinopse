@@ -12,6 +12,8 @@ const buttonVariants = cva(
           "bg-[color:var(--cinopse-primary)] text-white hover:text-white [&_svg]:transition-colors [&_svg]:group-hover/button:text-white",
         onBlue:
           "bg-white text-[color:var(--cinopse-primary)] hover:text-white [&_svg]:transition-colors [&_svg]:group-hover/button:text-white",
+        gold:
+          "bg-[image:var(--cinopse-gradient-gold)] text-[color:var(--cinopse-primary-deep)] shadow-[var(--cinopse-shadow-gold)] before:bg-[color:var(--cinopse-primary)] hover:text-white [&_svg]:transition-colors [&_svg]:group-hover/button:text-white",
         outline:
           "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
