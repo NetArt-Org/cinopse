@@ -49,6 +49,13 @@
 }
 
 :root {
+  --cinopse-primary: #1e4f9c;
+  --cinopse-secondary: #2f6fcb;
+  --cinopse-accent: #d9a441;
+  --cinopse-surface: #f7f9fc;
+  --cinopse-text: #1b2430;
+  --cinopse-text-secondary: #5e6b7a;
+  --cinopse-border: #e5eaf2;
   --font-sans: Arial, Helvetica, sans-serif;
   --font-geist-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --background: oklch(1 0 0);
@@ -128,6 +135,10 @@
   }
   html {
     @apply font-sans;
+  }
+
+  body {
+    @apply antialiased;
   }
 }
 

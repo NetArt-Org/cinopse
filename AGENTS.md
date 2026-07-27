@@ -1,131 +1,106 @@
 # AGENTS.md
 
-## Project Overview
+# Project Overview
 
-We are recreating a modern, premium **CiNOPSE India 2026 Event Registration** website using **Next.js**, **TypeScript**, **Tailwind CSS**, **shadcn/ui**, and **Lucide React**.
+Build the official **CiNOPSE India 2026** website using:
 
-This is **NOT** a marketing website or generic AI-generated landing page. The goal is to create a clean, editorial, healthcare-focused registration experience similar to premium conference/event websites.
+- Next.js
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Lucide React
 
-The overall feeling should be:
+The website should closely replicate the **layout, visual hierarchy, spacing, navigation, and overall user experience** of the reference website:
 
-- Clean
-- Premium
-- Editorial
-- Spacious
-- Minimal
-- Professional
-- Trustworthy
-- Healthcare focused
+https://2026.diabetesindia.org.in/
 
-Avoid unnecessary decorations or trendy AI-looking gradients.
+This project is **not** about redesigning the website. Recreate the same design language and component patterns while replacing the branding, colors, and content with CiNOPSE assets.
 
 ---
 
-# Extremely Important
+# Reference Guidelines
 
-## Never invent content.
-
-Every piece of content must come from the event posters/images provided by the user.
-
-That means:
-
-- Do NOT create pricing.
-- Do NOT create registration fees.
-- Do NOT create speakers.
-- Do NOT create sponsors.
-- Do NOT create agenda.
-- Do NOT create venue information.
-- Do NOT create statistics.
-- Do NOT create workshop details.
-- Do NOT create dates.
-- Do NOT create descriptions.
-
-Only use information that exists inside the provided poster images.
-
-If something is missing from the poster, leave the section out.
-
-Never hallucinate content.
+- Follow the same section ordering and page layouts as the reference website.
+- Match the spacing, proportions, component sizing, navigation behavior, and UI patterns.
+- Use **Lorem Ipsum** and placeholder content where actual content is not yet available.
+- Do **not** invent conference information. Placeholder text will be replaced later.
+- Page-wise structure will be provided separately during implementation. Do not define page structures yourself.
 
 ---
 
 # Design Language
 
-The design language should feel closer to:
+The website should feel:
 
-- Healthcare Event Submission Website
+- Professional
+- Editorial
+- Healthcare-focused
+- Clean
+- Spacious
+- Trustworthy
 
-NOT:
+Avoid:
 
-- Generic AI website
-- TemplateForest templates
-- Bootstrap conference templates
-- Busy medical websites
+- AI startup aesthetics
+- SaaS landing pages
+- Heavy gradients
+- Glassmorphism
+- Neumorphism
+- Decorative background graphics
+- Unnecessary animations
 
 ---
+# Colors
 
-# Theme
+Follow the same color hierarchy as the reference website.
 
-Healthcare
+These colors are based on the reference UI and should be treated as temporary design tokens until the final CiNOPSE brand colors are provided.
 
-Primary color:
+```ts
+export const colors = {
+  primary: "#1E4F9C",      // Primary Blue
+  secondary: "#2F6FCB",    // Secondary Blue
+  accent: "#D9A441",       // Gold Accent
 
-Blue
+  background: "#FFFFFF",
+  surface: "#F7F9FC",
 
-Blue should communicate:
+  text: "#1B2430",
+  textSecondary: "#5E6B7A",
 
-- Trust
-- Professionalism
-- Medical
-- Reliability
+  border: "#E5EAF2",
+};
+```
 
-Background:
+Use these colors consistently across the project.
 
-Pure White
+- **Primary Blue** → Navigation, buttons, links, active states.
+- **Secondary Blue** → Secondary actions, highlights, badges.
+- **Gold Accent** → Important CTAs, emphasis, and decorative accents (use sparingly).
+- **White** → Primary page background.
+- **Surface** → Alternate section backgrounds and cards.
+- **Text** → Headings and primary content.
+- **Text Secondary** → Body copy and supporting text.
+- **Border** → Dividers, cards, inputs, and subtle separators.
 
-Section backgrounds:
+Keep all colors centralized in the Tailwind theme (or design tokens) so the entire website can be rebranded by changing values in a single place.
 
-Very subtle gray only when needed.
-
-No dark mode.
-
-No heavy gradients.
-
-No background illustrations.
-
-No medical stock imagery.
-
-No DNA graphics.
-
-No hexagon patterns.
-
-No floating healthcare graphics.
-
-Content should create hierarchy—not graphics.
-
+Avoid hardcoding hex values inside components.
 ---
 
 # Typography
 
-Use responsive clamp() typography throughout.
+Use the predefined responsive typography consistently across the entire project.
+
+Do not introduce arbitrary font sizes.
 
 Only use:
 
-- h1
-- h2
-- h3
-- p
+### H1
 
-No random font sizes.
+Desktop: **48px**
 
-## H1
-
-Desktop:
-48px
-
-Mobile:
-28px
-
-Example
+Mobile: **28px**
 
 ```css
 font-size: clamp(28px, 4vw, 48px);
@@ -133,13 +108,11 @@ font-size: clamp(28px, 4vw, 48px);
 
 ---
 
-## H2
+### H2
 
-Desktop:
-36px
+Desktop: **36px**
 
-Mobile:
-22px
+Mobile: **22px**
 
 ```css
 font-size: clamp(22px, 3vw, 36px);
@@ -147,13 +120,11 @@ font-size: clamp(22px, 3vw, 36px);
 
 ---
 
-## H3
+### H3
 
-Desktop:
-28px
+Desktop: **28px**
 
-Mobile:
-20px
+Mobile: **20px**
 
 ```css
 font-size: clamp(20px, 2vw, 28px);
@@ -161,15 +132,11 @@ font-size: clamp(20px, 2vw, 28px);
 
 ---
 
-## Paragraph
+### Paragraph
 
-Desktop
+Desktop: **18px**
 
-18px
-
-Mobile
-
-16px
+Mobile: **16px**
 
 ```css
 font-size: clamp(16px, 1.4vw, 18px);
@@ -177,451 +144,148 @@ font-size: clamp(16px, 1.4vw, 18px);
 
 ---
 
-Typography should feel editorial.
+Use generous line heights and spacing to maintain an editorial reading experience.
 
-Use generous line height.
+Prefer Tailwind utility classes for typography. If these sizes are reused frequently, extend the Tailwind theme instead of creating custom CSS classes.
 
-Do not crowd text.
+Avoid inline styles and component-specific CSS for typography.
 
 ---
 
 # Layout
 
-Desktop:
+Maintain the same layout principles as the reference website.
 
-Two-column layout.
+- Large whitespace
+- Consistent vertical rhythm
+- Balanced content width
+- Responsive grids
+- Editorial alignment
 
-```
------------------------------------------------------
+Prefer:
 
-Content                     Sticky Registration Form
-
-(scrollable)                (sticky)
-
------------------------------------------------------
-```
-
-Content scrolls.
-
-Registration form remains sticky.
+- `max-w-7xl`
+- `mx-auto`
+- `px-6`
+- `lg:px-10`
 
 ---
 
-Mobile
+# Components
 
-Registration form should NOT appear inline.
+Keep components simple, reusable, and modular.
 
-Instead:
-
-Sticky bottom button
-
-```
-Register Now
-```
-
-When tapped:
-
-Open a Drawer or Dialog using shadcn.
-
-The complete registration form appears.
-
-Close button on top.
-
----
-
-# Registration Form
-
-Desktop:
-
-Sticky
-
-Mobile:
-
-Drawer / Modal
-
-The form should be broken into sections.
-
-Example
-
-Personal Information
-
-Professional Information
-
-Registration Information
-
-Payment
-
-Confirmation
-
-Avoid one huge form.
-
----
-
-# Payment
-
-Payment gateway is NOT decided yet.
-
-Only create the UI architecture.
-
-Need:
-
-- Payment summary area
-- Payment method placeholder
-- Proceed to Payment button
-
-Keep payment logic modular.
-
-Example
-
-```
-/lib/payment/
-
-payment-provider.ts
-
-payment-service.ts
-
-payment-types.ts
-```
-
-No provider-specific code yet.
-
-Later we should be able to plug in:
-
-- Razorpay
-- Cashfree
-- PhonePe
-- Stripe
-
-without rewriting components.
-
----
-
-# Component Structure
+Suggested structure:
 
 ```
 components/
-
-layout/
-
-sections/
-
-forms/
-
-payment/
-
-shared/
-
-ui/
+  layout/
+  shared/
+  sections/
+  ui/
+  forms/
 ```
+
+Avoid unnecessary component abstraction.
+
+Extract only reusable UI or repeated logic.
 
 ---
 
-Example
+# Styling
 
-```
-Hero
+Prefer **Tailwind CSS** for all styling.
 
-AboutConference
+- Use utility classes wherever possible.
+- Avoid writing custom CSS.
+- Use `globals.css` only for:
+  - Tailwind imports
+  - CSS variables
+  - Font declarations
+  - Global resets
 
-ConferenceHighlights
-
-ConferenceThemes
-
-Venue
-
-Committee
-
-FAQ
-
-RegistrationForm
-
-PaymentSummary
-
-StickyRegistration
-
-Footer
-```
+Do not place component-specific styling in `globals.css`.
 
 ---
 
 # Icons
 
-Only use
+Use **Lucide React** exclusively.
 
-Lucide React
-
-Avoid random icon packs.
-
-Icons should be simple.
-
-Examples
-
-Calendar
-
-MapPin
-
-Building2
-
-Hospital
-
-User
-
-Users
-
-HeartPulse
-
-Brain
-
-Activity
-
-BadgeCheck
-
-ShieldCheck
-
-CreditCard
-
-ArrowRight
-
-ChevronRight
-
-Phone
-
-Mail
-
-CircleCheck
-
----
-
-# Spacing
-
-Spacing is extremely important.
-
-Lots of breathing room.
-
-Never stack sections tightly.
-
-Suggested spacing
-
-Section padding
-
-```
-py-24
-```
-
-Large sections
-
-```
-py-32
-```
-
-Cards
-
-```
-gap-8
-```
-
-Grid
-
-```
-gap-10
-```
-
-Never create cramped layouts.
-
----
-
-# Cards
-
-Cards should be subtle.
-
-Rounded
-
-Shadow
-
-Very light border
-
-Example
-
-```
-rounded-3xl
-
-border
-
-shadow-sm
-```
-
-Avoid:
-
-Heavy shadows
-
-Gradient cards
-
-Glassmorphism
-
-Neumorphism
-
----
-
-# Buttons
-
-Primary
-
-Blue
-
-Rounded
-
-Simple
-
-Large touch targets
-
-Examples
-
-Register Now
-
-Proceed to Payment
-
-View Venue
-
-Download Brochure
-
-(if available in poster)
-
-Never use flashy gradients.
-
----
-
-# Forms
-
-Use shadcn components.
-
-Input
-
-Textarea
-
-Select
-
-Checkbox
-
-Radio Group
-
-Button
-
-Form
-
-Separator
-
-Accordion
-
-Drawer
-
-Dialog
-
-ScrollArea
-
-Card
-
-Badge
-
----
-
-# Responsiveness
-
-Desktop
-
-Tablet
-
-Mobile
-
-Everything must adapt naturally.
-
-No horizontal scrolling.
-
-No fixed widths.
-
-Prefer
-
-```
-max-w-7xl
-
-mx-auto
-
-px-6
-
-lg:px-10
-```
-
----
-
-# Accessibility
-
-Every field must have
-
-Label
-
-Placeholder
-
-Required state
-
-Keyboard navigation
-
-Focus styles
-
-aria labels where appropriate
+Keep icons minimal, consistent, and functional.
 
 ---
 
 # Animations
 
-Very subtle.
+Animations should be subtle.
 
-Fade
+Allowed:
 
-Slide
+- Fade
+- Opacity
+- Small translate
+- Hover transitions
 
-Opacity
+Avoid:
 
-No bouncing.
+- Bounce
+- Floating elements
+- Continuous animations
+- Large parallax
+- Distracting effects
 
-No floating objects.
-
-No excessive motion.
-
-Keep structure animation-friendly.
-
----
-
-# Code Style
-
-Reusable components.
-
-No duplicated UI.
-
-Strong typing.
-
-Use TypeScript everywhere.
-
-No inline styles.
-
-Tailwind only.
-
-Extract repeated values into constants.
+Performance should always take priority over visual effects. 
 
 ---
 
-# Content Rules
+# Performance
 
-Again,
+Optimize for speed and maintainability.
 
-DO NOT invent content.
+- Server Components where appropriate
+- Lazy load non-critical sections
+- Optimize images
+- Minimize client components
+- Avoid unnecessary re-renders
+- Keep bundle size small
+- Reuse components instead of duplicating code
 
-Only display information available inside the provided poster images.
+Always prefer simple implementations over complex abstractions.
 
-If the poster changes,
+---
 
-the website content changes.
+# Accessibility
 
-The website should behave like a visual translation of the poster into a modern web experience.
+Every component should include:
 
-Nothing more.
+- Semantic HTML
+- Proper heading hierarchy
+- Keyboard accessibility
+- Focus states
+- Labels for form fields
+- Appropriate ARIA attributes when required
 
-Nothing less.
+---
+
+# Code Standards
+
+- TypeScript everywhere
+- Strong typing
+- No inline styles
+- Reusable components
+- Clean folder structure
+- Meaningful naming
+- Consistent formatting
+
+Write code that is easy to extend and maintain.
+
+---
+
+# Content
+
+During development, use **Lorem Ipsum** or placeholder content wherever actual content is unavailable.
+
+Do not fabricate conference information.
+
+All placeholder content will be replaced with official CiNOPSE content later.

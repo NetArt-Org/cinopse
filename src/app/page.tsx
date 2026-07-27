@@ -1,348 +1,144 @@
 import Image from "next/image"
-import type React from "react"
+import Link from "next/link"
+import type { ReactNode } from "react"
 import {
-  Activity,
-  Bone,
-  BookOpenCheck,
   CalendarDays,
-  Hand,
-  HeartPulse,
+  Camera,
+  ChevronDown,
+  AtSign,
   Mail,
   MapPin,
-  Moon,
-  Network,
   Phone,
-  ShieldCheck,
-  Stethoscope,
-  TabletSmartphone,
-  Users,
+  Send,
+  Share2,
+  X,
 } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 
-import { MobileRegistrationDrawer } from "@/components/event/mobile-registration-drawer"
-import { RegistrationForm } from "@/components/event/registration-form"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { eventContent } from "@/lib/event-content"
+import { Button } from "@/components/ui/button"
+import { MobileNavigation } from "@/components/layout/mobile-navigation"
 
-const focusIcons = [
-  HeartPulse,
-  Activity,
-  Users,
-  Stethoscope,
-  Moon,
-  Activity,
-  Stethoscope,
-  Activity,
-  Bone,
+const committee = [
+  ["Founder & CEO", "Dr. Santosh K M"],
+  ["Chief Financial Officer", "Dr. Vinod Babu"],
+  ["Chief Operating Officer", "Dr. Karthik S M"],
+  ["Scientific Committee", "Lorem Ipsum"],
+  ["Organizing Committee", "Lorem Ipsum"],
+  ["Conference Secretariat", "Lorem Ipsum"],
+  ["Scientific Committee", "Lorem Ipsum"],
+  ["Organizing Committee", "Lorem Ipsum"],
+  ["Conference Secretariat", "Lorem Ipsum"],
+  ["Scientific Committee", "Lorem Ipsum"],
+  ["Organizing Committee", "Lorem Ipsum"],
+  ["Conference Secretariat", "Lorem Ipsum"],
 ]
 
-const highlightIcons = [
-  Users,
-  BookOpenCheck,
-  ShieldCheck,
-  Hand,
-  TabletSmartphone,
-  Network,
-]
+const registrationTiers = ["Early Registration", "Standard Registration", "Late Registration", "On-site Registration"]
 
-const pillarIcons = [Users, Network, BookOpenCheck, Activity, Hand]
-
-const conferenceHighlightIcons = [
-  BookOpenCheck,
-  Activity,
-  Moon,
-  Stethoscope,
-  Activity,
-  Bone,
-  HeartPulse,
-  Activity,
-  Users,
-  TabletSmartphone,
-  ShieldCheck,
-  Network,
+const navItems = [
+  { label: "Congress Information", hasDropdown: true },
+  { label: "Venue & Nearby", hasDropdown: true },
+  { label: "Program", hasDropdown: true },
+  { label: "Organizers", hasDropdown: true },
+  { label: "Registration", hasDropdown: false },
+  { label: "Abstract", hasDropdown: false },
+  { label: "Faculty", hasDropdown: true },
+  { label: "Contact Us", hasDropdown: false },
 ]
 
 export default function Home() {
   return (
-    <div className="min-h-dvh bg-gradient-to-b from-blue-50/80 via-white to-white text-slate-950">
-      <Header />
-      <main className="mx-auto grid w-full max-w-7xl gap-8 px-4 pb-8 pt-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-8 lg:pb-16 lg:pt-14">
-        <div className="space-y-12">
-          <HeroSection />
-          <OverviewSection />
-          <FocusAreasSection />
-          <ConferenceHighlightsSection />
-          <CommitteeSection />
-          <ContactSection />
-        </div>
-        <aside className="hidden lg:block">
-          <div className="sticky top-24">
-            <RegistrationForm />
-          </div>
-        </aside>
+    <div className="min-h-dvh bg-white text-[color:var(--cinopse-text)]">
+      <SiteHeader />
+      <main>
+        <Hero />
+        <About />
+        <OrganizingCommittee />
+        <Venue />
+        <Registration />
+        <PopularDestination />
+        <AssociatePartners />
       </main>
       <Footer />
-      <MobileRegistrationDrawer />
     </div>
   )
 }
 
-function Header() {
-  return (
-    <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex h-20 max-w-7xl items-center px-4 sm:px-6 lg:px-8">
-        <Image
-          src="/logo.jpg"
-          alt="CINOPSE"
-          width={168}
-          height={68}
-          priority
-          className="h-14 w-auto object-contain"
-        />
-      </div>
-    </header>
-  )
-}
-
-function HeroSection() {
-  return (
-    <section className="space-y-7 py-4 lg:py-8">
-      <div className="max-w-4xl space-y-6">
-        <div className="space-y-2">
-          <p className="text-sm font-semibold tracking-[0.14em] text-blue-800 uppercase">
-            {eventContent.cmeSummit}
-          </p>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
-            {eventContent.name}
-          </h1>
-          <p className="text-xl font-medium text-blue-800">
-            {eventContent.theme}
-          </p>
+function SiteHeader() {
+  return <header className="sticky top-0 z-50 shadow-sm">
+    <div className="bg-[color:var(--cinopse-surface)]">
+      <div className="mx-auto flex min-h-11 max-w-[1440px] flex-wrap items-center justify-between gap-x-6 gap-y-2 px-6 py-2 lg:px-10">
+        <div className="hidden items-center gap-5 text-xs text-[color:var(--cinopse-text-secondary)] md:flex">
+          <a href="mailto:contact@example.com" className="flex items-center gap-1.5 hover:text-[color:var(--cinopse-primary)]"><Mail className="size-3.5" />contact@cinopse.org</a>
+          <a href="tel:+910000000000" className="flex items-center gap-1.5 hover:text-[color:var(--cinopse-primary)]"><Phone className="size-3.5" />+91 00000 00000</a>
         </div>
-        <p className="max-w-3xl text-lg font-semibold leading-snug text-slate-800">
-          {eventContent.tagline}
-        </p>
-        <div className="grid gap-3 text-sm text-slate-700 sm:grid-cols-3">
-          <InfoPill icon={CalendarDays} text={eventContent.date} />
-          <InfoPill icon={MapPin} text={eventContent.city} />
-          <InfoPill icon={MapPin} text={eventContent.venue} />
+        <div className="ml-auto flex items-center gap-3 text-[color:var(--cinopse-primary)]">
+          <a href="#" aria-label="Facebook"><Share2 className="size-4" /></a><a href="#" aria-label="X"><X className="size-4" /></a><a href="#" aria-label="Instagram"><Camera className="size-4" /></a><a href="#" aria-label="LinkedIn"><AtSign className="size-4" /></a>
         </div>
       </div>
-    </section>
-  )
+    </div>
+    <nav className="bg-[color:var(--cinopse-primary)]" aria-label="Main navigation">
+      <div className="mx-auto flex min-h-[72px] max-w-[1440px] items-center px-6 lg:px-10">
+        <Link href="#home" className="flex items-center gap-3 text-white" aria-label="CiNOPSE India 2026 home">
+          <Image src="/logo.jpg" alt="CiNOPSE" width={58} height={58} className="size-13 rounded-full border-2 border-white/80 object-cover" priority />
+          <span className="hidden text-sm font-bold tracking-[0.08em] uppercase sm:block">CiNOPSE India 2026</span>
+        </Link>
+        <div className="ml-auto hidden items-center gap-1 xl:flex">
+          {navItems.map(({ label, hasDropdown }) => hasDropdown ? <div key={label} className="group relative"><span className="flex cursor-default items-center gap-1 px-3 py-7 text-[11px] font-semibold tracking-[0.03em] text-white uppercase transition-colors group-hover:bg-white/10 group-focus-within:bg-white/10">{label}<ChevronDown className="size-3" /></span><div className="invisible absolute right-0 top-full min-w-52 translate-y-2 border-t-2 border-[color:var(--cinopse-accent)] bg-white py-2 opacity-0 shadow-lg transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100"><Link href="#" className="block px-4 py-2.5 text-sm text-[color:var(--cinopse-text)] hover:bg-[color:var(--cinopse-surface)]">Lorem ipsum</Link><Link href="#" className="block px-4 py-2.5 text-sm text-[color:var(--cinopse-text)] hover:bg-[color:var(--cinopse-surface)]">Lorem ipsum</Link></div></div> : <Link key={label} href="#" className="px-3 py-7 text-[11px] font-semibold tracking-[0.03em] text-white uppercase hover:bg-white/10">{label}</Link>)}
+        </div>
+        <div className="ml-auto"><MobileNavigation items={navItems} /></div>
+      </div>
+    </nav>
+  </header>
 }
 
-function OverviewSection() {
-  return (
-    <section className="space-y-5">
-      <SectionHeading
-        title={eventContent.conferenceType}
-        body={eventContent.description}
-      />
-      <div className="grid gap-4 md:grid-cols-3">
-        {eventContent.pillars.map((pillar, index) => {
-          const Icon = pillarIcons[index] ?? Activity
-
-          return (
-            <Card key={pillar.title} className="shadow-none">
-              <CardHeader className="space-y-4">
-                <Icon className="size-7 text-blue-800" aria-hidden="true" />
-                <CardTitle className="text-base text-blue-900">
-                  {pillar.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm leading-6 text-slate-600">
-                  {pillar.body}
-                </p>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-      <Card className="bg-slate-50 shadow-none">
-        <CardContent className="p-5">
-          <p className="text-base leading-7 text-slate-700">
-            {eventContent.mission}
-          </p>
-        </CardContent>
-      </Card>
-    </section>
-  )
+function Hero() {
+  return <section id="home" className="relative flex min-h-[460px] items-end overflow-hidden bg-[color:var(--cinopse-primary)] md:min-h-[620px]">
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,rgba(217,164,65,.42),transparent_26%),linear-gradient(112deg,rgba(9,37,77,.88),rgba(30,79,156,.48))]" />
+    <div className="relative mx-auto w-full max-w-[1440px] px-6 py-16 lg:px-10 lg:py-22"><div className="max-w-3xl border-l-4 border-[color:var(--cinopse-accent)] pl-6 text-white"><p className="text-xs font-bold tracking-[0.18em] text-[color:var(--cinopse-accent)] uppercase">CiNOPSE India 2026</p><h1 className="mt-4 text-[clamp(28px,4vw,48px)] leading-[1.1] font-bold">One Place. One Agenda. One Vision.</h1><p className="mt-6 max-w-2xl text-[clamp(16px,1.4vw,18px)] leading-8 text-white/90">India&apos;s Independent Multidisciplinary Medical Conference Bringing Together Healthcare Professionals Across Specialties.</p><Button className="mt-8 h-11 rounded-md bg-[color:var(--cinopse-accent)] px-6 text-xs font-bold tracking-[0.08em] text-[color:var(--cinopse-primary)] uppercase hover:bg-white">Register Now</Button></div><div className="mt-14 flex items-center gap-2 text-xs text-white/65"><CalendarDays className="size-4 text-[color:var(--cinopse-accent)]" /> Official conference visual coming soon</div></div>
+  </section>
 }
 
-function FocusAreasSection() {
-  return (
-    <section className="space-y-5">
-      <SectionHeading title="Focus Areas" body={eventContent.cityLine} />
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
-        {eventContent.focusAreas.map((area, index) => {
-          const Icon = focusIcons[index] ?? Activity
-
-          return (
-            <Card key={area} className="shadow-none">
-              <CardContent className="flex min-h-32 flex-col justify-center gap-5 p-5">
-                <Icon className="size-6 text-blue-800" aria-hidden="true" />
-                <p className="text-sm font-semibold text-slate-800">{area}</p>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-    </section>
-  )
+function About() {
+  return <section className="relative overflow-hidden bg-white py-16 lg:py-24"><SectionTitle title="About CiNOPSE India 2026" /><div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-8 lg:grid-cols-2 lg:px-10"><div className="flex min-h-70 items-center justify-center border border-[color:var(--cinopse-border)] bg-[color:var(--cinopse-surface)] p-8"><Image src="/logo.jpg" alt="CiNOPSE placeholder" width={220} height={220} className="size-48 rounded-full object-cover opacity-75" /></div><div className="rounded-xl bg-white/80 p-1 text-[color:var(--cinopse-text-secondary)]"><p className="leading-7">CiNOPSE is an independent multidisciplinary medical conference created to foster collaboration, clinical excellence, and continuous professional development across diverse healthcare specialties.</p><p className="mt-4 leading-7">The conference provides a focused environment for healthcare professionals to share ideas, examine evidence, and engage in meaningful clinical conversations.</p><p className="mt-4 leading-7">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer euismod, mauris a congue consequat, metus nisl ultrices eros, at aliquet nisl sem ut ligula.</p></div></div></section>
 }
 
-function ConferenceHighlightsSection() {
-  return (
-    <section className="space-y-5">
-      <SectionHeading
-        title="Conference Highlights"
-        body="One Conference. Multiple Specialties. Limitless Collaboration."
-      />
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {eventContent.highlights.map((highlight, index) => {
-          const Icon = conferenceHighlightIcons[index] ?? ShieldCheck
-
-          return (
-            <div
-              key={highlight}
-              className="flex gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700"
-            >
-              <Icon
-                className="mt-0.5 size-5 shrink-0 text-blue-800"
-                aria-hidden="true"
-              />
-              <span>{highlight}</span>
-            </div>
-          )
-        })}
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {eventContent.whyAttend.map((item, index) => {
-          const Icon = highlightIcons[index] ?? ShieldCheck
-
-          return (
-            <Card key={item} className="shadow-none">
-              <CardContent className="flex items-center gap-3 p-4">
-                <Icon className="size-5 text-blue-800" aria-hidden="true" />
-                <p className="text-sm font-medium text-slate-800">{item}</p>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-    </section>
-  )
+function OrganizingCommittee() {
+  return <section className="bg-[color:var(--cinopse-primary)] py-16 lg:py-24"><SectionTitle title="Organizing Committee" dark /><div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-5 gap-y-8 px-6 py-8 sm:grid-cols-3 lg:grid-cols-4 lg:px-10">{committee.map(([role, name], index) => <article key={`${role}-${index}`} className="text-center text-white"><div className="mx-auto flex size-28 items-center justify-center rounded-full border-4 border-white/70 bg-white/10"><Image src="/logo.jpg" alt="Committee profile placeholder" width={84} height={84} className="size-20 rounded-full object-cover opacity-85" /></div><h2 className="mt-4 text-sm font-semibold">{name}</h2><p className="mt-1 text-xs leading-5 text-white/75">{role}<br />CiNOPSE India 2026</p></article>)}</div></section>
 }
 
-function CommitteeSection() {
-  return (
-    <section className="space-y-5">
-      <SectionHeading title="Organising Committee" />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {eventContent.committee.map((member) => (
-          <Card key={`${member.role}-${member.name}`} className="shadow-none">
-            <CardHeader>
-              <p className="text-xs font-semibold tracking-[0.12em] text-blue-800 uppercase">
-                {member.role}
-              </p>
-              <CardTitle className="text-base">{member.name}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-slate-600">{member.affiliation}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      <Card className="shadow-none">
-        <CardHeader>
-          <CardTitle className="text-base">Hospitality & Logistics</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          {eventContent.logistics.map((person) => (
-            <span
-              key={person}
-              className="rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-900"
-            >
-              {person}
-            </span>
-          ))}
-        </CardContent>
-      </Card>
-    </section>
-  )
+function Venue() {
+  return <section className="bg-white py-16 lg:py-24"><SectionTitle title="About Venue" /><div className="mx-auto grid max-w-6xl gap-0 overflow-hidden rounded-xl border border-[color:var(--cinopse-border)] px-6 py-8 md:grid-cols-2 lg:px-10"><div className="flex min-h-80 flex-col items-center justify-center bg-[color:var(--cinopse-surface)] p-8 text-center"><MapPin className="size-10 text-[color:var(--cinopse-secondary)]" /><p className="mt-4 text-sm font-semibold text-[color:var(--cinopse-primary)]">Venue map coming soon</p><p className="mt-2 max-w-xs text-sm leading-6 text-[color:var(--cinopse-text-secondary)]">Official venue details will be announced shortly.</p></div><div className="flex flex-col justify-between p-7 text-center"><div><h2 className="text-[clamp(20px,2vw,28px)] font-bold text-[color:var(--cinopse-primary)]">Conference Venue</h2><div className="mt-7 grid gap-4 text-sm text-[color:var(--cinopse-text-secondary)]"><InfoBox icon={MapPin} text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." /><InfoBox icon={Phone} text="+91 00000 00000" /><InfoBox icon={Mail} text="contact@cinopse.org" /></div></div><Button className="mx-auto mt-8 h-10 rounded-md bg-[color:var(--cinopse-primary)] px-6 text-xs font-bold tracking-[0.08em] text-white uppercase hover:bg-[color:var(--cinopse-secondary)]">Know More</Button></div></div></section>
 }
 
-function ContactSection() {
-  return (
-    <section className="space-y-5">
-      <SectionHeading title="For Enquiries, Contact" />
-      <div className="grid gap-4 md:grid-cols-2">
-        <ContactCard icon={Phone} text={eventContent.enquiryPhone} />
-        <ContactCard icon={Phone} text={eventContent.alternatePhone} />
-        <ContactCard icon={Mail} text={eventContent.email} />
-        <ContactCard icon={Network} text={eventContent.website} />
-      </div>
-    </section>
-  )
+function Registration() {
+  return <section className="bg-[color:var(--cinopse-primary)] py-16 lg:py-24"><SectionTitle title="Registration" dark /><div className="mx-auto grid max-w-6xl gap-5 px-6 py-8 sm:grid-cols-2 lg:grid-cols-4 lg:px-10">{registrationTiers.map((tier) => <article key={tier} className="rounded-xl bg-white p-6 shadow-sm"><h2 className="text-center text-lg font-bold text-[color:var(--cinopse-primary)]">{tier}</h2><div className="mt-5 divide-y divide-[color:var(--cinopse-border)] text-sm"><PriceItem label="Delegate" value="TBA" /><PriceItem label="Student / Other HCPs" value="TBA" /><PriceItem label="International Delegate" value="TBA" /></div></article>)}</div><div className="mt-2 text-center"><Button className="h-11 rounded-md bg-white px-7 text-xs font-bold tracking-[0.08em] text-[color:var(--cinopse-primary)] uppercase hover:bg-[color:var(--cinopse-accent)]">Register Now</Button></div></section>
+}
+
+function PopularDestination() {
+  return <section className="bg-white py-16 lg:py-24"><SectionTitle title="Popular Destination" /><div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-8 md:grid-cols-2 lg:px-10"><div className="relative mx-auto flex aspect-square w-full max-w-sm items-center justify-center bg-[color:var(--cinopse-surface)] p-10"><div className="absolute inset-8 border border-[color:var(--cinopse-secondary)]/30" /><div className="relative text-center"><MapPin className="mx-auto size-12 text-[color:var(--cinopse-secondary)]" /><p className="mt-4 text-sm font-semibold text-[color:var(--cinopse-primary)]">Host city visual coming soon</p></div></div><div><h2 className="text-[clamp(20px,2vw,28px)] font-bold text-[color:var(--cinopse-primary)]">Discover our host city</h2><p className="mt-5 leading-7 text-[color:var(--cinopse-text-secondary)]">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer euismod, mauris a congue consequat, metus nisl ultrices eros, at aliquet nisl sem ut ligula.</p><p className="mt-4 leading-7 text-[color:var(--cinopse-text-secondary)]">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vitae lacus non augue semper tincidunt.</p><div className="mt-7 text-center"><Button className="h-10 rounded-md bg-[color:var(--cinopse-primary)] px-6 text-xs font-bold tracking-[0.08em] text-white uppercase hover:bg-[color:var(--cinopse-secondary)]">Read More</Button></div></div></div></section>
+}
+
+function AssociatePartners() {
+  return <section className="bg-white pb-16 lg:pb-20"><SectionTitle title="Our Associate Partners" /><div className="mx-auto grid max-w-5xl grid-cols-2 gap-8 px-6 py-8 sm:grid-cols-3 lg:px-10">{["Partner Logo", "Partner Logo", "Partner Logo", "Partner Logo", "Partner Logo", "Partner Logo"].map((partner, index) => <div key={`${partner}-${index}`} className="flex h-28 items-center justify-center border border-[color:var(--cinopse-border)] bg-[color:var(--cinopse-surface)] px-4 text-center text-xs font-bold tracking-[0.08em] text-slate-400 uppercase grayscale">{partner}</div>)}</div></section>
 }
 
 function Footer() {
-  return (
-    <footer className="border-t border-slate-100 bg-white pb-24 lg:pb-0">
-      <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-6 sm:flex-row sm:justify-between sm:px-6 lg:px-8">
-        <Image
-          src="/logo.jpg"
-          alt="CINOPSE"
-          width={132}
-          height={54}
-          className="h-11 w-auto object-contain"
-        />
-        <p className="text-sm text-slate-500">© CINOPSE 2026</p>
-      </div>
-    </footer>
-  )
+  return <footer className="bg-[color:var(--cinopse-text)] text-white"><div className="mx-auto grid max-w-[1440px] gap-10 px-6 py-14 md:grid-cols-2 lg:grid-cols-3 lg:px-10"><FooterBlock title="Conference Secretariat"><Image src="/logo.jpg" alt="CiNOPSE" width={76} height={76} className="mt-3 size-16 rounded-full object-cover" /><p className="mt-4 text-sm leading-6 text-white/70">Lorem ipsum dolor sit amet,<br />consectetur adipiscing elit.</p><p className="mt-4 text-sm leading-6 text-white/70">Phone: +91 00000 00000<br />Email: contact@cinopse.org</p></FooterBlock><FooterBlock title="Professional Conference Organizer"><div className="mt-3 flex size-16 items-center justify-center rounded-full bg-white/10"><Send className="size-7 text-[color:var(--cinopse-accent)]" /></div><p className="mt-4 text-sm leading-6 text-white/70">Lorem ipsum dolor sit amet,<br />consectetur adipiscing elit.</p><p className="mt-4 text-sm leading-6 text-white/70">Phone: +91 00000 00000<br />Email: info@example.com</p></FooterBlock><FooterBlock title="Useful Links"><div className="mt-4 grid grid-cols-2 gap-2 text-sm text-white/70"><Link href="#home">Home</Link><Link href="#">Privacy Policy</Link><Link href="#">Faculty</Link><Link href="#">Terms & Conditions</Link><Link href="#">Organizing Committee</Link><Link href="#">Registration</Link></div></FooterBlock></div><div className="border-t border-white/20 py-5 text-center"><div className="flex justify-center gap-4"><Camera className="size-4" /><Share2 className="size-4" /><X className="size-4" /><AtSign className="size-4" /></div><p className="mt-4 text-xs text-white/60">© Copyright CiNOPSE India 2026. All Rights Reserved.</p></div></footer>
 }
 
-function SectionHeading({ title, body }: { title: string; body?: string }) {
-  return (
-    <div className="space-y-2">
-      <h2 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
-        {title}
-      </h2>
-      {body ? <p className="max-w-3xl leading-7 text-slate-600">{body}</p> : null}
-    </div>
-  )
+function SectionTitle({ title, dark = false }: { title: string; dark?: boolean }) {
+  return <div className="mx-auto max-w-6xl px-6 lg:px-10"><h1 className={`mx-auto w-fit border-b-2 pb-3 text-center text-[clamp(22px,3vw,36px)] font-bold ${dark ? "border-[color:var(--cinopse-accent)] text-white" : "border-[color:var(--cinopse-accent)] text-[color:var(--cinopse-primary)]"}`}>{title}</h1></div>
 }
 
-function InfoPill({
-  icon: Icon,
-  text,
-}: {
-  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>
-  text: string
-}) {
-  return (
-    <div className="flex items-start gap-3 rounded-2xl border border-blue-200 bg-white/85 px-4 py-3">
-      <Icon className="mt-0.5 size-4 shrink-0 text-blue-800" aria-hidden={true} />
-      <span className="leading-6">{text}</span>
-    </div>
-  )
+function InfoBox({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
+  return <div className="flex flex-col items-center gap-2 rounded-lg bg-[color:var(--cinopse-surface)] p-4"><Icon className="size-5 text-[color:var(--cinopse-secondary)]" /><p>{text}</p></div>
 }
 
-function ContactCard({
-  icon: Icon,
-  text,
-}: {
-  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>
-  text: string
-}) {
-  return (
-    <Card className="shadow-none">
-      <CardContent className="flex items-center gap-3 p-4">
-        <Icon className="size-5 text-blue-800" aria-hidden={true} />
-        <p className="text-sm font-medium text-slate-800">{text}</p>
-      </CardContent>
-    </Card>
-  )
+function PriceItem({ label, value }: { label: string; value: string }) {
+  return <p className="flex justify-between gap-2 py-3 text-[color:var(--cinopse-text-secondary)]"><span>{label}</span><strong className="text-[color:var(--cinopse-primary)]">{value}</strong></p>
+}
+
+function FooterBlock({ title, children }: { title: string; children: ReactNode }) {
+  return <div><h2 className="text-lg font-semibold text-[color:var(--cinopse-accent)]">{title}</h2>{children}</div>
 }
