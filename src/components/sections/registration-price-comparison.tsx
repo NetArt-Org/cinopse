@@ -1,86 +1,836 @@
 "use client"
 
-import { useRef, useState } from "react"
-import { useGSAP } from "@gsap/react"
-import { gsap } from "gsap"
+import { useEffect, useMemo, useState } from "react"
+import type { ReactNode } from "react"
+import { createPortal } from "react-dom"
+import { ArrowRight, Check, X } from "lucide-react"
+import PhoneInput, {
+  isValidPhoneNumber,
+  type Value,
+} from "react-phone-number-input"
+import flags from "react-phone-number-input/flags"
 
-import { Button } from "@/components/ui/button"
+export type RegistrationPhase = {
+  name: string
+  window: string
+  status: "Closed" | "Open now" | "Upcoming"
+  prices: string[]
+}
 
-const audiences = ["Delegate", "Student / HCP", "International"]
+export type RegistrationPriceComparisonProps = {
+  audiences: string[]
+  eventDateLabel: string
+  eventDate: string
+  windowStart: string
+  phases: RegistrationPhase[]
+  note: string
+  ctaLabel: string
+}
 
-const phases = [
-  { name: "Early", window: "Registration window coming soon", status: "Closed", prices: ["₹8,500", "₹5,500", "$180"] },
-  { name: "Standard", window: "Registration window coming soon", status: "Open now", prices: ["₹10,500", "₹6,500", "$220"] },
-  { name: "Late", window: "Registration window coming soon", status: "Upcoming", prices: ["₹12,500", "₹7,500", "$260"] },
-  { name: "On-site", window: "Registration window coming soon", status: "Upcoming", prices: ["₹14,000", "₹8,500", "$300"] },
+type WizardForm = {
+  name: string
+  email: string
+  phone?: Value
+  city: string
+  institution: string
+  terms: boolean
+}
+
+const categoryDescriptions = [
+  "Practicing physicians & consultants",
+  "Postgraduates, trainees & allied HCPs",
+  "Delegates joining from outside India",
 ]
 
-gsap.registerPlugin(useGSAP)
+const initialForm: WizardForm = {
+  name: "",
+  email: "",
+  city: "",
+  institution: "",
+  terms: false,
+}
 
-export function RegistrationPriceComparison() {
-  const root = useRef<HTMLDivElement>(null)
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+
+export function RegistrationPriceComparison({
+  audiences,
+  eventDateLabel,
+  eventDate,
+  windowStart,
+  phases,
+  note,
+  ctaLabel,
+}: RegistrationPriceComparisonProps) {
   const [audience, setAudience] = useState(0)
+  const [now, setNow] = useState(() => Date.now())
+  const [modalOpen, setModalOpen] = useState(false)
+  const [activeView, setActiveView] = useState<"wizard" | "login">("wizard")
+  const [step, setStep] = useState(1)
+  const [selectedCategory, setSelectedCategory] = useState(-1)
+  const [form, setForm] = useState<WizardForm>(initialForm)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [registrationId, setRegistrationId] = useState("CIN-2026-0000")
+  const [lookupEmail, setLookupEmail] = useState("")
+  const [lookupResult, setLookupResult] = useState<
+    | { state: "found"; id: string; name: string; label: string; price: string }
+    | { state: "missing"; message: string }
+    | null
+  >(null)
 
-  useGSAP(
-    () => {
-      const prices = root.current?.querySelectorAll<HTMLElement>("[data-registration-price]")
+  const deadline = useMemo(() => new Date(eventDate).getTime(), [eventDate])
+  const start = useMemo(() => new Date(windowStart).getTime(), [windowStart])
+  const countdown = useCountdown(deadline, now)
+  const progress = Math.min(Math.max(((now - start) / (deadline - start)) * 100, 0), 100)
 
-      if (!prices?.length) return
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
 
-      gsap
-        .timeline({ defaults: { ease: "power3.out" } })
-        .fromTo(prices, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, duration: 0.3, stagger: 0.06, y: 0 })
-    },
-    { dependencies: [audience], revertOnUpdate: true, scope: root }
-  )
+    return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    const openRegistration = () => {
+      setActiveView("wizard")
+      setModalOpen(true)
+    }
+
+    window.addEventListener("cinopse:open-registration", openRegistration)
+    return () =>
+      window.removeEventListener("cinopse:open-registration", openRegistration)
+  }, [])
+
+  useEffect(() => {
+    document.body.classList.toggle("overflow-hidden", modalOpen)
+
+    return () => document.body.classList.remove("overflow-hidden")
+  }, [modalOpen])
+
+  const openPhase = phases.find((phase) => phase.status === "Open now") ?? phases[0]
+  const selectedLabel = selectedCategory >= 0 ? audiences[selectedCategory] : ""
+  const selectedPrice =
+    selectedCategory >= 0 ? openPhase.prices[selectedCategory] : ""
+
+  function resetWizard() {
+    setStep(1)
+    setSelectedCategory(-1)
+    setForm(initialForm)
+    setErrors({})
+    setLookupResult(null)
+  }
+
+  function closeModal() {
+    setModalOpen(false)
+    window.setTimeout(() => resetWizard(), 300)
+  }
+
+  function nextStep() {
+    if (step === 1) {
+      if (selectedCategory < 0) {
+        setErrors({ category: "Please choose a category to continue." })
+        return
+      }
+      setErrors({})
+      setStep(2)
+      return
+    }
+
+    if (step === 2) {
+      const nextErrors = validateDetails(form)
+      setErrors(nextErrors)
+      if (Object.keys(nextErrors).length) return
+      setStep(3)
+      return
+    }
+
+    if (step === 3) {
+      if (!form.terms) {
+        setErrors({ terms: "Please agree to terms and conditions." })
+        return
+      }
+
+      const id = `CIN-2026-${String(Math.floor(1000 + (Date.now() % 9000))).padStart(4, "0")}`
+      const record = {
+        id,
+        name: form.name,
+        email: form.email.toLowerCase(),
+        phone: form.phone ?? "",
+        city: form.city,
+        institution: form.institution,
+        label: selectedLabel,
+        price: selectedPrice,
+        at: new Date().toISOString(),
+      }
+      const store = JSON.parse(window.localStorage.getItem("cinopse_regs") || "{}")
+      store[record.email] = record
+      window.localStorage.setItem("cinopse_regs", JSON.stringify(store))
+      setRegistrationId(id)
+      setErrors({})
+      setStep(4)
+      return
+    }
+
+    closeModal()
+  }
+
+  function checkRegistration() {
+    const email = lookupEmail.trim().toLowerCase()
+    if (!emailPattern.test(email)) {
+      setLookupResult({
+        state: "missing",
+        message: "Please type the email address you used to register.",
+      })
+      return
+    }
+
+    const store = JSON.parse(window.localStorage.getItem("cinopse_regs") || "{}")
+    const record = store[email]
+    if (record) {
+      setLookupResult({
+        state: "found",
+        id: record.id,
+        name: record.name,
+        label: record.label,
+        price: record.price,
+      })
+      return
+    }
+
+    setLookupResult({
+      state: "missing",
+      message: `We couldn't find a registration for ${email} in this browser.`,
+    })
+  }
 
   return (
-    <div ref={root} className="mx-auto mt-14 max-w-4xl">
-      <div className="mx-auto grid max-w-md grid-cols-3 rounded-full border border-white/20 bg-white/10 p-1.5">
-        {audiences.map((item, index) => (
-          <button
-            key={item}
-            type="button"
-            onClick={() => setAudience(index)}
-            className={`rounded-full px-3 py-3 text-xs font-semibold transition-all duration-300 sm:text-sm ${
-              audience === index ? "bg-white text-[color:var(--cinopse-primary)] shadow-[0_3px_12px_rgba(6,26,58,.25)]" : "text-white/70 hover:text-white"
+    <>
+      <div className="mx-auto max-w-none">
+        <div
+          data-reveal
+          className="relative z-10 mx-auto mb-7 grid max-w-[430px] grid-cols-3 rounded-full border border-white/15 bg-white/10 p-[5px]"
+        >
+          <span
+            className={`absolute top-[5px] bottom-[5px] left-[5px] w-[calc(33.333%-3.33px)] rounded-full bg-white shadow-[0_3px_12px_rgba(6,26,58,0.25)] transition-transform duration-500 ease-[cubic-bezier(.22,.9,.18,1)] ${
+              audience === 1
+                ? "translate-x-[calc(100%+5px)]"
+                : audience === 2
+                  ? "translate-x-[calc(200%+10px)]"
+                  : "translate-x-0"
             }`}
-            aria-pressed={audience === index}
-          >
-            {item}
-          </button>
-        ))}
-      </div>
-
-      <p className="mt-5 text-center text-sm text-white/70">Demo pricing for {audiences[audience].toLowerCase()} attendees.</p>
-
-      <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {phases.map((phase) => {
-          const isOpen = phase.status === "Open now"
-
-          return (
-            <article
-              key={phase.name}
-              className={`relative rounded-2xl border p-5 text-center transition-transform duration-300 ${
-                isOpen ? "-translate-y-1 border-white bg-white shadow-[0_16px_32px_rgba(6,26,58,.28)]" : "border-white/15 bg-white/8"
+          />
+          {audiences.map((item, index) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => setAudience(index)}
+              className={`relative rounded-full px-1 py-3 text-xs leading-none font-medium transition-colors duration-300 sm:text-[12px] ${
+                audience === index
+                  ? "text-[color:var(--cinopse-primary)]"
+                  : "text-white/70 hover:text-white"
               }`}
+              aria-pressed={audience === index}
             >
-              {isOpen && <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[color:var(--cinopse-accent)] px-3 py-1 text-[10px] font-bold text-[color:var(--cinopse-primary)]">Open Now</span>}
-              <h3 className={`font-display text-xl font-semibold ${isOpen ? "text-[color:var(--cinopse-primary)]" : "text-white"}`}>{phase.name}</h3>
-              <p className={`mt-2 min-h-9 text-[11px] leading-4 ${isOpen ? "text-[color:var(--cinopse-text-secondary)]" : "text-white/55"}`}>{phase.window}</p>
-              <div data-registration-price className="mt-5 flex h-9 items-center justify-center overflow-hidden">
-                <span className={`font-display text-2xl font-semibold ${isOpen ? "text-[color:var(--cinopse-primary)]" : "text-white"}`}>{phase.prices[audience]}</span>
-              </div>
-              <p className={`mt-4 text-[10px] font-semibold ${isOpen ? "text-emerald-600" : "text-white/45"}`}>{phase.status === "Closed" ? "CLOSED" : phase.status === "Open now" ? "BEST AVAILABLE RATE" : "UPCOMING"}</p>
-            </article>
-          )
-        })}
+              {item}
+            </button>
+          ))}
+        </div>
+
+        <div
+          data-reveal
+          className="relative z-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          {phases.map((phase) => {
+            const isOpen = phase.status === "Open now"
+
+            return (
+              <article
+                key={phase.name}
+                className={`relative rounded-[14px] border px-4 py-[22px] text-center transition-[background,transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(.22,.9,.18,1)] ${
+                  isOpen
+                    ? "-translate-y-1 border-white bg-white shadow-[0_16px_32px_rgba(6,26,58,0.28)]"
+                    : "border-white/15 bg-white/[0.07]"
+                }`}
+              >
+                <span
+                  data-soft-pulse
+                  className={`absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-[color:var(--cinopse-accent)] px-3 py-1 text-[9px] leading-none font-semibold tracking-[0.1em] whitespace-nowrap text-[color:var(--cinopse-primary-deep)] uppercase animate-[softPulse_2.4s_ease-out_infinite] ${
+                    isOpen ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  Open Now
+                </span>
+                <p
+                  className={`m-0 text-[12px] leading-4 font-medium ${
+                    isOpen ? "text-[color:var(--cinopse-primary)]" : "text-white/90"
+                  }`}
+                >
+                  {phase.name}
+                </p>
+                <p
+                  className={`mt-1 mb-[13px] text-[10px] leading-4 font-light ${
+                    isOpen
+                      ? "text-[color:var(--cinopse-muted)]"
+                      : "text-white/50"
+                  }`}
+                >
+                  {phase.window}
+                </p>
+                <div className="h-8 overflow-hidden">
+                  <p
+                    key={`${phase.name}-${audience}`}
+                    className={`font-display m-0 animate-[swapIn_0.38s_cubic-bezier(.2,.85,.2,1)] text-2xl leading-8 font-semibold tabular-nums ${
+                      isOpen ? "text-[color:var(--cinopse-primary)]" : "text-white"
+                    }`}
+                  >
+                    {phase.prices[audience]}
+                  </p>
+                </div>
+                <p
+                  className={`mt-2.5 text-[9.5px] leading-4 font-normal tracking-[0.06em] ${
+                    isOpen ? "text-[#3f9150]" : "text-white/45"
+                  }`}
+                >
+                  {getDelta(phase.prices[audience], phases[0].prices[audience])}
+                </p>
+              </article>
+            )
+          })}
+        </div>
+
+        <div
+          data-reveal
+          className="relative z-10 mt-6 flex flex-col gap-5 rounded-[14px] border border-white/15 bg-white/[0.08] px-5 py-[18px] sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div className="min-w-60 flex-1">
+            <p className="m-0 mb-2.5 text-[11.5px] leading-5 font-normal text-white/80">
+              Conference day — {eventDateLabel} —{" "}
+              <b className="font-medium text-[color:var(--cinopse-accent)] tabular-nums">
+                {countdown}
+              </b>{" "}
+              to go
+            </p>
+            <progress
+              className="registration-progress"
+              value={progress}
+              max={100}
+              aria-label="Time elapsed until conference day"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-white px-9 py-4 text-[12.5px] leading-none font-medium text-[color:var(--cinopse-primary)] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(0,0,0,0.28)]"
+          >
+            {ctaLabel}
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </button>
+        </div>
+
+        <p
+          data-reveal
+          className="relative z-10 mx-auto mt-5 max-w-xl text-center text-[11px] leading-5 font-light text-white/45"
+        >
+          {note}
+        </p>
       </div>
 
-      <div className="mt-7 flex flex-col gap-5 rounded-2xl border border-white/15 bg-white/8 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-        <p className="max-w-lg text-sm leading-6 text-white/75">Demo rates are shown for layout preview. Official registration fees will be published with the final programme.</p>
-        <Button variant="onBlue" className="shrink-0">Notify Me</Button>
-      </div>
+      {modalOpen && typeof document !== "undefined"
+        ? createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(9,26,54,0.62)] p-4 backdrop-blur-[7px]"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Registration"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeModal()
+          }}
+        >
+          <div
+            data-modal-panel
+            className="relative max-h-[92vh] w-full max-w-[520px] overflow-auto rounded-[20px] bg-white px-7 pt-6 pb-[18px] shadow-[0_30px_80px_rgba(6,26,58,0.5)] animate-[swapIn_0.45s_cubic-bezier(.22,.9,.18,1)]"
+          >
+            <button
+              type="button"
+              onClick={closeModal}
+              aria-label="Close"
+              className="absolute top-3.5 right-3.5 z-10 grid size-8 place-items-center rounded-full bg-[color:var(--cinopse-cream)] text-lg leading-none text-[color:var(--cinopse-text-secondary)] transition-[transform,background,color] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:rotate-90 hover:bg-[color:var(--cinopse-accent)] hover:text-[color:var(--cinopse-primary-deep)]"
+            >
+              <X className="size-4" aria-hidden="true" />
+            </button>
+
+            <div className="mr-9 mb-5 grid grid-cols-2 rounded-full bg-[color:var(--cinopse-cream)] p-1">
+              {[
+                ["wizard", "New Registration"],
+                ["login", "Already Registered?"],
+              ].map(([view, label]) => (
+                <button
+                  key={view}
+                  type="button"
+                  onClick={() => setActiveView(view as "wizard" | "login")}
+                  className={`rounded-full px-2 py-3 text-xs leading-none font-medium transition-[background,color,box-shadow] duration-300 ${
+                    activeView === view
+                      ? "bg-[color:var(--cinopse-primary)] text-white shadow-[0_4px_12px_rgba(27,75,150,0.30)]"
+                      : "text-[color:var(--cinopse-muted)]"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {activeView === "wizard" ? (
+              <div>
+                {step < 4 ? (
+                  <div className="mb-5 flex">
+                    {["Category", "Details", "Review"].map((label, index) => {
+                      const stepNumber = index + 1
+                      const isCurrent = step === stepNumber
+                      const isDone = step > stepNumber
+
+                      return (
+                        <div
+                          key={label}
+                          className={`relative flex flex-1 flex-col items-center gap-2 text-[8.5px] leading-none font-medium tracking-[0.12em] uppercase ${
+                            isCurrent
+                              ? "text-[color:var(--cinopse-primary)]"
+                              : isDone
+                                ? "text-[color:var(--cinopse-accent-deep)]"
+                                : "text-[color:var(--cinopse-faint)]"
+                          } after:absolute after:top-[13px] after:left-[calc(50%+20px)] after:h-0.5 after:w-[calc(100%-40px)] after:bg-[color:var(--cinopse-border)] last:after:hidden ${
+                            isDone ? "after:bg-[color:var(--cinopse-accent)]" : ""
+                          }`}
+                        >
+                          <span
+                            className={`relative z-10 grid size-[27px] place-items-center rounded-full text-[11px] leading-none font-semibold ${
+                              isDone
+                                ? "bg-[color:var(--cinopse-accent)] text-[color:var(--cinopse-primary-deep)]"
+                                : isCurrent
+                                  ? "bg-[color:var(--cinopse-primary)] text-white shadow-[0_4px_12px_rgba(27,75,150,0.30)]"
+                                  : "bg-[color:var(--cinopse-cream)] text-[color:var(--cinopse-muted)]"
+                            }`}
+                          >
+                            {isDone ? <Check className="size-3" /> : stepNumber}
+                          </span>
+                          {label}
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : null}
+
+                {step === 1 ? (
+                  <div data-wizard-step className="animate-[swapIn_0.4s_cubic-bezier(.22,.9,.18,1)]">
+                    <h3 className="font-display m-0 mb-3.5 text-xl leading-tight font-semibold text-[color:var(--cinopse-primary)]">
+                      Choose your category
+                    </h3>
+                    <div className="grid gap-2.5">
+                      {audiences.map((item, index) => (
+                        <button
+                          key={item}
+                          type="button"
+                          onClick={() => {
+                            setSelectedCategory(index)
+                            setErrors({})
+                          }}
+                          className={`flex items-center justify-between gap-3.5 rounded-[14px] border-[1.5px] px-[18px] py-[15px] text-left transition-[border-color,background,transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 ${
+                            selectedCategory === index
+                              ? "border-[color:var(--cinopse-primary)] bg-[rgba(27,75,150,0.05)] shadow-[0_8px_20px_rgba(27,75,150,0.14)]"
+                              : "border-[color:var(--cinopse-border)]"
+                          }`}
+                        >
+                          <span>
+                            <b className="block text-[13.5px] leading-5 font-medium text-[color:var(--cinopse-ink)]">
+                              {index === 1 ? "Student / Other HCPs" : item}
+                            </b>
+                            <i className="mt-0.5 block text-[10.5px] leading-4 font-light text-[color:var(--cinopse-muted)] not-italic">
+                              {categoryDescriptions[index]}
+                            </i>
+                          </span>
+                          <span className="font-display shrink-0 text-[17px] leading-none font-semibold text-[color:var(--cinopse-primary)]">
+                            {openPhase.prices[index]}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                    {errors.category ? <ErrorText>{errors.category}</ErrorText> : null}
+                    <p className="mt-3.5 text-[10px] leading-4 font-light text-[color:var(--cinopse-faint)]">
+                      Early registration rate shown. Demo pricing — official fees are published with the final programme.
+                    </p>
+                  </div>
+                ) : null}
+
+                {step === 2 ? (
+                  <div data-wizard-step className="animate-[swapIn_0.4s_cubic-bezier(.22,.9,.18,1)]">
+                    <h3 className="font-display m-0 mb-3.5 text-xl leading-tight font-semibold text-[color:var(--cinopse-primary)]">
+                      Your details
+                    </h3>
+                    <Field
+                      id="fName"
+                      label="Full name"
+                      value={form.name}
+                      placeholder="Dr. Full Name"
+                      autoComplete="name"
+                      error={errors.name}
+                      onChange={(value) => setForm((current) => ({ ...current, name: value }))}
+                    />
+                    <Field
+                      id="fEmail"
+                      label="Email"
+                      type="email"
+                      value={form.email}
+                      placeholder="you@example.com"
+                      autoComplete="email"
+                      error={errors.email}
+                      onChange={(value) => setForm((current) => ({ ...current, email: value }))}
+                    />
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <PhoneField
+                        value={form.phone}
+                        error={errors.phone}
+                        onChange={(phone) => setForm((current) => ({ ...current, phone }))}
+                      />
+                      <Field
+                        id="fCity"
+                        label="City"
+                        value={form.city}
+                        placeholder="Bengaluru"
+                        error={errors.city}
+                        onChange={(value) => setForm((current) => ({ ...current, city: value }))}
+                      />
+                    </div>
+                    <Field
+                      id="fInst"
+                      label="Institution / Hospital"
+                      value={form.institution}
+                      placeholder="Hospital or institute"
+                      error={errors.institution}
+                      onChange={(value) =>
+                        setForm((current) => ({ ...current, institution: value }))
+                      }
+                    />
+                  </div>
+                ) : null}
+
+                {step === 3 ? (
+                  <div data-wizard-step className="animate-[swapIn_0.4s_cubic-bezier(.22,.9,.18,1)]">
+                    <h3 className="font-display m-0 mb-3.5 text-xl leading-tight font-semibold text-[color:var(--cinopse-primary)]">
+                      Review & confirm
+                    </h3>
+                    <div className="rounded-[14px] bg-[color:var(--cinopse-cream)] px-[18px] py-2">
+                      {[
+                        ["Name", form.name],
+                        ["Email", form.email],
+                        ["Mobile", form.phone ?? ""],
+                        ["City", form.city],
+                        ["Institution", form.institution],
+                        ["Category", selectedLabel],
+                        ["Early rate", selectedPrice],
+                      ].map(([label, value]) => (
+                        <div
+                          key={label}
+                          className="flex justify-between gap-4 border-b border-black/5 py-2.5 last:border-b-0"
+                        >
+                          <span className="text-[11px] leading-5 font-normal tracking-[0.06em] text-[color:var(--cinopse-muted)] uppercase">
+                            {label}
+                          </span>
+                          <b
+                            className={`text-right text-[12.5px] leading-5 font-medium text-[color:var(--cinopse-ink)] ${
+                              label === "Early rate"
+                                ? "font-display text-[15px] text-[color:var(--cinopse-primary)]"
+                                : ""
+                            }`}
+                          >
+                            {value}
+                          </b>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="mt-3.5 rounded-xl border border-[color:var(--cinopse-border)] bg-white px-4 py-3 text-[10px] leading-4 font-light text-[color:var(--cinopse-faint)]">
+                      Payment placeholder: payment gateway integration will be connected later.
+                    </p>
+                    <label className="mt-3 flex items-start gap-3 rounded-xl border border-[color:var(--cinopse-border)] bg-white px-4 py-3 text-[11px] leading-5 text-[color:var(--cinopse-text-secondary)]">
+                      <input
+                        type="checkbox"
+                        checked={form.terms}
+                        onChange={(event) => {
+                          setForm((current) => ({ ...current, terms: event.target.checked }))
+                          setErrors((current) => ({ ...current, terms: "" }))
+                        }}
+                        className="mt-1 size-4 rounded border-[color:var(--cinopse-border)] accent-[color:var(--cinopse-primary)]"
+                      />
+                      <span>
+                        I agree to terms and conditions{" "}
+                        <span className="text-red-600" aria-hidden="true">
+                          *
+                        </span>
+                      </span>
+                    </label>
+                    {errors.terms ? <ErrorText>{errors.terms}</ErrorText> : null}
+                  </div>
+                ) : null}
+
+                {step === 4 ? (
+                  <div data-wizard-step className="py-2 text-center animate-[swapIn_0.4s_cubic-bezier(.22,.9,.18,1)]">
+                    <span
+                      data-soft-pulse
+                      className="mx-auto mb-3.5 grid size-16 place-items-center rounded-full bg-[#eaf3e9] text-3xl text-[#3f9150] animate-[softPulse_2.4s_ease-out_infinite]"
+                    >
+                      <Check className="size-7" aria-hidden="true" />
+                    </span>
+                    <h3 className="font-display m-0 text-center text-xl leading-tight font-semibold text-[color:var(--cinopse-primary)]">
+                      You&apos;re registered!
+                    </h3>
+                    <p className="mt-2.5 text-[9.5px] leading-none font-normal tracking-[0.18em] text-[color:var(--cinopse-muted)] uppercase">
+                      Your registration ID
+                    </p>
+                    <p className="mt-1 font-mono text-2xl leading-tight font-semibold tracking-[0.04em] text-[color:var(--cinopse-primary)]">
+                      {registrationId}
+                    </p>
+                    <p className="mt-3.5 text-center text-[10px] leading-4 font-light text-[color:var(--cinopse-faint)]">
+                      We&apos;ve saved your seat for Sunday, 27 September 2026 at the Jawaharlal Nehru Planetarium, Bengaluru. A confirmation will follow on your email.
+                    </p>
+                  </div>
+                ) : null}
+
+                <div className="mt-5 flex justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setStep((current) => Math.max(1, current - 1))}
+                    className={`inline-flex items-center justify-center rounded-full bg-[color:var(--cinopse-cream)] px-6 py-3 text-[12.5px] leading-none font-medium text-[color:var(--cinopse-text-secondary)] transition-colors hover:bg-[#e2dfd8] ${
+                      step === 1 || step === 4 ? "invisible" : ""
+                    }`}
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    className="inline-flex items-center justify-center rounded-full bg-[color:var(--cinopse-primary)] px-6 py-3 text-[12.5px] leading-none font-medium text-white transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(27,75,150,0.35)]"
+                  >
+                    {step === 3
+                      ? "Confirm Registration ✓"
+                      : step === 4
+                        ? "Done"
+                        : "Continue →"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div data-wizard-step className="animate-[swapIn_0.4s_cubic-bezier(.22,.9,.18,1)]">
+                <h3 className="font-display m-0 mb-1.5 text-xl leading-tight font-semibold text-[color:var(--cinopse-primary)]">
+                  Check your registration
+                </h3>
+                <p className="mt-0 mb-4 text-xs leading-5 font-light text-[color:var(--cinopse-muted)]">
+                  Enter the email you registered with and we&apos;ll look up your seat.
+                </p>
+                <Field
+                  id="lEmail"
+                  label="Email"
+                  type="email"
+                  value={lookupEmail}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  onChange={setLookupEmail}
+                />
+                <button
+                  type="button"
+                  onClick={checkRegistration}
+                  className="mt-2 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--cinopse-primary)] px-6 py-3 text-[12.5px] leading-none font-medium text-white transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(27,75,150,0.35)]"
+                >
+                  Check Status
+                </button>
+                {lookupResult ? (
+                  <div
+                    className={`mt-4 rounded-[14px] border-[1.5px] px-[18px] py-4 animate-[swapIn_0.4s_cubic-bezier(.22,.9,.18,1)] ${
+                      lookupResult.state === "found"
+                        ? "border-[rgba(63,145,80,0.45)] bg-[#f4faf4]"
+                        : "border-[rgba(217,164,65,0.5)] bg-[#fdf8ee]"
+                    }`}
+                  >
+                    <h4 className="m-0 mb-2 flex items-center gap-2 font-display text-sm leading-5 font-semibold text-[color:var(--cinopse-ink)]">
+                      <span
+                        className={`grid size-[22px] place-items-center rounded-full text-[11px] ${
+                          lookupResult.state === "found"
+                            ? "bg-[#eaf3e9] text-[#3f9150]"
+                            : "bg-[#fdf4e4] text-[color:var(--cinopse-accent-deep)]"
+                        }`}
+                      >
+                        {lookupResult.state === "found" ? "✓" : "?"}
+                      </span>
+                      {lookupResult.state === "found"
+                        ? "Registration found"
+                        : "No registration found"}
+                    </h4>
+                    <p className="m-0 text-[11.5px] leading-5 font-light text-[color:var(--cinopse-text-secondary)]">
+                      {lookupResult.state === "found" ? (
+                        <>
+                          <span className="font-mono text-[13px] font-semibold text-[color:var(--cinopse-primary)]">
+                            {lookupResult.id}
+                          </span>
+                          <br />
+                          {lookupResult.name} · {lookupResult.label} · Early rate{" "}
+                          {lookupResult.price}
+                        </>
+                      ) : (
+                        lookupResult.message
+                      )}
+                    </p>
+                  </div>
+                ) : null}
+              </div>
+            )}
+
+            <p className="mt-4 border-t border-[color:var(--cinopse-border)] pt-3.5 text-center text-[9.5px] leading-4 font-light text-[color:var(--cinopse-faint)]">
+              Demo preview — details are stored only in this browser, nothing is sent to a server. For assistance write to cinopseindiamedical@gmail.com.
+            </p>
+          </div>
+        </div>,
+        document.body
+      )
+        : null}
+    </>
+  )
+}
+
+function Field({
+  id,
+  label,
+  type = "text",
+  value,
+  placeholder,
+  autoComplete,
+  error,
+  onChange,
+}: {
+  id: string
+  label: string
+  type?: string
+  value: string
+  placeholder?: string
+  autoComplete?: string
+  error?: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <div className="mb-3">
+      <label
+        htmlFor={id}
+        className="mb-1.5 block text-[9.5px] leading-none font-medium tracking-[0.1em] text-[color:var(--cinopse-muted)] uppercase"
+      >
+        {label}{" "}
+        <span className="text-red-600" aria-hidden="true">
+          *
+        </span>
+      </label>
+      <input
+        id={id}
+        type={type}
+        value={value}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        onChange={(event) => onChange(event.target.value)}
+        aria-invalid={error ? "true" : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
+        className="w-full rounded-[10px] border-[1.5px] border-[color:var(--cinopse-border)] bg-white px-3.5 py-3 text-[13px] leading-5 text-[color:var(--cinopse-ink)] outline-none transition-[border-color,box-shadow] duration-300 placeholder:text-[color:var(--cinopse-faint)] focus:border-[color:var(--cinopse-primary)] focus:shadow-[0_0_0_3px_rgba(27,75,150,0.1)]"
+      />
+      {error ? <ErrorText id={`${id}-error`}>{error}</ErrorText> : null}
     </div>
   )
+}
+
+function PhoneField({
+  value,
+  error,
+  onChange,
+}: {
+  value?: Value
+  error?: string
+  onChange: (value?: Value) => void
+}) {
+  return (
+    <div className="mb-3">
+      <label className="mb-1.5 block text-[9.5px] leading-none font-medium tracking-[0.1em] text-[color:var(--cinopse-muted)] uppercase">
+        Mobile{" "}
+        <span className="text-red-600" aria-hidden="true">
+          *
+        </span>
+      </label>
+      <PhoneInput
+        international
+        countryCallingCodeEditable={false}
+        defaultCountry="IN"
+        flags={flags}
+        value={value}
+        onChange={onChange}
+        className="phone-input-control"
+        numberInputProps={{
+          id: "fPhone",
+          autoComplete: "tel",
+          "aria-invalid": error ? "true" : undefined,
+          "aria-describedby": error ? "fPhone-error" : undefined,
+        }}
+      />
+      {error ? <ErrorText id="fPhone-error">{error}</ErrorText> : null}
+    </div>
+  )
+}
+
+function ErrorText({
+  id,
+  children,
+}: {
+  id?: string
+  children: ReactNode
+}) {
+  return (
+    <p id={id} className="mt-1.5 text-[10.5px] leading-4 font-light text-[#c0392b]">
+      {children}
+    </p>
+  )
+}
+
+function validateDetails(form: WizardForm) {
+  const nextErrors: Record<string, string> = {}
+
+  if (!form.name.trim()) nextErrors.name = "Please enter your full name."
+  if (!emailPattern.test(form.email.trim())) {
+    nextErrors.email = "Please enter a valid email address."
+  }
+  if (!form.phone || !isValidPhoneNumber(form.phone)) {
+    nextErrors.phone = "Please enter a valid mobile number."
+  }
+  if (!form.city.trim()) nextErrors.city = "Please enter your city."
+  if (!form.institution.trim()) {
+    nextErrors.institution = "Please enter your institution or hospital."
+  }
+
+  return nextErrors
+}
+
+function useCountdown(deadline: number, now: number) {
+  const milliseconds = deadline - now
+
+  if (milliseconds <= 0) return "Closed"
+
+  let remaining = milliseconds
+  const days = Math.floor(remaining / 864e5)
+  remaining -= days * 864e5
+  const hours = Math.floor(remaining / 36e5)
+  remaining -= hours * 36e5
+  const minutes = Math.floor(remaining / 6e4)
+  remaining -= minutes * 6e4
+  const seconds = Math.floor(remaining / 1000)
+
+  return `${days}d ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`
+}
+
+function getDelta(price: string, basePrice: string) {
+  const base = numberFromPrice(basePrice)
+  const current = numberFromPrice(price)
+  const diff = Math.round(((current - base) / base) * 100)
+
+  return diff === 0 ? "LOWEST RATE" : `+${diff}% vs early`
+}
+
+function numberFromPrice(value: string) {
+  return Number.parseFloat(value.replace(/[^0-9.]/g, ""))
 }

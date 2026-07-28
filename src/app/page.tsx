@@ -1,48 +1,477 @@
-import Image from "next/image"
-import Link from "next/link"
-import type { ReactNode } from "react"
-import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTwitter } from "react-icons/fa"
-import {
-  ArrowRight,
-  CalendarDays,
-  Mail,
-  MapPin,
-  Phone,
-  Sparkles,
-} from "lucide-react"
-import type { LucideIcon } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
-import { SiteHeader } from "@/components/layout/site-header"
 import { GsapProvider } from "@/components/layout/gsap-provider"
-import { RegistrationPriceComparison } from "@/components/sections/registration-price-comparison"
-import { DestinationCoverflow } from "@/components/sections/destination-coverflow"
-
-const committee = [
-  ["Founder & CEO", "Dr. Santosh K M"],
-  ["Chief Financial Officer", "Dr. Vinod Babu"],
-  ["Chief Operating Officer", "Dr. Karthik S M"],
-  ["Scientific Committee", "Lorem Ipsum"],
-  ["Organizing Committee", "Lorem Ipsum"],
-  ["Conference Secretariat", "Lorem Ipsum"],
-  ["Scientific Committee", "Lorem Ipsum"],
-  ["Organizing Committee", "Lorem Ipsum"],
-  ["Conference Secretariat", "Lorem Ipsum"],
-  ["Scientific Committee", "Lorem Ipsum"],
-  ["Organizing Committee", "Lorem Ipsum"],
-  ["Conference Secretariat", "Lorem Ipsum"],
-]
+import { SiteHeader } from "@/components/layout/site-header"
+import { AboutSection } from "@/components/sections/about-section"
+import { AssociatePartnersSection } from "@/components/sections/associate-partners-section"
+import { ConferenceHighlightsSection } from "@/components/sections/conference-highlights-section"
+import { HeroSection } from "@/components/sections/hero-section"
+import type { HeroSectionProps } from "@/components/sections/hero-section"
+import { OrganizingCommitteeSection } from "@/components/sections/organizing-committee-section"
+import { PopularDestinationSection } from "@/components/sections/popular-destination-section"
+import { ProgrammeSection } from "@/components/sections/programme-section"
+import { RegistrationSection } from "@/components/sections/registration-section"
+import { SiteFooter } from "@/components/sections/site-footer"
+import { VenueSection } from "@/components/sections/venue-section"
 
 const navItems = [
-  { label: "Congress Information", hasDropdown: true },
-  { label: "Venue & Nearby", hasDropdown: true },
-  { label: "Program", hasDropdown: true },
-  { label: "Organizers", hasDropdown: true },
-  { label: "Registration", hasDropdown: false },
-  { label: "Abstract", hasDropdown: false },
-  { label: "Faculty", hasDropdown: true },
-  { label: "Contact Us", hasDropdown: false },
+  { label: "About", href: "#about" },
+  { label: "Highlights", href: "#highlights" },
+  { label: "Programme", href: "#programme" },
+  { label: "Committee", href: "#leadership" },
+  { label: "Venue", href: "#venue" },
+  { label: "Destination", href: "#destination" },
+  { label: "Partners", href: "#partners" },
 ]
+
+const hero: HeroSectionProps = {
+  eyebrow:
+    "CME Summit · Cardio · Renal · Obesity · Pulmonary · Sleep Medicine",
+  titleWords: ["CINOPSE", "India", "2026"],
+  goldWord: "India",
+  tagline: [
+    "One Place.",
+    "One Agenda.",
+    "One Vision.",
+    "Infinite Possibilities.",
+  ],
+  description:
+    "A comprehensive multidisciplinary medical conference — case-based discussions, guideline updates, innovations, and hands-on workshops, all under one roof in Bengaluru.",
+  logo: {
+    src: "/logo.jpg",
+    alt: "CINOPSE logo",
+  },
+  ctaLabel: "Register Now",
+  secondaryCtaLabel: "Explore the Conference",
+  meta: [
+    {
+      title: "Sunday, 27 September 2026",
+      description: "Save the date",
+      icon: "calendar",
+    },
+    {
+      title: "Jawaharlal Nehru Planetarium",
+      description: "Sankey Road, Bengaluru",
+      icon: "location",
+    },
+    {
+      title: "CME Summit",
+      description: "Multi-specialty sessions",
+      icon: "medical",
+    },
+  ],
+  specialties: [
+    "Cardiology",
+    "Nephrology",
+    "Obesity & Diabetes",
+    "Pulmonology",
+    "Sleep Medicine",
+    "Metabolic Medicine",
+  ],
+  stripItems: [
+    "ONE PLACE",
+    "ONE AGENDA",
+    "ONE VISION",
+    "INFINITE POSSIBILITIES",
+    "27 SEPTEMBER 2026",
+    "BENGALURU",
+  ],
+}
+
+const committee = {
+  eyebrow: "Leadership",
+  title: "Organizing Committee",
+  description:
+    "The people shaping the agenda, the science, and the experience of CINOPSE India 2026.",
+  leaders: [
+    {
+      initials: "SK",
+      name: "Dr. Santosh K M",
+      role: "Founder & CEO",
+      affiliation: "Organising Chairman · Narayana Health City",
+      message:
+        "Our patients do not live within the boundaries of a single specialty — their care demands collaboration, shared expertise, and a unified approach. This vision gave birth to CINOPSE: a world-class multidisciplinary platform where knowledge is shared without boundaries, and every discussion serves one goal — better patient care.",
+    },
+    {
+      initials: "VB",
+      name: "Dr. Vinod Babu",
+      role: "Chief Financial Officer",
+      affiliation: "Organising Co-Chairperson · Dr Mohan's Diabetes Centre",
+      message:
+        "Academic excellence must be matched by financial discipline, transparent governance, and efficient resource allocation. CINOPSE is committed to a sustainable model that supports high-quality education, broad participation, and long-term growth — without compromising accessibility or impact.",
+    },
+    {
+      initials: "KS",
+      name: "Dr. Karthik S M",
+      role: "Chief Operating Officer",
+      affiliation: "Organising Treasurer · Apollo Hospitals",
+      message:
+        "By combining evidence-based medicine with real-world clinical experience, we bridge the gap between knowledge and practice — and mentor the next generation of healthcare professionals. Together, we can build a future where multidisciplinary collaboration becomes the foundation of clinical excellence.",
+    },
+  ],
+  members: [
+    {
+      initials: "MM",
+      name: "Dr Murali Mohan BV",
+      caption: "President · Narayana Health City",
+    },
+    {
+      initials: "SK",
+      name: "Dr Sheetal Kamat",
+      caption: "Organising Secretary · Apollo Hospitals",
+    },
+    {
+      initials: "UH",
+      name: "Dr Usha Humbi",
+      caption: "Scientific Committee · Narayana Health City",
+    },
+    {
+      initials: "SM",
+      name: "Dr Soumya M S",
+      caption: "Scientific Committee · Narayana Health City",
+    },
+    {
+      initials: "PG",
+      name: "Dr Praveen Gangadhara",
+      caption: "Scientific Committee · Dr Mohan's Diabetes Centre",
+    },
+    {
+      initials: "✣",
+      name: "Vishnu · Stephen · Akash · Bhavishya",
+      caption: "Hospitality & Logistics",
+    },
+  ],
+}
+
+const venue = {
+  eyebrow: "Location",
+  title: "About Venue",
+  mapEmbedUrl:
+    "https://maps.google.com/maps?q=Jawaharlal%20Nehru%20Planetarium%2C%20Sankey%20Road%2C%20Bengaluru&z=16&output=embed",
+  mapCaption:
+    "Jawaharlal Nehru Planetarium · Sankey Road, High Grounds, Bengaluru",
+  mapTitle: "Map — Jawaharlal Nehru Planetarium, Bengaluru",
+  venueTitle: "Jawaharlal Nehru Planetarium",
+  description:
+    "Sri T. Chowdaiah Road (Sankey Road), High Grounds, Bengaluru – 560001, Karnataka, India. An iconic city-centre landmark — easy to reach, and a fitting stage for a conference about looking forward.",
+  details: [
+    {
+      icon: "sparkle" as const,
+      text: "Sunday, 27 September 2026",
+    },
+    { icon: "phone" as const, text: "+91 63817 86183 · +91 99023 40225" },
+    { icon: "email" as const, text: "cinopseindiamedical@gmail.com" },
+  ],
+  ctaLabel: "Get Directions",
+  ctaHref: "https://maps.app.goo.gl/zjCfHkqoZQr7N3uMA",
+}
+
+const registration = {
+  eyebrow: "Join Us",
+  title: "Registration",
+  description:
+    "Registration is open — rates rise at every deadline. Pick your category to compare.",
+  comparison: {
+    audiences: ["Delegate", "Student / HCP", "International"],
+    eventDateLabel: "Sunday, 27 September 2026",
+    eventDate: "2026-09-27T08:00:00+05:30",
+    windowStart: "2026-07-24T00:00:00+05:30",
+    phases: [
+      {
+        name: "Early",
+        window: "Open now",
+        status: "Open now" as const,
+        prices: ["₹8,500", "₹5,500", "$180"],
+      },
+      {
+        name: "Standard",
+        window: "To be announced",
+        status: "Upcoming" as const,
+        prices: ["₹10,500", "₹6,500", "$220"],
+      },
+      {
+        name: "Late",
+        window: "To be announced",
+        status: "Upcoming" as const,
+        prices: ["₹12,500", "₹7,500", "$260"],
+      },
+      {
+        name: "On-site",
+        window: "27 Sep, at the venue",
+        status: "Upcoming" as const,
+        prices: ["₹14,000", "₹8,500", "$300"],
+      },
+    ],
+    note: "Demo rates are shown for layout preview. Official registration fees will be published with the final programme — get notified the moment they go live.",
+    ctaLabel: "Register Now",
+  },
+}
+
+const popularDestination = {
+  eyebrow: "Explore",
+  title: "Popular Destination",
+  heading: "Bengaluru — The Garden City of India's Innovation",
+  paragraphs: [
+    "CINOPSE India 2026 comes home to Namma Bengaluru — where India's medical institutions, research centres, and technology ecosystem meet leafy boulevards and legendary weather.",
+    "From clinical mornings at the Planetarium to cultural evenings across the city, plan a visit that goes beyond the conference hall.",
+  ],
+  ctaLabel: "Explore Bengaluru",
+  ctaHref: "https://www.google.com/maps/search/?api=1&query=Bengaluru",
+  cards: [
+    {
+      title: "Vidhana Soudha",
+      description: "The granite heart of the city",
+      image: "/images/vidhana-soudha.jpg",
+      alt: "Vidhana Soudha, Bengaluru",
+    },
+    {
+      title: "Lalbagh Gardens",
+      description: "The Glass House of the Garden City",
+      image: "/images/lalbagh.jpg",
+      alt: "Lalbagh Glass House, Bengaluru",
+    },
+    {
+      title: "Bangalore Palace",
+      description: "Tudor towers amid the tech city",
+      image: "/images/bangalore-palace.jpg",
+      alt: "Bangalore Palace",
+    },
+  ],
+}
+
+const associatePartners = {
+  eyebrow: "Trusted By",
+  title: "Our Associate Partners",
+  description:
+    "Partner announcements are underway — logos below are placeholders until confirmed.",
+  partners: [
+    "Partner Logo",
+    "Partner Logo",
+    "Partner Logo",
+    "Partner Logo",
+    "Partner Logo",
+    "Partner Logo",
+    "Partner Logo",
+    "Partner Logo",
+  ],
+}
+
+const about = {
+  eyebrow: "Who We Are",
+  title: "About CiNOPSE India 2026",
+  eventDate: "2026-09-27T08:00:00+05:30",
+  dateLabel: "27 Sep",
+  eventLabel: "Sunday · 2026",
+  locationLabel: "Bengaluru · India",
+  paragraphs: [
+    "CiNOPSE is an independent multidisciplinary medical conference created to foster collaboration, clinical excellence, and continuous professional development across diverse healthcare specialties. It is a dynamic platform where physicians, researchers, academicians, and allied healthcare professionals exchange knowledge and discuss solutions to contemporary clinical challenges.",
+    "The scientific programme combines evidence-based updates, expert perspectives, real-world case discussions, and practical learning — with exposure to recent advances in diagnostics, therapeutics, digital health, and the technologies shaping the future of clinical practice.",
+  ],
+  quote: {
+    text: "One Place, One Agenda, One Vision —",
+    emphasis: "Infinite Possibilities",
+    subtext:
+      "The philosophy that connects ideas, expertise, and people to advance multidisciplinary medicine.",
+  },
+  pillars: [
+    {
+      icon: "sparkles" as const,
+      title: "Comprehensive",
+      description: "All key areas of healthcare under one roof.",
+    },
+    {
+      icon: "scale" as const,
+      title: "Multidisciplinary",
+      description: "Experts from diverse fields working together.",
+    },
+    {
+      icon: "case" as const,
+      title: "Case-Based",
+      description: "Real cases. Real insights. Real impact.",
+    },
+    {
+      icon: "star" as const,
+      title: "Innovations",
+      description: "Latest advances shaping the future of medicine.",
+    },
+    {
+      icon: "pen" as const,
+      title: "Hands-On",
+      description: "Workshops to learn, practice, and excel.",
+    },
+  ],
+  stats: [
+    { value: "12", label: "Scientific Sessions" },
+    { value: "10", label: "Focus Areas" },
+    { value: "1", label: "Day, One Roof" },
+    { value: "∞", label: "Possibilities", accent: true },
+  ],
+}
+
+const conferenceHighlights = {
+  eyebrow: "Scientific Programme",
+  title: "Conference Highlights",
+  description:
+    "Integrating metabolic medicine across specialties — grounded in the latest international guidelines.",
+  highlights: [
+    {
+      number: "01",
+      title: "Latest Guideline Updates",
+      description: "ADA 2026, EASD, ESC, ACE, AHA, AASM & IOF",
+    },
+    {
+      number: "02",
+      title: "GLP-1, Fatty & Triple Agonists",
+      description: "The future of obesity & diabetes care",
+    },
+    {
+      number: "03",
+      title: "Cardio-Renal-Metabolic Syndrome",
+      description: "One system, one integrated conversation",
+    },
+    {
+      number: "04",
+      title: "CGM & Diabetes Technology",
+      description: "Continuous glucose monitoring in practice",
+    },
+    {
+      number: "05",
+      title: "Artificial Intelligence",
+      description: "AI in everyday clinical practice",
+    },
+    {
+      number: "06",
+      title: "MASLD / Fatty Liver Disease",
+      description: "From screening to management",
+    },
+    {
+      number: "07",
+      title: "Dyslipidemia",
+      description: "Beyond LDL",
+    },
+    {
+      number: "08",
+      title: "Hypertension",
+      description: "From guidelines to real-world practice",
+    },
+    {
+      number: "09",
+      title: "Obstructive Sleep Apnea",
+      description: "The cardiometabolic risk connection",
+    },
+    {
+      number: "10",
+      title: "Osteoporosis & Sarcopenia",
+      description: "Healthy aging across specialties",
+    },
+    {
+      number: "11",
+      title: "Case Discussions & Panel Debate",
+      description: "Interactive, real-world clinical cases",
+    },
+    {
+      number: "12",
+      title: "Workshops & Awards",
+      description: "Young Investigator Awards & networking",
+    },
+  ],
+  focusLabel: "Focus Areas",
+  focusAreas: [
+    "Cardiology",
+    "Diabetes",
+    "Obesity",
+    "Pulmonology",
+    "Sleep Medicine",
+    "Nephrology",
+    "Fatty Liver Disease",
+    "Dyslipidemia",
+    "Osteoporosis",
+    "Hypertension",
+  ],
+}
+
+const programme = {
+  eyebrow: "Programme",
+  title: "The Programme — At a Glance",
+  description:
+    "Sunday, 27 September 2026 · Jawaharlal Nehru Planetarium, Bengaluru. A provisional one-day plan — final timings, halls, and faculty will be published with the official scientific programme.",
+  dayLabel: "Day 1",
+  dateLabel: "Sun, 27 Sep",
+  items: [
+    {
+      time: "09:00",
+      period: "AM",
+      title: "Obstructive Sleep Apnea & Cardiometabolic Risk",
+      description:
+        "The sleep–heart–metabolism connection every specialty should screen for.",
+      tags: ["09"],
+    },
+    {
+      time: "10:30",
+      period: "AM",
+      title: "Osteoporosis, Sarcopenia & Healthy Aging",
+      description:
+        "Bone health across specialties — screening, treating, preventing the first fracture.",
+      tags: ["10"],
+    },
+    {
+      time: "11:30",
+      period: "AM",
+      title: "Interactive Case Discussions & Panel Debate",
+      description: "Real cases, real decisions — the panel debates, the audience votes.",
+      tags: ["11"],
+    },
+    {
+      time: "02:00",
+      period: "PM",
+      title: "Young Investigator Awards",
+      description: "The next generation presents — award session and jury felicitation.",
+      tags: ["12"],
+    },
+    {
+      time: "04:00",
+      period: "PM",
+      title: "Valedictory & Networking High Tea",
+      description:
+        "Closing remarks, take-home messages, and see you at CINOPSE 2027.",
+    },
+  ],
+  ctaLabel: "Explore the Full Agenda",
+  ctaHref: "#programme",
+  note: "Provisional programme for preview — subject to change until the official agenda is released.",
+}
+
+const footer = {
+  columns: [
+    {
+      title: "CINOPSE",
+      brandEmphasis: "India 2026",
+      logo: {
+        src: "/logo.jpg",
+        alt: "CINOPSE logo",
+      },
+      paragraphs: [
+        "CME Summit for Cardio, Renal, Obesity, Pulmonary & Sleep Medicine — Sunday, 27 September 2026, Jawaharlal Nehru Planetarium, Bengaluru.",
+      ],
+    },
+  ],
+  linksTitle: "Navigate",
+  links: [
+    { label: "About the Conference", href: "#about" },
+    { label: "Conference Highlights", href: "#highlights" },
+    { label: "Full Agenda", href: "#programme" },
+    { label: "Organising Committee", href: "#leadership" },
+    { label: "Venue", href: "#venue" },
+    { label: "Registration", href: "#registration" },
+  ],
+  contactTitle: "Contact",
+  contacts: [
+    "+91 63817 86183",
+    "+91 99023 40225",
+    "cinopseindiamedical@gmail.com",
+    "www.cinopse.com",
+  ],
+  socialLinks: [],
+  copyright: "© 2026 CINOPSE India. All rights reserved.",
+}
 
 export default function Home() {
   return (
@@ -50,427 +479,18 @@ export default function Home() {
       <SiteHeader items={navItems} />
       <GsapProvider>
         <main>
-          <Hero />
-          <OrganizingCommittee />
-          <Venue />
-          <Registration />
-          <PopularDestination />
-          <AssociatePartners />
-          <About />
+          <HeroSection {...hero} />
+          <AboutSection {...about} />
+          <ConferenceHighlightsSection {...conferenceHighlights} />
+          <ProgrammeSection {...programme} />
+          <OrganizingCommitteeSection {...committee} />
+          <VenueSection {...venue} />
+          <RegistrationSection {...registration} />
+          <PopularDestinationSection {...popularDestination} />
+          <AssociatePartnersSection {...associatePartners} />
         </main>
-        <Footer />
+        <SiteFooter {...footer} />
       </GsapProvider>
-    </div>
-  )
-}
-
-function Hero() {
-  return (
-    <section
-      id="home"
-      className="relative flex min-h-[100svh] items-end overflow-hidden bg-[color:var(--cinopse-primary-deep)]"
-    >
-      <div className="absolute inset-0" data-parallax="0.25">
-        <Image
-          src="/images/cinopse-hero-cover.png"
-          alt="Bengaluru city skyline at night"
-          fill
-          priority
-          className="scale-110 object-cover object-center"
-        />
-      </div>
-      {/* Layered overlays for depth + legibility */}
-      <div className="absolute inset-0 bg-[linear-gradient(105deg,rgba(15,44,88,0.94)_0%,rgba(15,44,88,0.78)_42%,rgba(15,44,88,0.28)_72%,rgba(15,44,88,0.1)_100%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(15,44,88,0.65)_0%,transparent_45%)]" />
-
-      <div className="relative mx-auto w-full max-w-[1440px] px-6 pb-20 pt-32 lg:px-10 lg:pb-28">
-        <div data-reveal-group className="max-w-3xl">
-          <div className="relative border-l-2 border-[color:var(--cinopse-accent)] pl-6 text-white">
-            <p data-reveal className="eyebrow text-[color:var(--cinopse-accent-soft)]">
-              <Sparkles className="size-3.5" /> CiNOPSE India 2026
-            </p>
-            <h1
-              data-reveal
-              className="font-display mt-5 text-[clamp(34px,5.4vw,60px)] font-semibold leading-[1.05] tracking-[-0.01em]"
-            >
-              One Place. One Agenda.{" "}
-              <span className="italic text-[color:var(--cinopse-accent-soft)]">
-                One Vision.
-              </span>
-            </h1>
-            <p
-              data-reveal
-              className="mt-6 max-w-2xl text-[clamp(16px,1.4vw,18px)] leading-8 text-white/85"
-            >
-              India&apos;s Independent Multidisciplinary Medical Conference Bringing Together Healthcare Professionals Across Specialties.
-            </p>
-            <div data-reveal className="mt-9 flex flex-wrap items-center gap-4">
-              <Button className="h-12 px-8 text-[13px]">
-                Register Now <ArrowRight className="size-4" />
-              </Button>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/5 px-4 py-2.5 text-xs text-white/75 backdrop-blur-sm">
-                <CalendarDays className="size-4 text-[color:var(--cinopse-accent)]" /> Official conference visual coming soon
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Scroll cue */}
-        <div className="pointer-events-none mt-16 hidden items-center gap-3 text-[11px] uppercase tracking-[0.24em] text-white/50 lg:flex">
-          <span className="relative flex h-9 w-5 items-start justify-center rounded-full border border-white/30 p-1">
-            <span className="h-2 w-0.5 animate-bounce rounded-full bg-[color:var(--cinopse-accent)]" />
-          </span>
-          Scroll to explore
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function About() {
-  return (
-    <section className="relative overflow-hidden bg-white py-20 lg:py-28">
-      <div className="bg-grid-faint absolute inset-0 opacity-60" />
-      <div className="relative mx-auto max-w-6xl px-6 lg:px-10">
-        <SectionHeading eyebrow="Who We Are" title="About CiNOPSE India 2026" />
-        <div className="mt-14 grid items-center gap-12 lg:grid-cols-[0.85fr_1fr]">
-          <div data-reveal="left" className="relative mx-auto w-full max-w-md">
-            {/* Layered gold frame behind the image */}
-            <div className="absolute -inset-4 -z-10 rounded-[2rem] bg-[image:var(--cinopse-gradient-gold)] opacity-15" />
-            <div className="absolute -right-5 -top-5 -z-10 size-24 rounded-full bg-[color:var(--cinopse-secondary)]/10" />
-            <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-[1.75rem] border border-[color:var(--cinopse-border)] bg-[color:var(--cinopse-surface)] shadow-[var(--cinopse-shadow-lg)]">
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(217,164,65,0.12),transparent_60%)]" />
-              <Image
-                src="/logo.jpg"
-                alt="CiNOPSE placeholder"
-                width={240}
-                height={240}
-                className="size-52 rounded-full border-4 border-white object-cover shadow-md"
-              />
-            </div>
-          </div>
-          <div data-reveal="right" className="text-[color:var(--cinopse-text-secondary)]">
-            <p className="text-lg leading-8 first-letter:float-left first-letter:mr-3 first-letter:font-display first-letter:text-6xl first-letter:font-semibold first-letter:leading-[0.8] first-letter:text-[color:var(--cinopse-primary)]">
-              CiNOPSE is an independent multidisciplinary medical conference created to foster collaboration, clinical excellence, and continuous professional development across diverse healthcare specialties.
-            </p>
-            <p className="mt-5 leading-8">
-              The conference provides a focused environment for healthcare professionals to share ideas, examine evidence, and engage in meaningful clinical conversations.
-            </p>
-            <p className="mt-5 leading-8">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer euismod, mauris a congue consequat, metus nisl ultrices eros, at aliquet nisl sem ut ligula.
-            </p>
-            <div className="mt-8 h-px w-full bg-gradient-to-r from-[color:var(--cinopse-accent)]/60 to-transparent" />
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function OrganizingCommittee() {
-  return (
-    <section className="relative overflow-hidden bg-[image:var(--cinopse-gradient-blue)] py-20 lg:py-28">
-      <div className="bg-grid-faint absolute inset-0 opacity-[0.08]" />
-      <div className="absolute -left-24 top-10 size-72 rounded-full bg-[color:var(--cinopse-accent)]/10 blur-3xl" />
-      <div className="absolute -right-24 bottom-0 size-80 rounded-full bg-[color:var(--cinopse-secondary)]/25 blur-3xl" />
-      <div className="relative mx-auto max-w-6xl px-6 lg:px-10">
-        <SectionHeading eyebrow="Leadership" title="Organizing Committee" dark />
-        <div
-          data-reveal-group
-          className="mt-14 grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4"
-        >
-          {committee.map(([role, name], index) => (
-            <article
-              key={`${role}-${index}`}
-              data-reveal="scale"
-              data-card
-              className="relative flex flex-col items-center overflow-hidden rounded-2xl border border-white/12 bg-white/[0.07] py-6 text-center text-white shadow-[0_12px_34px_-20px_rgba(0,0,0,0.6)] backdrop-blur-sm"
-            >
-              <span
-                data-card-fill
-                className="absolute inset-0 rounded-[inherit] bg-[image:var(--cinopse-gradient-deep)]"
-              />
-              <div className="relative z-10 flex flex-col items-center">
-                <div
-                  data-icon-tile
-                  className="flex size-24 items-center justify-center rounded-full border border-white/25 bg-white/10 backdrop-blur-sm"
-                >
-                  <Image
-                    src="/logo.jpg"
-                    alt="Committee profile placeholder"
-                    width={84}
-                    height={84}
-                    className="size-[72px] rounded-full object-cover opacity-95"
-                  />
-                </div>
-                <h3 className="mt-5 font-display text-base font-semibold">{name}</h3>
-                <p className="mt-1.5 text-xs leading-5 text-white/70">
-                  {role}
-                  <br />
-                  CiNOPSE India 2026
-                </p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function Venue() {
-  return (
-    <section className="bg-[color:var(--cinopse-surface)] py-20 lg:py-28">
-      <div className="mx-auto max-w-6xl px-6 lg:px-10">
-        <SectionHeading eyebrow="Location" title="About Venue" />
-        <div
-          data-reveal="scale"
-          className="mt-14 grid overflow-hidden rounded-[1.75rem] border border-[color:var(--cinopse-border)] bg-white shadow-[var(--cinopse-shadow-md)] md:grid-cols-2"
-        >
-          <div className="relative flex min-h-80 flex-col items-center justify-center bg-[image:var(--cinopse-gradient-deep)] p-10 text-center">
-            <div className="bg-grid-faint absolute inset-0 opacity-10" />
-            <div className="relative flex size-20 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/20">
-              <MapPin className="size-9 text-[color:var(--cinopse-accent)]" />
-            </div>
-            <p className="relative mt-6 text-sm font-semibold text-white">Venue map coming soon</p>
-            <p className="relative mt-2 max-w-xs text-sm leading-6 text-white/70">
-              Official venue details will be announced shortly.
-            </p>
-          </div>
-          <div className="flex flex-col justify-between p-8 text-left lg:p-12">
-            <div>
-              <h3 className="font-display text-[clamp(22px,2.4vw,30px)] font-semibold text-[color:var(--cinopse-primary)]">
-                Conference Venue
-              </h3>
-              <div className="mt-4 gold-rule" />
-              <div className="mt-8 grid gap-3 text-left text-sm text-[color:var(--cinopse-text-secondary)]">
-                <InfoChip icon={MapPin} text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." />
-                <InfoChip icon={Phone} text="+91 00000 00000" />
-                <InfoChip icon={Mail} text="contact@cinopse.org" />
-              </div>
-            </div>
-            <div className="mt-10 flex justify-start">
-              <Button>
-                Know More <ArrowRight className="size-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function Registration() {
-  return (
-    <section className="relative overflow-hidden bg-[image:var(--cinopse-gradient-blue)] py-20 lg:py-28">
-      <div className="absolute -right-20 -top-16 size-80 roundfed-full bg-[color:var(--cinopse-accent)]/10 blur-3xl" />
-      <div className="relative mx-auto max-w-6xl px-6 lg:px-10">
-        <SectionHeading eyebrow="Join Us" title="Registration" dark />
-        <RegistrationPriceComparison />
-      </div>
-    </section>
-  )
-}
-
-function PopularDestination() {
-  return (
-    <section className="relative overflow-hidden bg-white py-20 lg:py-28">
-      <div className="mx-auto max-w-6xl px-6 lg:px-10">
-        <SectionHeading eyebrow="Explore" title="Popular Destination" />
-        <div className="mt-14 grid items-center gap-12 md:grid-cols-2">
-          <div data-reveal="left"><DestinationCoverflow /></div>
-          <div data-reveal="right">
-            <h3 className="font-display text-[clamp(22px,2.4vw,30px)] font-semibold text-[color:var(--cinopse-primary)]">
-              Discover our host city
-            </h3>
-            <div className="mt-4 gold-rule" />
-            <p className="mt-6 leading-8 text-[color:var(--cinopse-text-secondary)]">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer euismod, mauris a congue consequat, metus nisl ultrices eros, at aliquet nisl sem ut ligula.
-            </p>
-            <p className="mt-4 leading-8 text-[color:var(--cinopse-text-secondary)]">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse vitae lacus non augue semper tincidunt.
-            </p>
-            <div className="mt-8">
-              <Button>
-                Read More <ArrowRight className="size-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function AssociatePartners() {
-  return (
-    <section className="bg-[color:var(--cinopse-surface)] py-20 lg:py-24">
-      <div className="mx-auto max-w-5xl px-6 lg:px-10">
-        <SectionHeading eyebrow="Trusted By" title="Our Associate Partners" />
-        <div
-          data-reveal-group
-          className="mt-14 grid grid-cols-2 gap-6 sm:grid-cols-3"
-        >
-          {["Partner Logo", "Partner Logo", "Partner Logo", "Partner Logo", "Partner Logo", "Partner Logo"].map(
-            (partner, index) => (
-              <div
-                key={`${partner}-${index}`}
-                data-reveal="scale"
-                data-card
-                className="relative flex h-28 items-center justify-center overflow-hidden rounded-xl border border-[color:var(--cinopse-border)] bg-white px-4 text-center shadow-[var(--cinopse-shadow-sm)]"
-              >
-                <span
-                  data-card-fill
-                  className="absolute inset-0 rounded-[inherit] bg-[image:var(--cinopse-gradient-deep)]"
-                />
-                <span className="relative z-10 text-xs font-bold uppercase tracking-[0.08em] text-slate-400">
-                  {partner}
-                </span>
-              </div>
-            )
-          )}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function Footer() {
-  return (
-    <footer className="relative overflow-hidden bg-[image:var(--cinopse-gradient-deep)] text-white">
-      <div className="h-1 w-full bg-[image:var(--cinopse-gradient-gold)]" />
-      <div
-        data-reveal-group
-        className="mx-auto grid max-w-[1440px] gap-10 px-6 py-16 md:grid-cols-2 lg:grid-cols-3 lg:px-10"
-      >
-        <FooterBlock title="Conference Secretariat">
-          <Image
-            src="/logo.jpg"
-            alt="CiNOPSE"
-            width={76}
-            height={76}
-            className="mt-4 size-16 rounded-full border border-white/20 object-cover"
-          />
-          <p className="mt-4 text-sm leading-6 text-white/65">
-            Lorem ipsum dolor sit amet,
-            <br />
-            consectetur adipiscing elit.
-          </p>
-          <p className="mt-4 text-sm leading-6 text-white/65">
-            Phone: +91 00000 00000
-            <br />
-            Email: contact@cinopse.org
-          </p>
-        </FooterBlock>
-        <FooterBlock title="Professional Conference Organizer">
-          <p className="mt-4 text-sm leading-6 text-white/65">
-            Lorem ipsum dolor sit amet,
-            <br />
-            consectetur adipiscing elit.
-          </p>
-          <p className="mt-4 text-sm leading-6 text-white/65">
-            Phone: +91 00000 00000
-            <br />
-            Email: info@example.com
-          </p>
-        </FooterBlock>
-        <FooterBlock title="Useful Links">
-          <div className="mt-4 grid grid-cols-2 gap-y-2.5 text-sm text-white/65">
-            {[
-              ["Home", "#home"],
-              ["Privacy Policy", "#"],
-              ["Faculty", "#"],
-              ["Terms & Conditions", "#"],
-              ["Organizing Committee", "#"],
-              ["Registration", "#"],
-            ].map(([label, href]) => (
-              <Link
-                key={label}
-                href={href}
-                className="group inline-flex w-fit items-center gap-1.5 transition-colors hover:text-[color:var(--cinopse-accent)]"
-              >
-                <span className="h-px w-0 bg-[color:var(--cinopse-accent)] transition-all duration-300 group-hover:w-3" />
-                {label}
-              </Link>
-            ))}
-          </div>
-        </FooterBlock>
-      </div>
-      <div data-reveal className="border-t border-white/12 py-6 text-center">
-        <div className="flex justify-center gap-3">
-          {[
-            { icon: FaFacebookF, label: "Facebook" },
-            { icon: FaInstagram, label: "Instagram" },
-            { icon: FaTwitter, label: "Twitter" },
-            { icon: FaLinkedinIn, label: "LinkedIn" },
-          ].map(({ icon: Icon, label }) => (
-            <a
-              key={label}
-              href="#"
-              aria-label={label}
-              className="flex size-9 items-center justify-center rounded-full border border-white/20 text-white/80 transition-all duration-300 hover:-translate-y-0.5 hover:border-[color:var(--cinopse-accent)] hover:bg-white/5 hover:text-[color:var(--cinopse-accent)]"
-            >
-              <Icon className="size-3.5" />
-            </a>
-          ))}
-        </div>
-        <p className="mt-5 text-xs text-white/55">
-          © Copyright CiNOPSE India 2026. All Rights Reserved.
-        </p>
-      </div>
-    </footer>
-  )
-}
-
-function SectionHeading({
-  eyebrow,
-  title,
-  dark = false,
-}: {
-  eyebrow: string
-  title: string
-  dark?: boolean
-}) {
-  return (
-    <div data-reveal className="mx-auto flex max-w-2xl flex-col items-center text-center">
-      <span
-        className={`eyebrow ${
-          dark ? "text-[color:var(--cinopse-accent-soft)]" : "text-[color:var(--cinopse-secondary)]"
-        }`}
-      >
-        <span className="gold-rule" />
-        {eyebrow}
-      </span>
-      <h2
-        className={`font-display mt-4 text-[clamp(24px,3.4vw,40px)] font-semibold tracking-[-0.01em] ${
-          dark ? "text-white" : "text-[color:var(--cinopse-primary)]"
-        }`}
-      >
-        {title}
-      </h2>
-    </div>
-  )
-}
-
-function InfoChip({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-[color:var(--cinopse-border)] bg-[color:var(--cinopse-surface)] p-3.5 transition-colors hover:border-[color:var(--cinopse-accent)]/40">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white text-[color:var(--cinopse-secondary)] shadow-sm">
-        <Icon className="size-4" />
-      </span>
-      <p>{text}</p>
-    </div>
-  )
-}
-
-function FooterBlock({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div data-reveal>
-      <h3 className="font-display text-lg font-semibold text-[color:var(--cinopse-accent)]">
-        {title}
-      </h3>
-      {children}
     </div>
   )
 }

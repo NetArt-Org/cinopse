@@ -1,0 +1,138 @@
+export type CommitteeLeader = {
+  initials: string
+  name: string
+  role: string
+  affiliation: string
+  message?: string
+}
+
+export type CommitteeMember = {
+  initials: string
+  name: string
+  caption: string
+}
+
+export type OrganizingCommitteeSectionProps = {
+  eyebrow: string
+  title: string
+  description: string
+  leaders: CommitteeLeader[]
+  members: CommitteeMember[]
+}
+
+export function OrganizingCommitteeSection({
+  eyebrow,
+  title,
+  description,
+  leaders,
+  members,
+}: OrganizingCommitteeSectionProps) {
+  return (
+    <section
+      id="leadership"
+      className="relative overflow-hidden bg-white py-16 md:py-20 lg:py-24"
+    >
+      <div className="mx-auto max-w-[1160px] px-7">
+        <div data-reveal className="text-center">
+          <div className="inline-flex items-center justify-center gap-5">
+            <span className="h-0.5 w-16 rounded-full bg-[color:var(--cinopse-accent)]" />
+            <span className="text-[11px] leading-none font-semibold tracking-[0.35em] text-[color:var(--cinopse-accent-deep)] uppercase">
+              {eyebrow}
+            </span>
+            <span className="h-0.5 w-16 rounded-full bg-[color:var(--cinopse-accent)]" />
+          </div>
+          <h2 className="font-display mt-5 text-[clamp(38px,4vw,56px)] leading-tight font-semibold tracking-[-0.02em] text-[color:var(--cinopse-ink)]">
+            {title}
+          </h2>
+        </div>
+        <p
+          data-reveal
+          className="mx-auto mt-5 max-w-xl text-center text-[clamp(16px,1.4vw,18px)] leading-8 text-[color:var(--cinopse-text-secondary)]"
+        >
+          {description}
+        </p>
+
+        <div
+          data-reveal-group
+          className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+        >
+          {leaders.map((leader) => (
+            <article
+              key={leader.name}
+              tabIndex={0}
+              data-reveal="scale"
+              className="group/leader relative outline-none [perspective:1400px]"
+            >
+              <div className="relative h-[360px] transition-transform duration-[850ms] ease-[cubic-bezier(.22,.9,.18,1)] [transform-style:preserve-3d] group-hover/leader:[transform:rotateY(180deg)] group-focus-within/leader:[transform:rotateY(180deg)] sm:h-[390px] lg:h-[400px]">
+                <div className="absolute inset-0 flex flex-col items-center overflow-hidden rounded-[18px] bg-[color:var(--cinopse-cream)] px-6 pt-9 pb-[22px] text-center shadow-[0_8px_24px_rgba(12,40,84,0.08)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-[image:linear-gradient(90deg,var(--cinopse-accent),var(--cinopse-accent-hi))]">
+                  <div
+                    data-spin-ring
+                    className="relative mt-0 grid size-[104px] place-items-center rounded-full bg-[image:var(--cinopse-gradient-reference-blue)] font-display text-[32px] leading-none font-semibold text-[color:var(--cinopse-accent)] shadow-[0_10px_26px_rgba(12,40,84,0.28)] transition-transform duration-500 ease-[cubic-bezier(.22,.9,.18,1)] after:absolute after:-inset-1.5 after:rounded-full after:border-[1.5px] after:border-dashed after:border-[rgba(27,75,150,0.3)] after:animate-[spinSlow_24s_linear_infinite] group-hover/leader:scale-[1.06] group-hover/leader:rotate-3"
+                  >
+                    {leader.initials}
+                  </div>
+                  <h3 className="font-display mt-6 text-lg leading-tight font-semibold text-[color:var(--cinopse-primary)]">
+                    {leader.name}
+                  </h3>
+                  <p className="mt-1.5 text-[11px] leading-5 font-medium tracking-[0.1em] text-[color:var(--cinopse-accent-deep)] uppercase">
+                    {leader.role}
+                  </p>
+                  <p className="mt-1.5 text-[11px] leading-5 text-[color:var(--cinopse-muted)]">
+                    {leader.affiliation}
+                  </p>
+                  <p className="mt-auto pt-4 text-[9.5px] leading-none tracking-[0.14em] text-[color:var(--cinopse-faint)] uppercase">
+                    Hover to read their message
+                  </p>
+                </div>
+
+                <div className="absolute inset-0 flex flex-col overflow-hidden rounded-[18px] bg-[image:var(--cinopse-gradient-reference-blue)] px-6 py-6 text-left text-white shadow-[0_20px_44px_rgba(12,40,84,0.30)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)]">
+                  <span className="font-display text-[42px] font-bold leading-[0.6] text-[color:var(--cinopse-accent)]">
+                    “
+                  </span>
+                  {leader.message ? (
+                    <p className="m-0 mt-2 text-[11.6px] leading-[1.68] font-light text-white/90">
+                      {leader.message}
+                    </p>
+                  ) : null}
+                  <div className="mt-auto border-t border-white/15 pt-3">
+                    <b className="font-display block text-sm leading-5 font-semibold text-[color:var(--cinopse-accent)]">
+                      {leader.name}
+                    </b>
+                    <i className="mt-1 block text-[8.5px] leading-4 font-light tracking-[0.05em] text-white/55 not-italic">
+                      One Place. One Agenda. One Vision. Infinite Possibilities.
+                    </i>
+                  </div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div
+          data-reveal-group
+          className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+        >
+          {members.map((member) => (
+            <article
+              key={member.name}
+              data-reveal
+              className="flex min-h-[78px] items-center gap-3.5 rounded-[14px] bg-[color:var(--cinopse-cream)] px-[18px] py-[15px] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-1 hover:shadow-[0_14px_28px_rgba(12,40,84,0.12)]"
+            >
+              <div className="grid size-11 shrink-0 place-items-center rounded-full bg-[image:var(--cinopse-gradient-reference-blue)] font-display text-[15px] leading-none font-semibold text-[color:var(--cinopse-accent)]">
+                {member.initials}
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-[13.5px] leading-[1.3] font-medium text-[color:var(--cinopse-ink)]">
+                  {member.name}
+                </h3>
+                <p className="mt-1 text-[9px] leading-[1.4] font-normal tracking-[0.08em] text-[color:var(--cinopse-accent-deep)] uppercase">
+                  {member.caption}
+                </p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}

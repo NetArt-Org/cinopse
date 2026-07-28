@@ -2,100 +2,106 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronDown } from "lucide-react"
 import { useEffect, useState } from "react"
 
 import { MobileNavigation } from "@/components/layout/mobile-navigation"
 
 export type NavItem = {
   label: string
-  hasDropdown: boolean
+  href: string
 }
 
 export function SiteHeader({ items }: { items: NavItem[] }) {
   const [scrolled, setScrolled] = useState(false)
+  const [progress, setProgress] = useState(0)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24)
+    const onScroll = () => {
+      const scrollTop = window.scrollY
+      const maxScroll =
+        document.documentElement.scrollHeight - window.innerHeight
+
+      setScrolled(scrollTop > 40)
+      setProgress(maxScroll > 0 ? (scrollTop / maxScroll) * 100 : 0)
+    }
+
     onScroll()
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
 
+  function openRegistration() {
+    window.dispatchEvent(new Event("cinopse:open-registration"))
+  }
+
   return (
-    <header className="fixed inset-x-0 top-0 z-50">
-      <nav
-        aria-label="Main navigation"
-        className={`transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] ${
-          scrolled
-            ? "bg-[color:var(--cinopse-primary)]/95 shadow-[0_10px_30px_-16px_rgba(15,44,88,0.6)] backdrop-blur-md"
-            : "bg-gradient-to-b from-black/45 to-transparent"
-        }`}
-      >
-        <div
-          className={`mx-auto flex max-w-[1440px] items-center px-6 transition-all duration-500 lg:px-10 ${
-            scrolled ? "min-h-[64px]" : "min-h-[84px]"
+    <>
+      <progress
+        className="fixed top-0 left-0 z-[101] h-[2.5px] w-full appearance-none border-0 bg-transparent [&::-moz-progress-bar]:bg-[image:linear-gradient(90deg,var(--cinopse-accent),var(--cinopse-accent-hi))] [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:bg-[image:linear-gradient(90deg,var(--cinopse-accent),var(--cinopse-accent-hi))]"
+        value={progress}
+        max={100}
+        aria-label="Page scroll progress"
+      />
+      <header className="fixed inset-x-0 top-0 z-[100]">
+        <nav
+          aria-label="Main navigation"
+          className={`transition-[background,box-shadow,padding] duration-500 ease-[cubic-bezier(.22,.9,.18,1)] ${
+            scrolled
+              ? "bg-[rgba(13,49,105,0.86)] py-3 shadow-[0_8px_30px_rgba(6,26,58,0.25)] backdrop-blur-[14px]"
+              : "py-5"
           }`}
         >
-          <Link
-            href="#home"
-            className="group flex items-center gap-3 text-white"
-            aria-label="CiNOPSE India 2026 home"
-          >
-            <span className="relative inline-flex">
-              <span className="absolute -inset-0.5 rounded-full bg-[image:var(--cinopse-gradient-gold)] opacity-70 blur-[2px] transition-opacity duration-500 group-hover:opacity-100" />
+          <div className="mx-auto flex max-w-[1160px] items-center justify-between gap-6 px-7">
+            <Link
+              href="#home"
+              className="flex items-center gap-2.5 font-display text-xl leading-none font-semibold tracking-[0.01em] text-white"
+              aria-label="CINOPSE India 2026 home"
+            >
               <Image
                 src="/logo.jpg"
-                alt="CiNOPSE"
-                width={64}
-                height={64}
+                alt="CINOPSE logo"
+                width={36}
+                height={36}
                 priority
-                className={`relative rounded-full border-2 border-white/85 object-cover transition-all duration-500 ${
-                  scrolled ? "size-12" : "size-14"
-                }`}
+                className="size-9 shrink-0 rounded-full bg-white object-cover shadow-[0_3px_10px_rgba(6,26,58,0.3)]"
               />
-            </span>
-          </Link>
+              <span>
+                CINOPSE{" "}
+                <em className="align-baseline font-sans text-[11px] leading-none font-medium tracking-[0.18em] text-[color:var(--cinopse-accent)] not-italic">
+                  INDIA 2026
+                </em>
+              </span>
+            </Link>
 
-          <div className="ml-auto hidden items-center gap-0.5 xl:flex">
-            {items.map(({ label, hasDropdown }) =>
-              hasDropdown ? (
-                <div key={label} className="group relative">
-                  <span className="relative flex cursor-default items-center gap-1 px-3.5 py-6 text-[11px] font-semibold tracking-[0.06em] text-white/90 uppercase transition-colors group-hover:text-white">
-                    {label}
-                    <ChevronDown className="size-3 transition-transform duration-300 group-hover:rotate-180" />
-                    <span className="absolute inset-x-3.5 bottom-4 h-0.5 origin-left scale-x-0 rounded-full bg-[image:var(--cinopse-gradient-gold)] transition-transform duration-300 group-hover:scale-x-100" />
-                  </span>
-                  <div className="invisible absolute right-0 top-full min-w-56 translate-y-2 overflow-hidden rounded-xl border-t-2 border-[color:var(--cinopse-accent)] bg-white/98 py-2 opacity-0 shadow-[0_24px_50px_-20px_rgba(15,44,88,0.45)] backdrop-blur transition-all duration-300 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
-                    {["Lorem ipsum", "Lorem ipsum"].map((entry, i) => (
-                      <Link
-                        key={i}
-                        href="#"
-                        className="block px-4 py-2.5 text-sm text-[color:var(--cinopse-text)] transition-colors hover:bg-[color:var(--cinopse-surface)] hover:text-[color:var(--cinopse-primary)]"
-                      >
-                        {entry}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ) : (
+            <div className="hidden items-center gap-7 xl:flex">
+              {items.map((item) => (
                 <Link
-                  key={label}
-                  href="#"
-                  className="group relative px-3.5 py-6 text-[11px] font-semibold tracking-[0.06em] text-white/90 uppercase transition-colors hover:text-white"
+                  key={item.href}
+                  href={item.href}
+                  className="group relative py-1.5 text-[12.5px] leading-none font-normal text-white/80 transition-colors hover:text-white"
                 >
-                  {label}
-                  <span className="absolute inset-x-3.5 bottom-4 h-0.5 origin-left scale-x-0 rounded-full bg-[image:var(--cinopse-gradient-gold)] transition-transform duration-300 group-hover:scale-x-100" />
+                  {item.label}
+                  <span className="absolute right-full bottom-0 left-0 h-[1.5px] bg-[color:var(--cinopse-accent)] transition-[right] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] group-hover:right-0" />
                 </Link>
-              )
-            )}
-          </div>
+              ))}
+              <button
+                type="button"
+                onClick={openRegistration}
+                className="group inline-flex items-center gap-2 rounded-full bg-[color:var(--cinopse-accent)] px-[22px] py-3 text-xs leading-none font-medium whitespace-nowrap text-[color:var(--cinopse-primary-deep)] shadow-[0_4px_14px_rgba(6,26,58,0.25)] transition-[transform,box-shadow,background] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:bg-[color:var(--cinopse-accent-hi)] hover:shadow-[0_10px_22px_rgba(217,164,65,0.4)]"
+              >
+                Register Now
+                <span className="transition-transform duration-300 group-hover:translate-x-1">
+                  →
+                </span>
+              </button>
+            </div>
 
-          <div className="ml-auto xl:hidden">
-            <MobileNavigation items={items} />
+            <div className="xl:hidden">
+              <MobileNavigation items={items} onRegister={openRegistration} />
+            </div>
           </div>
-        </div>
-      </nav>
-    </header>
+        </nav>
+      </header>
+    </>
   )
 }

@@ -1,139 +1,156 @@
 "use client"
 
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
-import { useRef, useState } from "react"
 import { useGSAP } from "@gsap/react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { gsap } from "gsap"
 
-const cards = [
-  { city: "Mumbai", image: "/images/destination-mumbai.png" },
-  { city: "Bengaluru", image: "/images/cinopse-hero-cover.png" },
-  { city: "Delhi", image: "/images/destination-delhi.png" },
-  { city: "Mumbai", image: "/images/destination-mumbai.png" },
-  { city: "Bengaluru", image: "/images/cinopse-hero-cover.png" },
-]
+export type DestinationCard = {
+  title: string
+  description: string
+  image: string
+  alt: string
+}
 
-const transforms = [
-  "[transform:translate(-50%,-50%)_rotateY(0deg)_translateZ(12rem)]",
-  "[transform:translate(-50%,-50%)_rotateY(72deg)_translateZ(12rem)]",
-  "[transform:translate(-50%,-50%)_rotateY(144deg)_translateZ(12rem)]",
-  "[transform:translate(-50%,-50%)_rotateY(216deg)_translateZ(12rem)]",
-  "[transform:translate(-50%,-50%)_rotateY(288deg)_translateZ(12rem)]",
+const faceTransforms = [
+  "[transform:rotateY(0deg)_translateZ(250px)] max-[420px]:[transform:rotateY(0deg)_translateZ(205px)]",
+  "[transform:rotateY(120deg)_translateZ(250px)] max-[420px]:[transform:rotateY(120deg)_translateZ(205px)]",
+  "[transform:rotateY(240deg)_translateZ(250px)] max-[420px]:[transform:rotateY(240deg)_translateZ(205px)]",
 ]
 
 gsap.registerPlugin(useGSAP)
 
-export function DestinationCoverflow() {
-  const root = useRef<HTMLDivElement>(null)
-  const [activeCity, setActiveCity] = useState(cards[0].city)
+export function DestinationCoverflow({ cards }: { cards: DestinationCard[] }) {
+  const rootRef = useRef<HTMLDivElement>(null)
+  const ringRef = useRef<HTMLDivElement>(null)
+  const [active, setActive] = useState(0)
+  const [paused, setPaused] = useState(false)
 
   useGSAP(
     () => {
-      const viewport = root.current?.querySelector<HTMLElement>("[data-cylinder-viewport]")
-      const ring = root.current?.querySelector<HTMLElement>("[data-cylinder-ring]")
-      if (!viewport || !ring) return
+      const ring = ringRef.current
+      if (!ring) return
 
-      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      let rotation = 0
-      let activeIndex = 0
-      let pointerStart = 0
-      let pointerCurrent = 0
-      let dragging = false
-      let autoRotate: gsap.core.Timeline | undefined
-      let resumeDelay: gsap.core.Tween | undefined
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      const rotation = active * -120
 
-      const rotateTo = (nextIndex: number, duration = 1) => {
-        activeIndex = (nextIndex + cards.length) % cards.length
-        rotation = -activeIndex * 72
-        if (prefersReducedMotion) gsap.set(ring, { rotationY: rotation })
-        else gsap.to(ring, { duration, ease: "power3.inOut", overwrite: "auto", rotationY: rotation })
-        setActiveCity(cards[activeIndex].city)
+      if (reduceMotion) {
+        gsap.set(ring, { rotationY: rotation })
+        return
       }
 
-      const startAutoRotation = () => {
-        if (prefersReducedMotion) return
-        autoRotate?.kill()
-        const rotationTimeline = gsap.timeline({ repeat: -1 })
-        autoRotate = rotationTimeline
-        rotationTimeline.to({}, { duration: 2.8 })
-
-        cards.forEach(() => {
-          rotationTimeline
-            .to(ring, {
-              duration: 1.25,
-              ease: "power2.inOut",
-              rotationY: "-=72",
-              onComplete: () => {
-                activeIndex = (activeIndex + 1) % cards.length
-                rotation = -activeIndex * 72
-                setActiveCity(cards[activeIndex].city)
-              },
-            })
-            .to({}, { duration: 2.8 })
-        })
-      }
-
-      const onPointerDown = (event: PointerEvent) => {
-        dragging = true
-        pointerStart = event.clientX
-        pointerCurrent = event.clientX
-        rotation = Number(gsap.getProperty(ring, "rotationY"))
-        viewport.setPointerCapture(event.pointerId)
-        resumeDelay?.kill()
-        autoRotate?.kill()
-      }
-
-      const onPointerMove = (event: PointerEvent) => {
-        if (!dragging) return
-        pointerCurrent = event.clientX
-        gsap.set(ring, { rotationY: rotation + (pointerCurrent - pointerStart) * 0.18 })
-      }
-
-      const onPointerUp = (event: PointerEvent) => {
-        if (!dragging) return
-        dragging = false
-        viewport.releasePointerCapture(event.pointerId)
-        const distance = pointerCurrent - pointerStart
-        if (Math.abs(distance) > 24) rotateTo(activeIndex + (distance > 0 ? -1 : 1), 0.9)
-        else rotateTo(activeIndex, 0.55)
-        resumeDelay = gsap.delayedCall(Math.abs(distance) > 24 ? 1.2 : 0.85, startAutoRotation)
-      }
-
-      viewport.addEventListener("pointerdown", onPointerDown)
-      viewport.addEventListener("pointermove", onPointerMove)
-      viewport.addEventListener("pointerup", onPointerUp)
-      viewport.addEventListener("pointercancel", onPointerUp)
-      gsap.set(ring, { rotationY: 0 })
-      startAutoRotation()
-
-      return () => {
-        autoRotate?.kill()
-        resumeDelay?.kill()
-        viewport.removeEventListener("pointerdown", onPointerDown)
-        viewport.removeEventListener("pointermove", onPointerMove)
-        viewport.removeEventListener("pointerup", onPointerUp)
-        viewport.removeEventListener("pointercancel", onPointerUp)
-      }
+      gsap.to(ring, {
+        duration: 0.95,
+        ease: "back.out(1.45)",
+        overwrite: "auto",
+        rotationY: rotation,
+      })
     },
-    { scope: root }
+    { scope: rootRef, dependencies: [active] }
   )
 
+  useEffect(() => {
+    if (paused || cards.length < 2) return
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    if (reduceMotion) return
+
+    const timer = window.setInterval(() => {
+      setActive((current) => (current + 1) % cards.length)
+    }, 4200)
+
+    return () => window.clearInterval(timer)
+  }, [cards.length, paused])
+
+  function goTo(index: number) {
+    setActive((index + cards.length) % cards.length)
+  }
+
   return (
-    <div ref={root} className="relative flex aspect-square w-full items-end overflow-visible">
-      <div data-cylinder-viewport className="absolute inset-0 cursor-grab touch-none [perspective:1000px] active:cursor-grabbing" aria-label="3D carousel featuring Mumbai, Bengaluru, and Delhi">
-        <div data-cylinder-ring className="absolute inset-0 [transform-style:preserve-3d]">
+    <div
+      ref={rootRef}
+      className="relative z-10 grid min-h-[400px] place-items-center overflow-hidden px-6 py-11 pb-14"
+      onPointerEnter={() => setPaused(true)}
+      onPointerLeave={() => setPaused(false)}
+    >
+      <div
+        className="absolute inset-0 bg-[linear-gradient(180deg,#0d3169_0%,#1d4f9c_70%,#2a63b5_100%)]"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 opacity-60 [background-image:radial-gradient(circle_at_25%_20%,rgba(255,255,255,.22),transparent_24%),radial-gradient(circle_at_80%_76%,rgba(217,164,65,.28),transparent_26%)]"
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 h-[220px] w-[320px] [perspective:1100px] max-[420px]:h-[180px] max-[420px]:w-[250px]">
+        <div
+          ref={ringRef}
+          className="absolute inset-0 [transform-style:preserve-3d]"
+        >
           {cards.map((card, index) => (
-            <article key={`${card.city}-${index}`} className={`absolute top-1/2 left-1/2 h-[13rem] w-[9rem] overflow-hidden rounded-xl border border-white/60 bg-white shadow-[0_20px_36px_rgba(15,44,88,.24)] sm:h-[15rem] sm:w-[10.5rem] ${transforms[index]}`}>
-              <Image src={card.image} alt={`${card.city} destination sample`} fill sizes="(max-width: 640px) 172px, 200px" className="object-cover" draggable={false} />
-              <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[color:var(--cinopse-primary-deep)]/95 to-transparent" />
-              <p className="absolute right-4 bottom-3 left-4 text-sm font-semibold text-white">{card.city}</p>
-            </article>
+            <figure
+              key={card.title}
+              className={`absolute inset-0 overflow-hidden rounded-2xl shadow-[0_18px_44px_rgba(6,26,58,.45)] ${faceTransforms[index]}`}
+            >
+              <Image
+                src={card.image}
+                alt={card.alt}
+                fill
+                sizes="(max-width: 420px) 250px, 320px"
+                className="object-cover object-top"
+                draggable={false}
+              />
+              <span
+                className={`absolute inset-0 bg-[color:var(--cinopse-primary-deep)] transition-opacity duration-700 ${
+                  active === index ? "opacity-0" : "opacity-45"
+                }`}
+                aria-hidden="true"
+              />
+              <figcaption className="absolute inset-x-0 bottom-0 flex flex-col gap-0.5 bg-[linear-gradient(transparent,rgba(6,26,58,.92))] px-4 pt-10 pb-3.5 text-white">
+                <b className="font-display text-[15px] leading-tight font-semibold">
+                  {card.title}
+                </b>
+                <span className="text-[10.5px] leading-normal font-light text-white/65">
+                  {card.description}
+                </span>
+              </figcaption>
+            </figure>
           ))}
         </div>
+
+        <button
+          type="button"
+          onClick={() => goTo(active - 1)}
+          className="absolute top-1/2 -left-14 z-20 grid size-[38px] -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-white/12 text-white backdrop-blur-md transition-[transform,background] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-x-0.5 hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-[color:var(--cinopse-accent)] focus-visible:outline-none max-[420px]:-left-11"
+          aria-label="Previous destination"
+        >
+          <ChevronLeft className="size-5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => goTo(active + 1)}
+          className="absolute top-1/2 -right-14 z-20 grid size-[38px] -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-white/12 text-white backdrop-blur-md transition-[transform,background] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:translate-x-0.5 hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-[color:var(--cinopse-accent)] focus-visible:outline-none max-[420px]:-right-11"
+          aria-label="Next destination"
+        >
+          <ChevronRight className="size-5" />
+        </button>
       </div>
-      <div className="relative z-10 flex w-full items-center justify-between px-2 pb-1 text-xs text-[color:var(--cinopse-primary)]">
-        <span className="font-semibold">{activeCity}</span>
-        <span className="text-[11px] text-[color:var(--cinopse-text-secondary)]">Drag to explore</span>
+
+      <div className="absolute inset-x-0 bottom-5 z-20 flex justify-center gap-2">
+        {cards.map((card, index) => (
+          <button
+            key={card.title}
+            type="button"
+            onClick={() => goTo(index)}
+            className={`h-2 rounded-full transition-[width,background] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] ${
+              active === index
+                ? "w-[22px] bg-[color:var(--cinopse-accent)]"
+                : "w-2 bg-white/35"
+            }`}
+            aria-label={`Show ${card.title}`}
+          />
+        ))}
       </div>
     </div>
   )
