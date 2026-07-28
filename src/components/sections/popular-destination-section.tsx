@@ -36,7 +36,7 @@ export function PopularDestinationSection({
         </div>
         <h2
           data-reveal
-          className="font-display mt-5 text-[clamp(36px,5vw,58px)] leading-[1.05] font-semibold tracking-[-0.025em] text-[color:var(--cinopse-ink)]"
+          className="font-display mt-5 text-[clamp(32px,4.6vw,46px)] leading-[1.05] font-semibold tracking-[-0.025em] text-[color:var(--cinopse-ink)]"
         >
           {title}
         </h2>

@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { ArrowUpRight, Menu, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { gsap } from "gsap"
@@ -15,6 +16,7 @@ export function MobileNavigation({
   items: NavItem[]
   onRegister: () => void
 }) {
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const linksRef = useRef<HTMLDivElement>(null)
 
@@ -106,17 +108,24 @@ export function MobileNavigation({
           className="flex flex-1 flex-col py-8"
           aria-label="Mobile navigation"
         >
-          {items.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setIsOpen(false)}
-              className="m-nav-link group flex items-center justify-between border-b border-white/12 py-4 text-lg font-medium transition-colors hover:text-[color:var(--cinopse-accent)]"
-            >
-              {item.label}
-              <ArrowUpRight className="size-4 -translate-x-1 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100" />
-            </Link>
-          ))}
+          {items.map((item) => {
+            const isActive = item.href === pathname
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isActive ? "page" : undefined}
+                onClick={() => setIsOpen(false)}
+                className={`m-nav-link group flex items-center justify-between border-b border-white/12 py-4 text-lg font-medium transition-colors hover:text-[color:var(--cinopse-accent)] ${
+                  isActive ? "text-[color:var(--cinopse-accent)]" : ""
+                }`}
+              >
+                {item.label}
+                <ArrowUpRight className="size-4 -translate-x-1 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100" />
+              </Link>
+            )
+          })}
           <button
             type="button"
             onClick={handleRegister}

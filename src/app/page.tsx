@@ -13,13 +13,13 @@ import { SiteFooter } from "@/components/sections/site-footer"
 import { VenueSection } from "@/components/sections/venue-section"
 
 const navItems = [
-  { label: "About", href: "#about" },
-  { label: "Highlights", href: "#highlights" },
-  { label: "Programme", href: "#programme" },
-  { label: "Committee", href: "#leadership" },
-  { label: "Venue", href: "#venue" },
-  { label: "Destination", href: "#destination" },
-  { label: "Partners", href: "#partners" },
+  { label: "About", href: "/#about" },
+  { label: "Highlights", href: "/#highlights" },
+  { label: "Agenda", href: "/agenda" },
+  { label: "Committee", href: "/#leadership" },
+  { label: "Venue", href: "/#venue" },
+  { label: "Destination", href: "/#destination" },
+  { label: "Partners", href: "/#partners" },
 ]
 
 const hero: HeroSectionProps = {
@@ -161,7 +161,8 @@ const venue = {
     { icon: "email" as const, text: "cinopseindiamedical@gmail.com" },
   ],
   ctaLabel: "Get Directions",
-  ctaHref: "https://maps.app.goo.gl/zjCfHkqoZQr7N3uMA",
+  ctaHref:
+    "https://www.google.com/maps/place/Jawaharlal+Nehru+Planetarium/@12.9848665,77.5896341,17z/data=!3m1!4b1!4m6!3m5!1s0x3bae166bedda581f:0x757d1ae9f63c2835!8m2!3d12.9848665!4d77.5896341!16s%2Fg%2F1jky_rhrc?entry=ttu&g_ep=EgoyMDI2MDcyMi4wIKXMDSoASAFQAw%3D%3D",
 }
 
 const registration = {
@@ -214,7 +215,8 @@ const popularDestination = {
     "From clinical mornings at the Planetarium to cultural evenings across the city, plan a visit that goes beyond the conference hall.",
   ],
   ctaLabel: "Explore Bengaluru",
-  ctaHref: "https://www.google.com/maps/search/?api=1&query=Bengaluru",
+  ctaHref:
+    "https://www.google.com/maps/place/Bengaluru,+Karnataka/@12.987977,77.6219718,11z/data=!3m1!4b1!4m6!3m5!1s0x3bae1670c9b44e6d:0xf8dfc3e8517e4fe0!8m2!3d12.9628957!4d77.57754!16zL20vMDljMTc?entry=ttu&g_ep=EgoyMDI2MDcyMi4wIKXMDSoASAFQAw%3D%3D",
   cards: [
     {
       title: "Vidhana Soudha",
@@ -299,7 +301,7 @@ const about = {
     },
   ],
   stats: [
-    { value: "12", label: "Scientific Sessions" },
+    { value: "22", label: "Scientific Sessions" },
     { value: "10", label: "Focus Areas" },
     { value: "1", label: "Day, One Roof" },
     { value: "∞", label: "Possibilities", accent: true },
@@ -319,7 +321,7 @@ const conferenceHighlights = {
     },
     {
       number: "02",
-      title: "GLP-1, Fatty & Triple Agonists",
+      title: "GLP-1, Dual & Triple Agonists",
       description: "The future of obesity & diabetes care",
     },
     {
@@ -435,7 +437,7 @@ const programme = {
     },
   ],
   ctaLabel: "Explore the Full Agenda",
-  ctaHref: "#programme",
+  ctaHref: "/agenda",
   note: "Provisional programme for preview — subject to change until the official agenda is released.",
 }
 
@@ -457,7 +459,7 @@ const footer = {
   links: [
     { label: "About the Conference", href: "#about" },
     { label: "Conference Highlights", href: "#highlights" },
-    { label: "Full Agenda", href: "#programme" },
+    { label: "Full Agenda", href: "/agenda" },
     { label: "Organising Committee", href: "#leadership" },
     { label: "Venue", href: "#venue" },
     { label: "Registration", href: "#registration" },

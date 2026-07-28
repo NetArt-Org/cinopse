@@ -27,7 +27,7 @@ export function AssociatePartnersSection({
             </span>
             <span className="h-0.5 w-16 rounded-full bg-[color:var(--cinopse-accent)]" />
           </div>
-          <h2 className="font-display mt-5 text-[clamp(38px,4vw,56px)] leading-tight font-semibold tracking-[-0.02em] text-[color:var(--cinopse-ink)]">
+          <h2 className="font-display mt-5 text-[clamp(32px,4.6vw,46px)] leading-tight font-semibold tracking-[-0.02em] text-[color:var(--cinopse-ink)]">
             {title}
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-[clamp(16px,1.5vw,20px)] leading-8 font-light text-[color:var(--cinopse-text-secondary)]">

@@ -25,6 +25,7 @@ export type RegistrationPriceComparisonProps = {
   phases: RegistrationPhase[]
   note: string
   ctaLabel: string
+  dialogOnly?: boolean
 }
 
 type WizardForm = {
@@ -60,9 +61,11 @@ export function RegistrationPriceComparison({
   phases,
   note,
   ctaLabel,
+  dialogOnly = false,
 }: RegistrationPriceComparisonProps) {
   const [audience, setAudience] = useState(0)
-  const [now, setNow] = useState(() => Date.now())
+  const initialNow = useMemo(() => new Date(windowStart).getTime(), [windowStart])
+  const [now, setNow] = useState(initialNow)
   const [modalOpen, setModalOpen] = useState(false)
   const [activeView, setActiveView] = useState<"wizard" | "login">("wizard")
   const [step, setStep] = useState(1)
@@ -78,7 +81,7 @@ export function RegistrationPriceComparison({
   >(null)
 
   const deadline = useMemo(() => new Date(eventDate).getTime(), [eventDate])
-  const start = useMemo(() => new Date(windowStart).getTime(), [windowStart])
+  const start = initialNow
   const countdown = useCountdown(deadline, now)
   const progress = Math.min(Math.max(((now - start) / (deadline - start)) * 100, 0), 100)
 
@@ -203,6 +206,7 @@ export function RegistrationPriceComparison({
 
   return (
     <>
+      {!dialogOnly ? (
       <div className="mx-auto max-w-none">
         <div
           data-reveal
@@ -332,6 +336,7 @@ export function RegistrationPriceComparison({
           {note}
         </p>
       </div>
+      ) : null}
 
       {modalOpen && typeof document !== "undefined"
         ? createPortal(

@@ -42,7 +42,7 @@ export function ProgrammeSection({
               {eyebrow}
             </span>
           </div>
-          <h2 className="font-display mt-6 max-w-4xl text-[clamp(40px,4vw,58px)] leading-tight font-semibold tracking-[-0.02em] text-[color:var(--cinopse-ink)]">
+          <h2 className="font-display mt-6 max-w-4xl text-[clamp(32px,4.6vw,46px)] leading-tight font-semibold tracking-[-0.02em] text-[color:var(--cinopse-ink)]">
             {title}
           </h2>
           <p className="mt-6 max-w-[650px] text-[clamp(16px,1.5vw,20px)] leading-9 font-light text-[color:var(--cinopse-text-secondary)]">

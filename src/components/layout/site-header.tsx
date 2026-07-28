@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 
 import { MobileNavigation } from "@/components/layout/mobile-navigation"
@@ -12,6 +13,7 @@ export type NavItem = {
 }
 
 export function SiteHeader({ items }: { items: NavItem[] }) {
+  const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
   const [progress, setProgress] = useState(0)
 
@@ -53,7 +55,7 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
         >
           <div className="mx-auto flex max-w-[1160px] items-center justify-between gap-6 px-7">
             <Link
-              href="#home"
+              href="/#home"
               className="flex items-center gap-2.5 font-display text-xl leading-none font-semibold tracking-[0.01em] text-white"
               aria-label="CINOPSE India 2026 home"
             >
@@ -74,16 +76,29 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
             </Link>
 
             <div className="hidden items-center gap-7 xl:flex">
-              {items.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="group relative py-1.5 text-[12.5px] leading-none font-normal text-white/80 transition-colors hover:text-white"
-                >
-                  {item.label}
-                  <span className="absolute right-full bottom-0 left-0 h-[1.5px] bg-[color:var(--cinopse-accent)] transition-[right] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] group-hover:right-0" />
-                </Link>
-              ))}
+              {items.map((item) => {
+                const isActive =
+                  item.href === pathname ||
+                  (pathname === "/" && item.href === "/#home")
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`group relative py-1.5 text-[12.5px] leading-none font-normal transition-colors hover:text-white ${
+                      isActive ? "text-white" : "text-white/80"
+                    }`}
+                  >
+                    {item.label}
+                    <span
+                      className={`absolute bottom-0 left-0 h-[1.5px] bg-[color:var(--cinopse-accent)] transition-[right] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] group-hover:right-0 ${
+                        isActive ? "right-0" : "right-full"
+                      }`}
+                    />
+                  </Link>
+                )
+              })}
               <button
                 type="button"
                 onClick={openRegistration}

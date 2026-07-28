@@ -66,12 +66,12 @@ export function VenueSection({
               {eyebrow}
             </span>
           </div>
-          <h2 className="font-display mt-6 text-[clamp(38px,4vw,56px)] leading-tight font-semibold tracking-[-0.02em] text-[color:var(--cinopse-ink)]">
+          <h2 className="font-display mt-6 text-[clamp(32px,4.6vw,46px)] leading-tight font-semibold tracking-[-0.02em] text-[color:var(--cinopse-ink)]">
             {title}
           </h2>
 
           <div className="mt-8">
-            <h3 className="font-display text-[clamp(24px,2.2vw,32px)] leading-tight font-semibold text-[color:var(--cinopse-primary)]">
+            <h3 className="font-display text-[clamp(20px,1.8vw,26px)] leading-tight font-semibold text-[color:var(--cinopse-primary)] lg:whitespace-nowrap">
               {venueTitle}
             </h3>
             <p className="mt-4 text-[13.5px] leading-[1.85] font-light text-[color:var(--cinopse-text-secondary)]">

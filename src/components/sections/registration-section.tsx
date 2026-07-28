@@ -32,7 +32,7 @@ export function RegistrationSection({
             </span>
             <span className="h-0.5 w-16 rounded-full bg-[color:var(--cinopse-accent)]" />
           </div>
-          <h2 className="font-display mt-5 mb-2 text-[clamp(42px,4vw,56px)] leading-tight font-semibold tracking-[-0.02em] text-white">
+          <h2 className="font-display mt-5 mb-2 text-[clamp(32px,4.6vw,46px)] leading-tight font-semibold tracking-[-0.02em] text-white">
             {title}
           </h2>
           <p className="m-0 text-[12.5px] leading-5 font-light text-white/60">
