@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import type { ReactNode } from "react"
 import { createPortal } from "react-dom"
 import { ArrowRight, Check, X } from "lucide-react"
@@ -35,6 +35,11 @@ type WizardForm = {
   city: string
   institution: string
   terms: boolean
+}
+
+type GoogleProfile = {
+  name: string
+  email: string
 }
 
 const categoryDescriptions = [
@@ -79,6 +84,10 @@ export function RegistrationPriceComparison({
     | { state: "missing"; message: string }
     | null
   >(null)
+  const [googleProfile, setGoogleProfile] = useState<GoogleProfile | null>(null)
+  const [isSigningIn, setIsSigningIn] = useState(false)
+  const [authError, setAuthError] = useState("")
+  const firebaseUnsubscribe = useRef<(() => void) | null>(null)
 
   const deadline = useMemo(() => new Date(eventDate).getTime(), [eventDate])
   const start = initialNow
@@ -92,6 +101,8 @@ export function RegistrationPriceComparison({
   }, [])
 
   useEffect(() => {
+    if (!dialogOnly) return
+
     const openRegistration = () => {
       setActiveView("wizard")
       setModalOpen(true)
@@ -100,13 +111,46 @@ export function RegistrationPriceComparison({
     window.addEventListener("cinopse:open-registration", openRegistration)
     return () =>
       window.removeEventListener("cinopse:open-registration", openRegistration)
-  }, [])
+  }, [dialogOnly])
 
   useEffect(() => {
+    if (!dialogOnly) return
+
     document.body.classList.toggle("overflow-hidden", modalOpen)
 
     return () => document.body.classList.remove("overflow-hidden")
-  }, [modalOpen])
+  }, [dialogOnly, modalOpen])
+
+  useEffect(() => {
+    if (!dialogOnly || !modalOpen) return
+
+    let mounted = true
+
+    void import("@/lib/firebase-client").then(({ observeGoogleUser }) => {
+      if (!mounted) return
+
+      firebaseUnsubscribe.current?.()
+      firebaseUnsubscribe.current = observeGoogleUser((profile) => {
+        if (!mounted) return
+
+        setGoogleProfile(profile)
+        if (profile) {
+          setForm((current) => ({
+            ...current,
+            name: current.name || profile.name,
+            email: profile.email,
+          }))
+          setAuthError("")
+        }
+      })
+    })
+
+    return () => {
+      mounted = false
+      firebaseUnsubscribe.current?.()
+      firebaseUnsubscribe.current = null
+    }
+  }, [dialogOnly, modalOpen])
 
   const openPhase = phases.find((phase) => phase.status === "Open now") ?? phases[0]
   const selectedLabel = selectedCategory >= 0 ? audiences[selectedCategory] : ""
@@ -124,6 +168,33 @@ export function RegistrationPriceComparison({
   function closeModal() {
     setModalOpen(false)
     window.setTimeout(() => resetWizard(), 300)
+  }
+
+  async function handleGoogleSignIn() {
+    setIsSigningIn(true)
+    setAuthError("")
+
+    try {
+      const { signInWithGoogle } = await import("@/lib/firebase-client")
+      const profile = await signInWithGoogle()
+      setGoogleProfile(profile)
+      setForm((current) => ({
+        ...current,
+        name: current.name || profile.name,
+        email: profile.email,
+      }))
+    } catch (error) {
+      const code = typeof error === "object" && error && "code" in error ? String(error.code) : ""
+      setAuthError(
+        code === "auth/popup-closed-by-user"
+          ? "Google sign-in was cancelled. Please try again to continue."
+          : error instanceof Error
+            ? error.message
+            : "Unable to sign in with Google. Please try again.",
+      )
+    } finally {
+      setIsSigningIn(false)
+    }
   }
 
   function nextStep() {
@@ -321,7 +392,7 @@ export function RegistrationPriceComparison({
           </div>
           <button
             type="button"
-            onClick={() => setModalOpen(true)}
+            onClick={() => window.dispatchEvent(new Event("cinopse:open-registration"))}
             className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-white px-9 py-4 text-[12.5px] leading-none font-medium text-[color:var(--cinopse-primary)] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(0,0,0,0.28)]"
           >
             {ctaLabel}
@@ -338,7 +409,7 @@ export function RegistrationPriceComparison({
       </div>
       ) : null}
 
-      {modalOpen && typeof document !== "undefined"
+      {dialogOnly && modalOpen && typeof document !== "undefined"
         ? createPortal(
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(9,26,54,0.62)] p-4 backdrop-blur-[7px]"
@@ -362,6 +433,39 @@ export function RegistrationPriceComparison({
               <X className="size-4" aria-hidden="true" />
             </button>
 
+            {!googleProfile ? (
+              <section className="py-12 text-center" aria-labelledby="google-sign-in-title">
+                <div className="mx-auto mb-5 grid size-14 place-items-center rounded-full bg-[color:var(--cinopse-cream)] text-xl font-semibold text-[color:var(--cinopse-primary)]">
+                  G
+                </div>
+                <h2
+                  id="google-sign-in-title"
+                  className="font-display m-0 text-2xl leading-tight font-semibold text-[color:var(--cinopse-primary)]"
+                >
+                  Continue with Google
+                </h2>
+                <p className="mx-auto mt-3 max-w-sm text-sm leading-6 font-light text-[color:var(--cinopse-muted)]">
+                  Sign in to start your registration or check an existing registration.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={isSigningIn}
+                  className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-[color:var(--cinopse-border)] bg-white px-6 text-[13px] font-medium text-[color:var(--cinopse-ink)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-[color:var(--cinopse-primary)] hover:shadow-[0_10px_22px_rgba(27,75,150,0.16)] disabled:cursor-wait disabled:opacity-70"
+                >
+                  <span aria-hidden="true" className="font-semibold text-[color:var(--cinopse-primary)]">
+                    G
+                  </span>
+                  {isSigningIn ? "Connecting to Google…" : "Sign in with Google"}
+                </button>
+                {authError ? (
+                  <p role="alert" className="mt-4 text-sm leading-5 text-[#c0392b]">
+                    {authError}
+                  </p>
+                ) : null}
+              </section>
+            ) : (
+              <>
             <div className="mr-9 mb-5 grid grid-cols-2 rounded-full bg-[color:var(--cinopse-cream)] p-1">
               {[
                 ["wizard", "New Registration"],
@@ -485,6 +589,12 @@ export function RegistrationPriceComparison({
                       placeholder="you@example.com"
                       autoComplete="email"
                       error={errors.email}
+                      readOnly={Boolean(googleProfile)}
+                      hint={
+                        googleProfile
+                          ? "Verified through Google and cannot be changed."
+                          : undefined
+                      }
                       onChange={(value) => setForm((current) => ({ ...current, email: value }))}
                     />
                     <div className="grid gap-3 sm:grid-cols-2">
@@ -687,6 +797,8 @@ export function RegistrationPriceComparison({
             <p className="mt-4 border-t border-[color:var(--cinopse-border)] pt-3.5 text-center text-[9.5px] leading-4 font-light text-[color:var(--cinopse-faint)]">
               Demo preview — details are stored only in this browser, nothing is sent to a server. For assistance write to cinopseindiamedical@gmail.com.
             </p>
+              </>
+            )}
           </div>
         </div>,
         document.body
@@ -704,6 +816,8 @@ function Field({
   placeholder,
   autoComplete,
   error,
+  readOnly = false,
+  hint,
   onChange,
 }: {
   id: string
@@ -713,6 +827,8 @@ function Field({
   placeholder?: string
   autoComplete?: string
   error?: string
+  readOnly?: boolean
+  hint?: string
   onChange: (value: string) => void
 }) {
   return (
@@ -732,11 +848,19 @@ function Field({
         value={value}
         placeholder={placeholder}
         autoComplete={autoComplete}
+        readOnly={readOnly}
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={error ? "true" : undefined}
-        aria-describedby={error ? `${id}-error` : undefined}
-        className="w-full rounded-[10px] border-[1.5px] border-[color:var(--cinopse-border)] bg-white px-3.5 py-3 text-[13px] leading-5 text-[color:var(--cinopse-ink)] outline-none transition-[border-color,box-shadow] duration-300 placeholder:text-[color:var(--cinopse-faint)] focus:border-[color:var(--cinopse-primary)] focus:shadow-[0_0_0_3px_rgba(27,75,150,0.1)]"
+        aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
+        className={`w-full rounded-[10px] border-[1.5px] border-[color:var(--cinopse-border)] bg-white px-3.5 py-3 text-[13px] leading-5 text-[color:var(--cinopse-ink)] outline-none transition-[border-color,box-shadow] duration-300 placeholder:text-[color:var(--cinopse-faint)] focus:border-[color:var(--cinopse-primary)] focus:shadow-[0_0_0_3px_rgba(27,75,150,0.1)] ${
+          readOnly ? "cursor-not-allowed bg-[color:var(--cinopse-cream)] text-[color:var(--cinopse-muted)]" : ""
+        }`}
       />
+      {hint ? (
+        <p id={`${id}-hint`} className="mt-1.5 text-[10.5px] leading-4 text-[color:var(--cinopse-muted)]">
+          {hint}
+        </p>
+      ) : null}
       {error ? <ErrorText id={`${id}-error`}>{error}</ErrorText> : null}
     </div>
   )

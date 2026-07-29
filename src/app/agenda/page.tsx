@@ -4,7 +4,7 @@ import { GsapProvider } from "@/components/layout/gsap-provider"
 import { SiteHeader } from "@/components/layout/site-header"
 import { AgendaPageContent } from "@/components/sections/agenda-page-content"
 import type { AgendaDay } from "@/components/sections/agenda-page-content"
-import { RegistrationPriceComparison } from "@/components/sections/registration-price-comparison"
+import { RegistrationFormModal } from "@/components/forms/registration-form-modal"
 import { SiteFooter } from "@/components/sections/site-footer"
 
 export const metadata: Metadata = {
@@ -293,7 +293,7 @@ export default function AgendaPage() {
   return (
     <div className="min-h-dvh bg-[color:var(--cinopse-cream)] text-[color:var(--cinopse-text)]">
       <SiteHeader items={navItems} />
-      <RegistrationPriceComparison {...registrationComparison} dialogOnly />
+      <RegistrationFormModal {...registrationComparison} />
       <GsapProvider>
         <header className="relative overflow-hidden bg-[image:var(--cinopse-gradient-reference-blue)] pt-[126px] pb-[42px] text-white">
           <div className="absolute -top-[200px] -right-40 size-[480px] rounded-full bg-[rgba(29,90,180,.5)] blur-[90px]" />

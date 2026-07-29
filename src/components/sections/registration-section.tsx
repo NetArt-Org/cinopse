@@ -1,5 +1,6 @@
 import { RegistrationPriceComparison } from "@/components/sections/registration-price-comparison"
 import type { RegistrationPriceComparisonProps } from "@/components/sections/registration-price-comparison"
+import { RegistrationFormModal } from "@/components/forms/registration-form-modal"
 
 export type RegistrationSectionProps = {
   eyebrow: string
@@ -40,6 +41,7 @@ export function RegistrationSection({
           </p>
         </div>
         <RegistrationPriceComparison {...comparison} />
+        <RegistrationFormModal {...comparison} />
       </div>
     </section>
   )
