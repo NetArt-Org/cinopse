@@ -1,21 +1,30 @@
 "use client"
 
-import Image from "next/image"
+import Image, { type ImageLoaderProps } from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+import { ChevronDown, LogOut, UserRound } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
 
 import { MobileNavigation } from "@/components/layout/mobile-navigation"
+import { useGoogleAuthUser } from "@/hooks/use-google-auth-user"
 
 export type NavItem = {
   label: string
   href: string
 }
 
+function googleAvatarLoader({ src }: ImageLoaderProps) {
+  return src
+}
+
 export function SiteHeader({ items }: { items: NavItem[] }) {
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [accountOpen, setAccountOpen] = useState(false)
+  const accountMenuRef = useRef<HTMLDivElement>(null)
+  const googleUser = useGoogleAuthUser()
 
   useEffect(() => {
     const onScroll = () => {
@@ -32,8 +41,33 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
 
+  useEffect(() => {
+    function closeAccountMenu(event: MouseEvent) {
+      if (!accountMenuRef.current?.contains(event.target as Node)) {
+        setAccountOpen(false)
+      }
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setAccountOpen(false)
+    }
+
+    document.addEventListener("mousedown", closeAccountMenu)
+    document.addEventListener("keydown", closeOnEscape)
+    return () => {
+      document.removeEventListener("mousedown", closeAccountMenu)
+      document.removeEventListener("keydown", closeOnEscape)
+    }
+  }, [])
+
   function openRegistration() {
     window.dispatchEvent(new Event("cinopse:open-registration"))
+  }
+
+  async function handleLogout() {
+    const { signOutGoogle } = await import("@/lib/firebase-client")
+    await signOutGoogle()
+    setAccountOpen(false)
   }
 
   return (
@@ -109,6 +143,61 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
                   →
                 </span>
               </button>
+              {googleUser ? (
+                <div ref={accountMenuRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setAccountOpen((open) => !open)}
+                    aria-expanded={accountOpen}
+                    aria-haspopup="menu"
+                    aria-label="Open account menu"
+                    className="flex items-center gap-1.5 rounded-full border border-white/30 py-1 pr-2 pl-1 text-white transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  >
+                    {googleUser.photoUrl ? (
+                      <Image
+                        src={googleUser.photoUrl}
+                        alt=""
+                        loader={googleAvatarLoader}
+                        width={32}
+                        height={32}
+                        className="size-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <span className="grid size-8 place-items-center rounded-full bg-white/20">
+                        <UserRound className="size-4" aria-hidden="true" />
+                      </span>
+                    )}
+                    <ChevronDown
+                      className={`size-3.5 transition-transform duration-200 ${
+                        accountOpen ? "rotate-180" : ""
+                      }`}
+                      aria-hidden="true"
+                    />
+                  </button>
+                  {accountOpen ? (
+                    <div
+                      role="menu"
+                      className="absolute right-0 mt-3 w-56 rounded-2xl border border-[color:var(--cinopse-border)] bg-white p-2 text-[color:var(--cinopse-text)] shadow-[0_18px_40px_rgba(6,26,58,0.28)]"
+                    >
+                      <div className="border-b border-[color:var(--cinopse-border)] px-3 py-2.5">
+                        <p className="truncate text-xs font-medium">{googleUser.name || "Signed in"}</p>
+                        <p className="mt-1 truncate text-[11px] text-[color:var(--cinopse-text-secondary)]">
+                          {googleUser.email}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={handleLogout}
+                        className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-xs font-medium text-[color:var(--cinopse-primary)] transition-colors hover:bg-[color:var(--cinopse-cream)] focus-visible:outline-2 focus-visible:outline-[color:var(--cinopse-primary)]"
+                      >
+                        <LogOut className="size-4" aria-hidden="true" />
+                        Logout
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
 
             <div className="xl:hidden">

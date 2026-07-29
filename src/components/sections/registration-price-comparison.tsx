@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import type { ReactNode } from "react"
 import { createPortal } from "react-dom"
 import { ArrowRight, Check, X } from "lucide-react"
+import { GoogleIcon } from "@/components/icons/google-icon"
 import PhoneInput, {
   isValidPhoneNumber,
   type Value,
@@ -435,8 +436,8 @@ export function RegistrationPriceComparison({
 
             {!googleProfile ? (
               <section className="py-12 text-center" aria-labelledby="google-sign-in-title">
-                <div className="mx-auto mb-5 grid size-14 place-items-center rounded-full bg-[color:var(--cinopse-cream)] text-xl font-semibold text-[color:var(--cinopse-primary)]">
-                  G
+                <div className="mx-auto mb-5 grid size-14 place-items-center rounded-full bg-[color:var(--cinopse-cream)] shadow-[0_8px_18px_rgba(6,26,58,0.08)]">
+                  <GoogleIcon className="size-6" />
                 </div>
                 <h2
                   id="google-sign-in-title"
@@ -453,9 +454,7 @@ export function RegistrationPriceComparison({
                   disabled={isSigningIn}
                   className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-[color:var(--cinopse-border)] bg-white px-6 text-[13px] font-medium text-[color:var(--cinopse-ink)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-[color:var(--cinopse-primary)] hover:shadow-[0_10px_22px_rgba(27,75,150,0.16)] disabled:cursor-wait disabled:opacity-70"
                 >
-                  <span aria-hidden="true" className="font-semibold text-[color:var(--cinopse-primary)]">
-                    G
-                  </span>
+                  <GoogleIcon className="size-5" />
                   {isSigningIn ? "Connecting to Google…" : "Sign in with Google"}
                 </button>
                 {authError ? (

@@ -3,6 +3,7 @@ import {
   GoogleAuthProvider,
   getAuth,
   onAuthStateChanged,
+  signOut,
   signInWithPopup,
   type User,
 } from "firebase/auth"
@@ -10,6 +11,7 @@ import {
 export type GoogleProfile = {
   name: string
   email: string
+  photoUrl: string | null
 }
 
 const firebaseConfig = {
@@ -40,6 +42,7 @@ function toGoogleProfile(user: User | null): GoogleProfile | null {
   return {
     name: user.displayName ?? "",
     email: user.email,
+    photoUrl: user.photoURL,
   }
 }
 
@@ -70,4 +73,11 @@ export async function signInWithGoogle() {
   }
 
   return profile
+}
+
+export async function signOutGoogle() {
+  const auth = getFirebaseAuth()
+  if (!auth) return
+
+  await signOut(auth)
 }
