@@ -24,7 +24,7 @@ const navItems = [
 ]
 
 const registrationComparison = {
-  audiences: ["Delegate", "Student / HCP", "International"],
+  audiences: ["Delegates", "PG and Others", "International Delegates"],
   eventDateLabel: "Sunday, 27 September 2026",
   eventDate: "2026-09-27T08:00:00+05:30",
   windowStart: "2026-07-24T00:00:00+05:30",
@@ -33,28 +33,28 @@ const registrationComparison = {
       name: "Early",
       window: "Open now",
       status: "Open now" as const,
-      prices: ["₹8,500", "₹5,500", "$180"],
+      prices: ["₹1,000", "₹500", "₹2,500"],
     },
     {
       name: "Standard",
       window: "To be announced",
       status: "Upcoming" as const,
-      prices: ["₹10,500", "₹7,500", "$220"],
+      prices: ["₹1,000", "₹500", "₹2,500"],
     },
     {
       name: "Late",
       window: "To be announced",
       status: "Upcoming" as const,
-      prices: ["₹12,500", "₹9,500", "$260"],
+      prices: ["₹1,000", "₹500", "₹2,500"],
     },
     {
       name: "On-site",
       window: "27 Sep, at the venue",
       status: "Upcoming" as const,
-      prices: ["₹14,000", "₹11,000", "$300"],
+      prices: ["₹1,000", "₹500", "₹2,500"],
     },
   ],
-  note: "Demo rates are shown for layout preview. Official registration fees will be published with the final programme.",
+  note: "Registration cost: ₹1,000 for Delegates, ₹500 for PG and Others, and ₹2,500 for International Delegates.",
   ctaLabel: "Register Now",
 }
 

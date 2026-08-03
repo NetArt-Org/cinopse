@@ -1,6 +1,6 @@
 "use client"
 
-import Image, { type ImageLoaderProps } from "next/image"
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ChevronDown, LogOut, UserRound } from "lucide-react"
@@ -14,8 +14,26 @@ export type NavItem = {
   href: string
 }
 
-function googleAvatarLoader({ src }: ImageLoaderProps) {
-  return src
+function GoogleAvatar({ photoUrl }: { photoUrl: string }) {
+  const [failed, setFailed] = useState(false)
+
+  if (failed) {
+    return (
+      <span className="grid size-8 place-items-center rounded-full bg-white/20">
+        <UserRound className="size-4" aria-hidden="true" />
+      </span>
+    )
+  }
+
+  return (
+    <img
+      src={photoUrl}
+      alt=""
+      referrerPolicy="no-referrer"
+      onError={() => setFailed(true)}
+      className="size-8 rounded-full object-cover"
+    />
+  )
 }
 
 export function SiteHeader({ items }: { items: NavItem[] }) {
@@ -154,13 +172,9 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
                     className="flex items-center gap-1.5 rounded-full border border-white/30 py-1 pr-2 pl-1 text-white transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   >
                     {googleUser.photoUrl ? (
-                      <Image
-                        src={googleUser.photoUrl}
-                        alt=""
-                        loader={googleAvatarLoader}
-                        width={32}
-                        height={32}
-                        className="size-8 rounded-full object-cover"
+                      <GoogleAvatar
+                        key={googleUser.photoUrl}
+                        photoUrl={googleUser.photoUrl}
                       />
                     ) : (
                       <span className="grid size-8 place-items-center rounded-full bg-white/20">

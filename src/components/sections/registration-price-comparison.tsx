@@ -5,6 +5,12 @@ import type { ReactNode } from "react"
 import { createPortal } from "react-dom"
 import { ArrowRight, Check, X } from "lucide-react"
 import { GoogleIcon } from "@/components/icons/google-icon"
+import {
+  calculateRegistrationTotal,
+  getRegistrationAmount,
+  registrationCoupons,
+  type RegistrationCoupon,
+} from "@/lib/registration-config"
 import PhoneInput, {
   isValidPhoneNumber,
   type Value,
@@ -43,9 +49,26 @@ type GoogleProfile = {
   email: string
 }
 
+type RegistrationLookupDetails = {
+  id: string
+  name: string
+  email: string
+  mobile: string
+  city: string
+  institution: string
+  category: string
+  amount: string
+  registrationStatus: string
+  payment: string
+  paymentStatus: string
+  coupon: string
+  transactionId: string
+  registrationDate: string
+}
+
 const categoryDescriptions = [
   "Practicing physicians & consultants",
-  "Postgraduates, trainees & allied HCPs",
+  "Postgraduates, trainees & allied healthcare professionals",
   "Delegates joining from outside India",
 ]
 
@@ -79,9 +102,14 @@ export function RegistrationPriceComparison({
   const [form, setForm] = useState<WizardForm>(initialForm)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [registrationId, setRegistrationId] = useState("CIN-2026-0000")
+  const [couponInput, setCouponInput] = useState("")
+  const [appliedCoupon, setAppliedCoupon] = useState<RegistrationCoupon | null>(null)
+  const [couponError, setCouponError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isCheckingRegistration, setIsCheckingRegistration] = useState(false)
   const [lookupEmail, setLookupEmail] = useState("")
   const [lookupResult, setLookupResult] = useState<
-    | { state: "found"; id: string; name: string; label: string; price: string }
+    | ({ state: "found" } & RegistrationLookupDetails)
     | { state: "missing"; message: string }
     | null
   >(null)
@@ -141,6 +169,7 @@ export function RegistrationPriceComparison({
             name: current.name || profile.name,
             email: profile.email,
           }))
+          setLookupEmail(profile.email)
           setAuthError("")
         }
       })
@@ -155,8 +184,11 @@ export function RegistrationPriceComparison({
 
   const openPhase = phases.find((phase) => phase.status === "Open now") ?? phases[0]
   const selectedLabel = selectedCategory >= 0 ? audiences[selectedCategory] : ""
-  const selectedPrice =
-    selectedCategory >= 0 ? openPhase.prices[selectedCategory] : ""
+  const selectedAmount = getRegistrationAmount(selectedLabel) ?? 0
+  const couponTotal = calculateRegistrationTotal(
+    selectedAmount,
+    appliedCoupon ? [appliedCoupon] : [],
+  )
 
   function resetWizard() {
     setStep(1)
@@ -164,6 +196,9 @@ export function RegistrationPriceComparison({
     setForm(initialForm)
     setErrors({})
     setLookupResult(null)
+    setCouponInput("")
+    setAppliedCoupon(null)
+    setCouponError("")
   }
 
   function closeModal() {
@@ -184,6 +219,7 @@ export function RegistrationPriceComparison({
         name: current.name || profile.name,
         email: profile.email,
       }))
+      setLookupEmail(profile.email)
     } catch (error) {
       const code = typeof error === "object" && error && "code" in error ? String(error.code) : ""
       setAuthError(
@@ -198,7 +234,32 @@ export function RegistrationPriceComparison({
     }
   }
 
-  function nextStep() {
+  function applyCoupon() {
+    const code = couponInput.trim().toUpperCase()
+    const coupon = registrationCoupons.find(
+      (item) => item.code.toUpperCase() === code,
+    )
+
+    if (!coupon) {
+      setCouponError("This coupon code is not available.")
+      return
+    }
+    if (appliedCoupon) {
+      setCouponError("Only one coupon can be applied to a registration.")
+      return
+    }
+
+    setAppliedCoupon(coupon)
+    setCouponInput("")
+    setCouponError("")
+  }
+
+  function removeCoupon() {
+    setAppliedCoupon(null)
+    setCouponError("")
+  }
+
+  async function nextStep() {
     if (step === 1) {
       if (selectedCategory < 0) {
         setErrors({ category: "Please choose a category to continue." })
@@ -223,58 +284,128 @@ export function RegistrationPriceComparison({
         return
       }
 
-      const id = `CIN-2026-${String(Math.floor(1000 + (Date.now() % 9000))).padStart(4, "0")}`
-      const record = {
-        id,
-        name: form.name,
-        email: form.email.toLowerCase(),
-        phone: form.phone ?? "",
-        city: form.city,
-        institution: form.institution,
-        label: selectedLabel,
-        price: selectedPrice,
-        at: new Date().toISOString(),
+      setIsSubmitting(true)
+      try {
+        const { getFirebaseIdToken } = await import("@/lib/firebase-client")
+        const idToken = await getFirebaseIdToken()
+        const response = await fetch("/api/registrations", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fullName: form.name,
+            category: selectedLabel,
+            mobile: form.phone,
+            city: form.city,
+            hospital: form.institution,
+            couponCode: appliedCoupon?.code ?? "",
+          }),
+        })
+        const payload = (await response.json()) as {
+          message?: string
+          registration?: { name: string }
+        }
+        if (!response.ok || !payload.registration) {
+          throw new Error(payload.message || "Unable to save your registration.")
+        }
+
+        setRegistrationId(payload.registration.name)
+        setErrors({})
+        setStep(4)
+      } catch (error) {
+        setErrors({
+          submit:
+            error instanceof Error
+              ? error.message
+              : "Unable to save your registration. Please try again.",
+        })
+      } finally {
+        setIsSubmitting(false)
       }
-      const store = JSON.parse(window.localStorage.getItem("cinopse_regs") || "{}")
-      store[record.email] = record
-      window.localStorage.setItem("cinopse_regs", JSON.stringify(store))
-      setRegistrationId(id)
-      setErrors({})
-      setStep(4)
       return
     }
 
     closeModal()
   }
 
-  function checkRegistration() {
-    const email = lookupEmail.trim().toLowerCase()
-    if (!emailPattern.test(email)) {
+  async function checkRegistration() {
+    setIsCheckingRegistration(true)
+    setLookupResult(null)
+
+    try {
+      const { getFirebaseIdToken } = await import("@/lib/firebase-client")
+      const idToken = await getFirebaseIdToken()
+      const response = await fetch("/api/registrations", {
+        headers: { Authorization: `Bearer ${idToken}` },
+      })
+      const payload = (await response.json()) as {
+        message?: string
+        registration?: {
+          name: string
+          full_name: string
+          email?: string
+          google_email?: string
+          mobile?: string
+          city?: string
+          hospital?: string
+          category: string
+          amount: number | string
+          status?: string
+          payment_method?: string
+          payment_status?: string
+          transaction_id?: string
+          registration_date?: string
+          remarks?: string
+          custom_coupon_amount?: number | string
+          custom_coupon_code?: string
+        } | null
+      }
+      if (!response.ok) throw new Error(payload.message || "Unable to check your registration.")
+
+      if (payload.registration) {
+        setLookupResult({
+          state: "found",
+          id: payload.registration.name,
+          name: payload.registration.full_name,
+          email: payload.registration.email || payload.registration.google_email || googleProfile?.email || "",
+          mobile: payload.registration.mobile || "",
+          city: payload.registration.city || "",
+          institution: payload.registration.hospital || "",
+          category: payload.registration.category,
+          amount: formatPrice(payload.registration.amount),
+          registrationStatus: payload.registration.status || "Not available",
+          payment: payload.registration.payment_method || "Not updated",
+          paymentStatus: payload.registration.payment_status || "Not updated",
+          coupon: formatCouponDetails(
+            payload.registration.custom_coupon_code,
+            payload.registration.custom_coupon_amount,
+            payload.registration.remarks,
+          ),
+          transactionId: payload.registration.transaction_id || "Not updated",
+          registrationDate: formatDisplayDate(payload.registration.registration_date),
+        })
+      } else {
+        setLookupResult({
+          state: "missing",
+          message: "No registration was found for your Google account.",
+        })
+      }
+    } catch (error) {
       setLookupResult({
         state: "missing",
-        message: "Please type the email address you used to register.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to check your registration right now.",
       })
-      return
+    } finally {
+      setIsCheckingRegistration(false)
     }
-
-    const store = JSON.parse(window.localStorage.getItem("cinopse_regs") || "{}")
-    const record = store[email]
-    if (record) {
-      setLookupResult({
-        state: "found",
-        id: record.id,
-        name: record.name,
-        label: record.label,
-        price: record.price,
-      })
-      return
-    }
-
-    setLookupResult({
-      state: "missing",
-      message: `We couldn't find a registration for ${email} in this browser.`,
-    })
   }
+
+  const foundLookup = lookupResult?.state === "found" ? lookupResult : null
 
   return (
     <>
@@ -413,7 +544,7 @@ export function RegistrationPriceComparison({
       {dialogOnly && modalOpen && typeof document !== "undefined"
         ? createPortal(
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(9,26,54,0.62)] p-4 backdrop-blur-[7px]"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(9,26,54,0.62)] px-6 py-4 backdrop-blur-[7px] sm:p-4"
           role="dialog"
           aria-modal="true"
           aria-label="Registration"
@@ -423,7 +554,7 @@ export function RegistrationPriceComparison({
         >
           <div
             data-modal-panel
-            className="relative max-h-[92vh] w-full max-w-[520px] overflow-auto rounded-[20px] bg-white px-7 pt-6 pb-[18px] shadow-[0_30px_80px_rgba(6,26,58,0.5)] animate-[swapIn_0.45s_cubic-bezier(.22,.9,.18,1)]"
+            className="relative max-h-[92vh] w-full max-w-[600px] overflow-auto rounded-[20px] bg-white px-5 pt-5 pb-4 shadow-[0_30px_80px_rgba(6,26,58,0.5)] animate-[swapIn_0.45s_cubic-bezier(.22,.9,.18,1)] sm:px-7 sm:pt-6 sm:pb-[18px]"
           >
             <button
               type="button"
@@ -463,6 +594,12 @@ export function RegistrationPriceComparison({
                   </p>
                 ) : null}
               </section>
+            ) : foundLookup ? (
+              <RegistrationStatusDetails
+                details={foundLookup}
+                onBack={() => setLookupResult(null)}
+                onClose={closeModal}
+              />
             ) : (
               <>
             <div className="mr-9 mb-5 grid grid-cols-2 rounded-full bg-[color:var(--cinopse-cream)] p-1">
@@ -547,7 +684,7 @@ export function RegistrationPriceComparison({
                         >
                           <span>
                             <b className="block text-[13.5px] leading-5 font-medium text-[color:var(--cinopse-ink)]">
-                              {index === 1 ? "Student / Other HCPs" : item}
+                              {item}
                             </b>
                             <i className="mt-0.5 block text-[10.5px] leading-4 font-light text-[color:var(--cinopse-muted)] not-italic">
                               {categoryDescriptions[index]}
@@ -561,7 +698,7 @@ export function RegistrationPriceComparison({
                     </div>
                     {errors.category ? <ErrorText>{errors.category}</ErrorText> : null}
                     <p className="mt-3.5 text-[10px] leading-4 font-light text-[color:var(--cinopse-faint)]">
-                      Early registration rate shown. Demo pricing — official fees are published with the final programme.
+                      Your registration cost is confirmed in the review step. Eligible coupons can be applied before confirmation.
                     </p>
                   </div>
                 ) : null}
@@ -629,7 +766,7 @@ export function RegistrationPriceComparison({
                     <h3 className="font-display m-0 mb-3.5 text-xl leading-tight font-semibold text-[color:var(--cinopse-primary)]">
                       Review & confirm
                     </h3>
-                    <div className="rounded-[14px] bg-[color:var(--cinopse-cream)] px-[18px] py-2">
+                    <div className="grid gap-x-6 rounded-[14px] bg-[color:var(--cinopse-cream)] px-[18px] py-2 sm:grid-cols-2">
                       {[
                         ["Name", form.name],
                         ["Email", form.email],
@@ -637,19 +774,21 @@ export function RegistrationPriceComparison({
                         ["City", form.city],
                         ["Institution", form.institution],
                         ["Category", selectedLabel],
-                        ["Early rate", selectedPrice],
+                        ["Registration cost", formatPrice(selectedAmount)],
                       ].map(([label, value]) => (
                         <div
                           key={label}
-                          className="flex justify-between gap-4 border-b border-black/5 py-2.5 last:border-b-0"
+                          className={`flex min-w-0 items-start justify-between gap-4 border-b border-black/5 py-2.5 last:border-b-0 sm:flex-col sm:justify-start sm:gap-1 ${
+                            label === "Registration cost" ? "sm:col-span-2" : ""
+                          }`}
                         >
-                          <span className="text-[11px] leading-5 font-normal tracking-[0.06em] text-[color:var(--cinopse-muted)] uppercase">
+                          <span className="shrink-0 text-[10px] leading-5 font-medium text-[color:var(--cinopse-muted)] uppercase">
                             {label}
                           </span>
                           <b
-                            className={`text-right text-[12.5px] leading-5 font-medium text-[color:var(--cinopse-ink)] ${
-                              label === "Early rate"
-                                ? "font-display text-[15px] text-[color:var(--cinopse-primary)]"
+                            className={`min-w-0 truncate text-right text-[13px] leading-5 font-medium text-[color:var(--cinopse-ink)] sm:text-left ${
+                              label === "Registration cost"
+                                ? "font-display text-sm text-[color:var(--cinopse-primary)]"
                                 : ""
                             }`}
                           >
@@ -658,8 +797,76 @@ export function RegistrationPriceComparison({
                         </div>
                       ))}
                     </div>
+                    <div className="mt-3.5 rounded-[14px] border border-[color:var(--cinopse-border)] bg-white p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <h4 className="m-0 text-[12.5px] font-medium text-[color:var(--cinopse-ink)]">
+                            Coupon code
+                          </h4>
+                          <p className="mt-0.5 text-[10px] leading-4 text-[color:var(--cinopse-muted)]">
+                            Apply one eligible coupon to reduce your payable amount.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex gap-2">
+                        <input
+                          value={couponInput}
+                          onChange={(event) => {
+                            setCouponInput(event.target.value)
+                            setCouponError("")
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault()
+                              applyCoupon()
+                            }
+                          }}
+                          disabled={Boolean(appliedCoupon)}
+                          placeholder="Enter coupon code"
+                          aria-describedby={couponError ? "coupon-error" : undefined}
+                          className="min-w-0 flex-1 rounded-full border border-[color:var(--cinopse-border)] px-4 py-2.5 text-xs uppercase outline-none transition-[border-color,box-shadow] placeholder:normal-case focus:border-[color:var(--cinopse-primary)] focus:shadow-[0_0_0_3px_rgba(27,75,150,0.1)] disabled:cursor-not-allowed disabled:bg-[color:var(--cinopse-cream)]"
+                        />
+                        <button
+                          type="button"
+                          onClick={applyCoupon}
+                          disabled={Boolean(appliedCoupon)}
+                          className="rounded-full bg-[color:var(--cinopse-primary)] px-4 py-2.5 text-xs font-medium text-white transition-colors hover:bg-[color:var(--cinopse-secondary)] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Apply
+                        </button>
+                      </div>
+                      {couponError ? <ErrorText id="coupon-error">{couponError}</ErrorText> : null}
+                      {appliedCoupon ? (
+                        <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-[color:var(--cinopse-cream)] px-3 py-2 text-[10.5px]">
+                          <span>
+                            <b className="font-medium text-[color:var(--cinopse-ink)]">
+                              {appliedCoupon.name}
+                            </b>{" "}
+                            <span className="text-[color:var(--cinopse-muted)]">
+                              ({appliedCoupon.code}) · −{formatPrice(appliedCoupon.discount)}
+                            </span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={removeCoupon}
+                            className="text-[color:var(--cinopse-primary)] underline underline-offset-2"
+                            aria-label={`Remove ${appliedCoupon.name} coupon`}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : null}
+                      <div className="mt-3 flex items-center justify-between border-t border-[color:var(--cinopse-border)] pt-3">
+                        <span className="text-[11px] font-medium text-[color:var(--cinopse-text-secondary)]">
+                          Payable amount
+                        </span>
+                        <b className="font-display text-lg text-[color:var(--cinopse-primary)]">
+                          {formatPrice(couponTotal.payableAmount)}
+                        </b>
+                      </div>
+                    </div>
                     <p className="mt-3.5 rounded-xl border border-[color:var(--cinopse-border)] bg-white px-4 py-3 text-[10px] leading-4 font-light text-[color:var(--cinopse-faint)]">
-                      Payment placeholder: payment gateway integration will be connected later.
+                      Payment instructions will be shared after your registration is reviewed.
                     </p>
                     <label className="mt-3 flex items-start gap-3 rounded-xl border border-[color:var(--cinopse-border)] bg-white px-4 py-3 text-[11px] leading-5 text-[color:var(--cinopse-text-secondary)]">
                       <input
@@ -679,6 +886,7 @@ export function RegistrationPriceComparison({
                       </span>
                     </label>
                     {errors.terms ? <ErrorText>{errors.terms}</ErrorText> : null}
+                    {errors.submit ? <ErrorText>{errors.submit}</ErrorText> : null}
                   </div>
                 ) : null}
 
@@ -718,9 +926,12 @@ export function RegistrationPriceComparison({
                   <button
                     type="button"
                     onClick={nextStep}
-                    className="inline-flex items-center justify-center rounded-full bg-[color:var(--cinopse-primary)] px-6 py-3 text-[12.5px] leading-none font-medium text-white transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(27,75,150,0.35)]"
+                    disabled={isSubmitting}
+                    className="inline-flex items-center justify-center rounded-full bg-[color:var(--cinopse-primary)] px-6 py-3 text-[12.5px] leading-none font-medium text-white transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(27,75,150,0.35)] disabled:cursor-wait disabled:opacity-70"
                   >
-                    {step === 3
+                    {isSubmitting
+                      ? "Saving…"
+                      : step === 3
                       ? "Confirm Registration ✓"
                       : step === 4
                         ? "Done"
@@ -734,59 +945,39 @@ export function RegistrationPriceComparison({
                   Check your registration
                 </h3>
                 <p className="mt-0 mb-4 text-xs leading-5 font-light text-[color:var(--cinopse-muted)]">
-                  Enter the email you registered with and we&apos;ll look up your seat.
+                  We&apos;ll check the registration linked to your Google account.
                 </p>
                 <Field
                   id="lEmail"
                   label="Email"
                   type="email"
-                  value={lookupEmail}
+                  value={googleProfile?.email ?? lookupEmail}
                   placeholder="you@example.com"
                   autoComplete="email"
-                  onChange={setLookupEmail}
+                  readOnly
+                  hint="Verified through Google and cannot be changed."
+                  onChange={() => undefined}
                 />
                 <button
                   type="button"
                   onClick={checkRegistration}
-                  className="mt-2 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--cinopse-primary)] px-6 py-3 text-[12.5px] leading-none font-medium text-white transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(27,75,150,0.35)]"
+                  disabled={isCheckingRegistration}
+                  className="mt-2 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--cinopse-primary)] px-6 py-3 text-[12.5px] leading-none font-medium text-white transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(27,75,150,0.35)] disabled:cursor-wait disabled:opacity-70"
                 >
-                  Check Status
+                  {isCheckingRegistration ? "Checking…" : "Check Status"}
                 </button>
-                {lookupResult ? (
+                {lookupResult?.state === "missing" ? (
                   <div
-                    className={`mt-4 rounded-[14px] border-[1.5px] px-[18px] py-4 animate-[swapIn_0.4s_cubic-bezier(.22,.9,.18,1)] ${
-                      lookupResult.state === "found"
-                        ? "border-[rgba(63,145,80,0.45)] bg-[#f4faf4]"
-                        : "border-[rgba(217,164,65,0.5)] bg-[#fdf8ee]"
-                    }`}
+                    className="mt-4 rounded-[14px] border-[1.5px] border-[rgba(217,164,65,0.5)] bg-[#fdf8ee] px-[18px] py-4 animate-[swapIn_0.4s_cubic-bezier(.22,.9,.18,1)]"
                   >
                     <h4 className="m-0 mb-2 flex items-center gap-2 font-display text-sm leading-5 font-semibold text-[color:var(--cinopse-ink)]">
-                      <span
-                        className={`grid size-[22px] place-items-center rounded-full text-[11px] ${
-                          lookupResult.state === "found"
-                            ? "bg-[#eaf3e9] text-[#3f9150]"
-                            : "bg-[#fdf4e4] text-[color:var(--cinopse-accent-deep)]"
-                        }`}
-                      >
-                        {lookupResult.state === "found" ? "✓" : "?"}
+                      <span className="grid size-[22px] place-items-center rounded-full bg-[#fdf4e4] text-[11px] text-[color:var(--cinopse-accent-deep)]">
+                        ?
                       </span>
-                      {lookupResult.state === "found"
-                        ? "Registration found"
-                        : "No registration found"}
+                      No registration found
                     </h4>
                     <p className="m-0 text-[11.5px] leading-5 font-light text-[color:var(--cinopse-text-secondary)]">
-                      {lookupResult.state === "found" ? (
-                        <>
-                          <span className="font-mono text-[13px] font-semibold text-[color:var(--cinopse-primary)]">
-                            {lookupResult.id}
-                          </span>
-                          <br />
-                          {lookupResult.name} · {lookupResult.label} · Early rate{" "}
-                          {lookupResult.price}
-                        </>
-                      ) : (
-                        lookupResult.message
-                      )}
+                      {lookupResult.message}
                     </p>
                   </div>
                 ) : null}
@@ -794,7 +985,7 @@ export function RegistrationPriceComparison({
             )}
 
             <p className="mt-4 border-t border-[color:var(--cinopse-border)] pt-3.5 text-center text-[9.5px] leading-4 font-light text-[color:var(--cinopse-faint)]">
-              Demo preview — details are stored only in this browser, nothing is sent to a server. For assistance write to cinopseindiamedical@gmail.com.
+              Your details are securely saved to the CINOPSE registration system. For assistance write to cinopseindiamedical@gmail.com.
             </p>
               </>
             )}
@@ -804,6 +995,121 @@ export function RegistrationPriceComparison({
       )
         : null}
     </>
+  )
+}
+
+function RegistrationStatusDetails({
+  details,
+  onBack,
+  onClose,
+}: {
+  details: RegistrationLookupDetails
+  onBack: () => void
+  onClose: () => void
+}) {
+  const detailSections = [
+    {
+      title: "Registration Details",
+      items: [
+        ["Registration ID", details.id],
+        ["Registration date", details.registrationDate],
+        ["Registration status", details.registrationStatus],
+        ["Category", details.category],
+      ],
+    },
+    {
+      title: "Basic Details",
+      items: [
+        ["Name", details.name],
+        ["Email", details.email],
+        ["Mobile", details.mobile],
+        ["City", details.city],
+        ["Institution / Hospital", details.institution],
+      ],
+    },
+    {
+      title: "Payment Details",
+      items: [
+        ["Amount", details.amount],
+        ["Payment", details.payment],
+        ["Payment status", details.paymentStatus],
+        ["Coupon", details.coupon],
+        ["Transaction ID", details.transactionId],
+      ],
+    },
+  ]
+
+  return (
+    <section
+      data-wizard-step
+      aria-labelledby="registration-status-title"
+      className="animate-[swapIn_0.4s_cubic-bezier(.22,.9,.18,1)]"
+    >
+      <div className="mr-9">
+        <span className="mb-2 inline-flex items-center rounded-full bg-[#eaf3e9] px-3 py-1 text-[9px] font-medium text-[#3f9150] uppercase">
+          Registration found
+        </span>
+        <h3
+          id="registration-status-title"
+          className="font-display m-0 text-lg leading-tight font-semibold text-[color:var(--cinopse-primary)]"
+        >
+          Registration status
+        </h3>
+        <p className="mt-1.5 text-[13px] leading-5 font-light text-[color:var(--cinopse-muted)]">
+          These are the major details saved against your Google account.
+        </p>
+      </div>
+
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        {detailSections.map((section) => (
+          <section
+            key={section.title}
+            aria-label={section.title}
+            className="min-w-0 rounded-[13px] border border-[color:var(--cinopse-border)] bg-[color:var(--cinopse-cream)] px-3.5 py-3"
+          >
+            <h4 className="m-0 border-b border-[color:var(--cinopse-border)] pb-2 text-[11px] leading-none font-semibold text-[color:var(--cinopse-primary)] uppercase">
+              {section.title}
+            </h4>
+            <div className="mt-2.5 grid gap-2.5">
+              {section.items.map(([label, value]) => (
+                <div key={label} className="flex min-w-0 items-start justify-between gap-3">
+                  <span className="shrink-0 text-[10px] leading-5 font-medium text-[color:var(--cinopse-muted)] uppercase">
+                    {label}
+                  </span>
+                  <b
+                    className={`block min-w-0 truncate text-right text-[13px] leading-5 font-medium text-[color:var(--cinopse-ink)] ${
+                      label === "Amount" || label === "Registration ID"
+                        ? "font-display text-sm text-[color:var(--cinopse-primary)]"
+                        : ""
+                    }`}
+                    title={value || undefined}
+                  >
+                    {value || "Not available"}
+                  </b>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <div className="mt-4 flex flex-col-reverse justify-between gap-3 sm:flex-row">
+        <button
+          type="button"
+          onClick={onBack}
+          className="inline-flex items-center justify-center rounded-full bg-[color:var(--cinopse-cream)] px-5 py-2.5 text-[13px] leading-none font-medium text-[color:var(--cinopse-text-secondary)] transition-colors hover:bg-[#e2dfd8]"
+        >
+          ← Check Status
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="inline-flex items-center justify-center rounded-full bg-[color:var(--cinopse-primary)] px-5 py-2.5 text-[13px] leading-none font-medium text-white transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(27,75,150,0.35)]"
+        >
+          Close
+        </button>
+      </div>
+    </section>
   )
 }
 
@@ -961,4 +1267,54 @@ function getDelta(price: string, basePrice: string) {
 
 function numberFromPrice(value: string) {
   return Number.parseFloat(value.replace(/[^0-9.]/g, ""))
+}
+
+function formatPrice(amount: number | string) {
+  const numericAmount = typeof amount === "number" ? amount : Number(amount)
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(numericAmount)
+}
+
+function formatDisplayDate(value?: string) {
+  if (!value) return "Not available"
+
+  const normalizedValue = value.includes("T") ? value : value.replace(" ", "T")
+  const date = new Date(normalizedValue)
+  if (Number.isNaN(date.getTime())) return value
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date)
+}
+
+function getCouponFromRemarks(remarks?: string) {
+  if (!remarks) return "Not applied"
+
+  const couponMatch = remarks.match(/Coupon:\s*([^.]*)\./i)
+  const coupon = couponMatch?.[1]?.trim()
+
+  if (!coupon || coupon.toLowerCase() === "none") return "Not applied"
+
+  return coupon
+}
+
+function formatCouponDetails(
+  couponCode?: string,
+  couponAmount?: number | string,
+  remarks?: string,
+) {
+  const code = couponCode?.trim()
+  const numericAmount =
+    typeof couponAmount === "number" ? couponAmount : Number(couponAmount || 0)
+
+  if (code) {
+    return numericAmount > 0 ? `${code} · −${formatPrice(numericAmount)}` : code
+  }
+
+  return getCouponFromRemarks(remarks)
 }

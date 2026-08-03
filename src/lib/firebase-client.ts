@@ -9,6 +9,7 @@ import {
 } from "firebase/auth"
 
 export type GoogleProfile = {
+  uid: string
   name: string
   email: string
   photoUrl: string | null
@@ -40,6 +41,7 @@ function toGoogleProfile(user: User | null): GoogleProfile | null {
   if (!user?.email) return null
 
   return {
+    uid: user.uid,
     name: user.displayName ?? "",
     email: user.email,
     photoUrl: user.photoURL,
@@ -80,4 +82,13 @@ export async function signOutGoogle() {
   if (!auth) return
 
   await signOut(auth)
+}
+
+export async function getFirebaseIdToken() {
+  const auth = getFirebaseAuth()
+  if (!auth?.currentUser) {
+    throw new Error("Please sign in with Google to continue.")
+  }
+
+  return auth.currentUser.getIdToken()
 }
