@@ -50,7 +50,7 @@ export function SiteFooter({
       <div className="absolute bottom-[-260px] left-[-160px] size-[500px] rounded-full bg-[rgba(29,90,180,0.4)] blur-[90px]" />
       <div className="relative z-10 mx-auto grid max-w-[1160px] gap-9 px-7 md:grid-cols-[1.4fr_1fr_1fr] md:gap-[50px]">
         <div data-reveal>
-          <Link href="#home" className="mb-3.5 inline-flex items-center gap-3">
+          <Link href="/#home" className="mb-3.5 inline-flex items-center gap-3">
             {brandColumn.logo ? (
               <Image
                 src={brandColumn.logo.src}

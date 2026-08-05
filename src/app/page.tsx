@@ -11,6 +11,7 @@ import { ProgrammeSection } from "@/components/sections/programme-section"
 import { RegistrationSection } from "@/components/sections/registration-section"
 import { SiteFooter } from "@/components/sections/site-footer"
 import { VenueSection } from "@/components/sections/venue-section"
+import { policyFooterLinks } from "@/lib/policy-pages"
 
 const navItems = [
   { label: "About", href: "/#about" },
@@ -479,14 +480,7 @@ const footer = {
     },
   ],
   linksTitle: "Navigate",
-  links: [
-    { label: "About the Conference", href: "#about" },
-    { label: "Conference Highlights", href: "#highlights" },
-    { label: "Full Agenda", href: "/agenda" },
-    { label: "Organising Committee", href: "#leadership" },
-    { label: "Venue", href: "#venue" },
-    { label: "Registration", href: "#registration" },
-  ],
+  links: policyFooterLinks,
   contactTitle: "Contact",
   contacts: [
     "+91 63817 86183",

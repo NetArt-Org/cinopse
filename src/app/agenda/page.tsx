@@ -6,6 +6,7 @@ import { AgendaPageContent } from "@/components/sections/agenda-page-content"
 import type { AgendaDay } from "@/components/sections/agenda-page-content"
 import { RegistrationFormModal } from "@/components/forms/registration-form-modal"
 import { SiteFooter } from "@/components/sections/site-footer"
+import { policyFooterLinks } from "@/lib/policy-pages"
 
 export const metadata: Metadata = {
   title: "Full Agenda — CINOPSE India 2026",
@@ -73,14 +74,7 @@ const footer = {
     },
   ],
   linksTitle: "Navigate",
-  links: [
-    { label: "About the Conference", href: "/#about" },
-    { label: "Conference Highlights", href: "/#highlights" },
-    { label: "Full Agenda", href: "/agenda" },
-    { label: "Organising Committee", href: "/#leadership" },
-    { label: "Venue", href: "/#venue" },
-    { label: "Registration", href: "/#registration" },
-  ],
+  links: policyFooterLinks,
   contactTitle: "Contact",
   contacts: [
     "+91 63817 86183",
