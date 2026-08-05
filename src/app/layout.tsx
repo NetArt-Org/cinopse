@@ -18,8 +18,52 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "CiNOPSE India 2026",
-  description: "CiNOPSE India 2026 multidisciplinary medical conference.",
+  metadataBase: new URL("https://www.cinopse.com"),
+  title: {
+    default: "CiNOPSE India 2026",
+    template: "%s | CiNOPSE India 2026",
+  },
+  description:
+    "CiNOPSE India 2026 is a multidisciplinary medical conference for cardio, renal, obesity, pulmonary and sleep medicine, taking place on Sunday, 27 September 2026 at Jawaharlal Nehru Planetarium, Bengaluru.",
+  keywords: [
+    "CiNOPSE India 2026",
+    "medical conference Bengaluru",
+    "cardio renal obesity pulmonary sleep medicine",
+    "CME summit India",
+    "Jawaharlal Nehru Planetarium Bengaluru",
+  ],
+  authors: [{ name: "CiNOPSE India" }],
+  creator: "CiNOPSE India",
+  publisher: "CiNOPSE India",
+  icons: {
+    icon: "/logo.jpg",
+    shortcut: "/logo.jpg",
+    apple: "/logo.jpg",
+  },
+  openGraph: {
+    title: "CiNOPSE India 2026",
+    description:
+      "A multidisciplinary CME summit for cardio, renal, obesity, pulmonary and sleep medicine on Sunday, 27 September 2026 in Bengaluru.",
+    url: "https://www.cinopse.com",
+    siteName: "CiNOPSE India 2026",
+    images: [
+      {
+        url: "/logo.jpg",
+        width: 512,
+        height: 512,
+        alt: "CiNOPSE India 2026 logo",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "CiNOPSE India 2026",
+    description:
+      "A multidisciplinary CME summit on Sunday, 27 September 2026 at Jawaharlal Nehru Planetarium, Bengaluru.",
+    images: ["/logo.jpg"],
+  },
 };
 
 export default function RootLayout({

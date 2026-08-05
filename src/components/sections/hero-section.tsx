@@ -3,6 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowDown, ArrowRight, CalendarDays, MapPin, Stethoscope } from "lucide-react"
+import { useRegistrationTicketCta } from "@/hooks/use-registration-ticket-cta"
 
 export type HeroMeta = {
   title: string
@@ -82,9 +83,8 @@ export function HeroSection({
   specialties,
   stripItems,
 }: HeroSectionProps) {
-  function openRegistration() {
-    window.dispatchEvent(new Event("cinopse:open-registration"))
-  }
+  const { label: registerCtaLabel, openRegistrationOrTicket } =
+    useRegistrationTicketCta()
 
   return (
     <>
@@ -197,10 +197,10 @@ export function HeroSection({
             <div className="mt-[34px] flex translate-y-3.5 flex-wrap justify-center gap-4 opacity-0 animate-[fadeRise_.9s_cubic-bezier(.22,.9,.18,1)_1.8s_forwards] min-[921px]:justify-start">
               <button
                 type="button"
-                onClick={openRegistration}
+                onClick={openRegistrationOrTicket}
                 className="group inline-flex items-center gap-2.5 rounded-full bg-[color:var(--cinopse-accent)] px-[30px] py-4 text-[13.5px] leading-none font-medium text-[color:var(--cinopse-primary-deep)] transition-[transform,box-shadow,background] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:bg-[color:var(--cinopse-accent-hi)] hover:shadow-[0_14px_30px_rgba(217,164,65,.4)]"
               >
-                {ctaLabel}
+                {registerCtaLabel || ctaLabel}
                 <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
               </button>
               <Link

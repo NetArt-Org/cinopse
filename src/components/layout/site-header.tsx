@@ -7,7 +7,7 @@ import { ChevronDown, LogOut, UserRound } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
 import { MobileNavigation } from "@/components/layout/mobile-navigation"
-import { useGoogleAuthUser } from "@/hooks/use-google-auth-user"
+import { useRegistrationTicketCta } from "@/hooks/use-registration-ticket-cta"
 
 export type NavItem = {
   label: string
@@ -26,9 +26,12 @@ function GoogleAvatar({ photoUrl }: { photoUrl: string }) {
   }
 
   return (
-    <img
+    <Image
       src={photoUrl}
       alt=""
+      width={32}
+      height={32}
+      unoptimized
       referrerPolicy="no-referrer"
       onError={() => setFailed(true)}
       className="size-8 rounded-full object-cover"
@@ -42,7 +45,11 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
   const [progress, setProgress] = useState(0)
   const [accountOpen, setAccountOpen] = useState(false)
   const accountMenuRef = useRef<HTMLDivElement>(null)
-  const googleUser = useGoogleAuthUser()
+  const {
+    googleUser,
+    label: registerCtaLabel,
+    openRegistrationOrTicket,
+  } = useRegistrationTicketCta()
 
   useEffect(() => {
     const onScroll = () => {
@@ -77,10 +84,6 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
       document.removeEventListener("keydown", closeOnEscape)
     }
   }, [])
-
-  function openRegistration() {
-    window.dispatchEvent(new Event("cinopse:open-registration"))
-  }
 
   async function handleLogout() {
     const { signOutGoogle } = await import("@/lib/firebase-client")
@@ -153,10 +156,10 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
               })}
               <button
                 type="button"
-                onClick={openRegistration}
+                onClick={openRegistrationOrTicket}
                 className="group inline-flex items-center gap-2 rounded-full bg-[color:var(--cinopse-accent)] px-[22px] py-3 text-xs leading-none font-medium whitespace-nowrap text-[color:var(--cinopse-primary-deep)] shadow-[0_4px_14px_rgba(6,26,58,0.25)] transition-[transform,box-shadow,background] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:bg-[color:var(--cinopse-accent-hi)] hover:shadow-[0_10px_22px_rgba(217,164,65,0.4)]"
               >
-                Register Now
+                {registerCtaLabel}
                 <span className="transition-transform duration-300 group-hover:translate-x-1">
                   →
                 </span>
@@ -215,7 +218,11 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
             </div>
 
             <div className="xl:hidden">
-              <MobileNavigation items={items} onRegister={openRegistration} />
+              <MobileNavigation
+                items={items}
+                onRegister={openRegistrationOrTicket}
+                registerLabel={registerCtaLabel}
+              />
             </div>
           </div>
         </nav>

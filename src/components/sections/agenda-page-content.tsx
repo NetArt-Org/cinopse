@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { ArrowRight } from "lucide-react"
+import { useRegistrationTicketCta } from "@/hooks/use-registration-ticket-cta"
 
 export type AgendaSession = {
   number?: string
@@ -36,16 +37,14 @@ export type AgendaPageContentProps = {
   days: AgendaDay[]
 }
 
-function openRegistration() {
-  window.dispatchEvent(new Event("cinopse:open-registration"))
-}
-
 function isBreak(item: AgendaBlock | AgendaBreak): item is AgendaBreak {
   return "kind" in item
 }
 
 export function AgendaPageContent({ days }: AgendaPageContentProps) {
   const [activeDay, setActiveDay] = useState(0)
+  const { label: registerCtaLabel, openRegistrationOrTicket } =
+    useRegistrationTicketCta()
 
   return (
     <>
@@ -192,10 +191,10 @@ export function AgendaPageContent({ days }: AgendaPageContentProps) {
             </div>
             <button
               type="button"
-              onClick={openRegistration}
+              onClick={openRegistrationOrTicket}
               className="inline-flex items-center gap-2.5 rounded-full bg-[color:var(--cinopse-accent)] px-7 py-[15px] text-[13px] leading-none font-medium text-[color:var(--cinopse-primary-deep)] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(217,164,65,.4)]"
             >
-              Register Now
+              {registerCtaLabel}
               <ArrowRight className="size-4" aria-hidden="true" />
             </button>
           </div>

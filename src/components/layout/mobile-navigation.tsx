@@ -12,9 +12,11 @@ import type { NavItem } from "@/components/layout/site-header"
 export function MobileNavigation({
   items,
   onRegister,
+  registerLabel = "Register Now",
 }: {
   items: NavItem[]
   onRegister: () => void
+  registerLabel?: string
 }) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
@@ -131,7 +133,7 @@ export function MobileNavigation({
             onClick={handleRegister}
             className="m-nav-link mt-7 inline-flex items-center justify-center gap-2 rounded-full bg-[color:var(--cinopse-accent)] px-6 py-3 text-sm font-medium text-[color:var(--cinopse-primary-deep)]"
           >
-            Register Now
+            {registerLabel}
             <span aria-hidden="true">→</span>
           </button>
         </nav>

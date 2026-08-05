@@ -1,10 +1,12 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import Link from "next/link"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { ReactNode } from "react"
 import { createPortal } from "react-dom"
 import { ArrowRight, Check, X } from "lucide-react"
 import { GoogleIcon } from "@/components/icons/google-icon"
+import { useRegistrationTicketCta } from "@/hooks/use-registration-ticket-cta"
 import {
   calculateRegistrationTotal,
   getRegistrationAmount,
@@ -138,6 +140,8 @@ export function RegistrationPriceComparison({
   const [now, setNow] = useState(initialNow)
   const [modalOpen, setModalOpen] = useState(false)
   const [activeView, setActiveView] = useState<"wizard" | "login">("wizard")
+  const [statusOnlyView, setStatusOnlyView] = useState(false)
+  const [statusOnlyLoading, setStatusOnlyLoading] = useState(false)
   const [step, setStep] = useState(1)
   const [selectedCategory, setSelectedCategory] = useState(-1)
   const [form, setForm] = useState<WizardForm>(initialForm)
@@ -161,12 +165,17 @@ export function RegistrationPriceComparison({
     password: "",
   })
   const [authError, setAuthError] = useState("")
+  const autoCheckRequested = useRef(false)
   const firebaseUnsubscribe = useRef<(() => void) | null>(null)
 
   const deadline = useMemo(() => new Date(eventDate).getTime(), [eventDate])
   const start = initialNow
   const countdown = useCountdown(deadline, now)
   const progress = Math.min(Math.max(((now - start) / (deadline - start)) * 100, 0), 100)
+  const {
+    label: registerCtaLabel,
+    openRegistrationOrTicket,
+  } = useRegistrationTicketCta()
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000)
@@ -179,12 +188,25 @@ export function RegistrationPriceComparison({
 
     const openRegistration = () => {
       setActiveView("wizard")
+      setStatusOnlyView(false)
+      setStatusOnlyLoading(false)
+      setModalOpen(true)
+    }
+    const openTicketStatus = () => {
+      setActiveView("login")
+      setLookupResult(null)
+      setStatusOnlyView(true)
+      setStatusOnlyLoading(true)
+      autoCheckRequested.current = true
       setModalOpen(true)
     }
 
     window.addEventListener("cinopse:open-registration", openRegistration)
-    return () =>
+    window.addEventListener("cinopse:view-ticket", openTicketStatus)
+    return () => {
       window.removeEventListener("cinopse:open-registration", openRegistration)
+      window.removeEventListener("cinopse:view-ticket", openTicketStatus)
+    }
   }, [dialogOnly])
 
   useEffect(() => {
@@ -243,6 +265,8 @@ export function RegistrationPriceComparison({
     setForm(initialForm)
     setErrors({})
     setLookupResult(null)
+    setStatusOnlyView(false)
+    setStatusOnlyLoading(false)
     setCouponInput("")
     setAppliedCoupon(null)
     setCouponError("")
@@ -408,6 +432,7 @@ export function RegistrationPriceComparison({
         }
 
         setRegistrationId(payload.registration.name)
+        window.dispatchEvent(new Event("cinopse:registration-updated"))
         setErrors({})
         setStep(4)
       } catch (error) {
@@ -426,7 +451,7 @@ export function RegistrationPriceComparison({
     closeModal()
   }
 
-  async function checkRegistration() {
+  const checkRegistration = useCallback(async function checkRegistration() {
     setIsCheckingRegistration(true)
     setLookupResult(null)
 
@@ -504,7 +529,22 @@ export function RegistrationPriceComparison({
     } finally {
       setIsCheckingRegistration(false)
     }
-  }
+  }, [googleProfile])
+
+  useEffect(() => {
+    if (!dialogOnly || !modalOpen || activeView !== "login") return
+    if (!autoCheckRequested.current || !googleProfile || isCheckingRegistration) return
+
+    autoCheckRequested.current = false
+    void checkRegistration().finally(() => setStatusOnlyLoading(false))
+  }, [
+    activeView,
+    checkRegistration,
+    dialogOnly,
+    googleProfile,
+    isCheckingRegistration,
+    modalOpen,
+  ])
 
   const foundLookup = lookupResult?.state === "found" ? lookupResult : null
 
@@ -514,7 +554,7 @@ export function RegistrationPriceComparison({
       <div className="mx-auto max-w-none">
         <div
           data-reveal
-          className="relative z-10 mx-auto mb-7 grid max-w-[430px] grid-cols-3 rounded-full border border-white/15 bg-white/10 p-[5px]"
+          className="relative z-10 mx-auto mb-7 grid max-w-[430px] grid-cols-3 rounded-full border border-white/15 bg-white/10 p-[5px] sm:max-w-[540px]"
         >
           <span
             className={`absolute top-[5px] bottom-[5px] left-[5px] w-[calc(33.333%-3.33px)] rounded-full bg-white shadow-[0_3px_12px_rgba(6,26,58,0.25)] transition-transform duration-500 ease-[cubic-bezier(.22,.9,.18,1)] ${
@@ -530,7 +570,7 @@ export function RegistrationPriceComparison({
               key={item}
               type="button"
               onClick={() => setAudience(index)}
-              className={`relative rounded-full px-1 py-3 text-xs leading-none font-medium transition-colors duration-300 sm:text-[12px] ${
+              className={`relative min-w-0 rounded-full px-1 py-3 text-[10px] leading-none font-medium whitespace-nowrap transition-colors duration-300 min-[380px]:text-[10.5px] sm:text-[12px] ${
                 audience === index
                   ? "text-[color:var(--cinopse-primary)]"
                   : "text-white/70 hover:text-white"
@@ -625,10 +665,10 @@ export function RegistrationPriceComparison({
           </div>
           <button
             type="button"
-            onClick={() => window.dispatchEvent(new Event("cinopse:open-registration"))}
+            onClick={openRegistrationOrTicket}
             className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-white px-9 py-4 text-[12.5px] leading-none font-medium text-[color:var(--cinopse-primary)] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(0,0,0,0.28)]"
           >
-            {ctaLabel}
+            {registerCtaLabel || ctaLabel}
             <ArrowRight className="size-4" aria-hidden="true" />
           </button>
         </div>
@@ -747,9 +787,65 @@ export function RegistrationPriceComparison({
             ) : foundLookup ? (
               <RegistrationStatusDetails
                 details={foundLookup}
-                onBack={() => setLookupResult(null)}
+                onBack={() => {
+                  if (statusOnlyView) {
+                    closeModal()
+                  } else {
+                    setLookupResult(null)
+                  }
+                }}
                 onClose={closeModal}
+                showBack={!statusOnlyView}
               />
+            ) : statusOnlyView ? (
+              <section
+                data-wizard-step
+                aria-labelledby="ticket-status-title"
+                className="py-12 text-center animate-[swapIn_0.4s_cubic-bezier(.22,.9,.18,1)]"
+              >
+                <div className="mx-auto mb-5 grid size-14 place-items-center rounded-full bg-[color:var(--cinopse-cream)] text-[color:var(--cinopse-primary)]">
+                  {isCheckingRegistration || statusOnlyLoading ? (
+                    <span className="size-5 animate-spin rounded-full border-2 border-[color:var(--cinopse-border)] border-t-[color:var(--cinopse-primary)]" />
+                  ) : (
+                    <Check className="size-6" aria-hidden="true" />
+                  )}
+                </div>
+                <h3
+                  id="ticket-status-title"
+                  className="font-display m-0 text-xl leading-tight font-semibold text-[color:var(--cinopse-primary)]"
+                >
+                  {isCheckingRegistration || statusOnlyLoading
+                    ? "Loading your ticket"
+                    : "Registration status"}
+                </h3>
+                <p className="mx-auto mt-3 max-w-sm text-xs leading-5 font-light text-[color:var(--cinopse-muted)]">
+                  {lookupResult?.state === "missing"
+                    ? lookupResult.message
+                    : "Checking the registration linked to your current login."}
+                </p>
+                {lookupResult?.state === "missing" ? (
+                  <div className="mt-6 flex justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatusOnlyView(false)
+                        setActiveView("wizard")
+                        setLookupResult(null)
+                      }}
+                      className="inline-flex items-center justify-center rounded-full bg-[color:var(--cinopse-primary)] px-5 py-2.5 text-[13px] leading-none font-medium text-white transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(27,75,150,0.35)]"
+                    >
+                      Register Now
+                    </button>
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="inline-flex items-center justify-center rounded-full bg-[color:var(--cinopse-cream)] px-5 py-2.5 text-[13px] leading-none font-medium text-[color:var(--cinopse-text-secondary)] transition-colors hover:bg-[#e2dfd8]"
+                    >
+                      Close
+                    </button>
+                  </div>
+                ) : null}
+              </section>
             ) : (
               <>
             <div className="mr-9 mb-5 grid grid-cols-2 rounded-full bg-[color:var(--cinopse-cream)] p-1">
@@ -832,8 +928,8 @@ export function RegistrationPriceComparison({
                               : "border-[color:var(--cinopse-border)]"
                           }`}
                         >
-                          <span>
-                            <b className="block text-[13.5px] leading-5 font-medium text-[color:var(--cinopse-ink)]">
+                          <span className="min-w-0">
+                            <b className="block text-[13.5px] leading-5 font-medium whitespace-nowrap text-[color:var(--cinopse-ink)]">
                               {item}
                             </b>
                             <i className="mt-0.5 block text-[10.5px] leading-4 font-light text-[color:var(--cinopse-muted)] not-italic">
@@ -1034,21 +1130,21 @@ export function RegistrationPriceComparison({
                             <span
                               className={`text-[11px] ${
                                 label === "Total"
-                                  ? "font-semibold text-[color:var(--cinopse-ink)]"
+                                  ? "text-[15px] font-bold text-[color:var(--cinopse-ink)] sm:text-base"
                                   : "font-medium text-[color:var(--cinopse-text-secondary)]"
                               }`}
                             >
                               {label}
                             </span>
-                            <b
+                            <span
                               className={`font-display ${
                                 label === "Total"
-                                  ? "text-xl font-bold text-[color:var(--cinopse-primary)]"
-                                  : "text-sm text-[color:var(--cinopse-ink)]"
+                                  ? "text-lg font-bold text-[color:var(--cinopse-primary)] sm:text-xl"
+                                  : "text-sm font-normal text-[color:var(--cinopse-ink)]"
                               }`}
                             >
                               {value}
-                            </b>
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -1064,7 +1160,14 @@ export function RegistrationPriceComparison({
                         className="mt-1 size-4 rounded border-[color:var(--cinopse-border)] accent-[color:var(--cinopse-primary)]"
                       />
                       <span>
-                        I agree to terms and conditions{" "}
+                        I agree to{" "}
+                        <Link
+                          href="/terms-and-conditions"
+                          target="_blank"
+                          className="font-medium text-[color:var(--cinopse-primary)] underline underline-offset-2"
+                        >
+                          terms and conditions
+                        </Link>{" "}
                         <span className="text-red-600" aria-hidden="true">
                           *
                         </span>
@@ -1187,10 +1290,12 @@ function RegistrationStatusDetails({
   details,
   onBack,
   onClose,
+  showBack = true,
 }: {
   details: RegistrationLookupDetails
   onBack: () => void
   onClose: () => void
+  showBack?: boolean
 }) {
   const paymentItems = [
     ["Amount", details.amount],
@@ -1282,13 +1387,17 @@ function RegistrationStatusDetails({
       </div>
 
       <div className="mt-4 flex flex-col-reverse justify-between gap-3 sm:flex-row">
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex items-center justify-center rounded-full bg-[color:var(--cinopse-cream)] px-5 py-2.5 text-[13px] leading-none font-medium text-[color:var(--cinopse-text-secondary)] transition-colors hover:bg-[#e2dfd8]"
-        >
-          ← Check Status
-        </button>
+        {showBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex items-center justify-center rounded-full bg-[color:var(--cinopse-cream)] px-5 py-2.5 text-[13px] leading-none font-medium text-[color:var(--cinopse-text-secondary)] transition-colors hover:bg-[#e2dfd8]"
+          >
+            ← Check Status
+          </button>
+        ) : (
+          <span aria-hidden="true" />
+        )}
         <button
           type="button"
           onClick={onClose}
