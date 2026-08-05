@@ -41,6 +41,7 @@ type WizardForm = {
   phone?: Value
   city: string
   institution: string
+  medicalCouncilNumber: string
   terms: boolean
 }
 
@@ -56,6 +57,7 @@ type RegistrationLookupDetails = {
   mobile: string
   city: string
   institution: string
+  medicalCouncilNumber: string
   category: string
   amount: string
   registrationStatus: string
@@ -77,7 +79,46 @@ const initialForm: WizardForm = {
   email: "",
   city: "",
   institution: "",
+  medicalCouncilNumber: "",
   terms: false,
+}
+
+type RazorpayPaymentResponse = {
+  razorpay_order_id: string
+  razorpay_payment_id: string
+  razorpay_signature: string
+}
+
+type RazorpayCheckoutOptions = {
+  key: string
+  amount: number
+  currency: string
+  name: string
+  description: string
+  order_id: string
+  prefill: {
+    name: string
+    email: string
+    contact?: string
+  }
+  notes: Record<string, string>
+  theme: {
+    color: string
+  }
+  handler: (response: RazorpayPaymentResponse) => void
+  modal: {
+    ondismiss: () => void
+  }
+}
+
+type RazorpayInstance = {
+  open: () => void
+}
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: RazorpayCheckoutOptions) => RazorpayInstance
+  }
 }
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
@@ -189,6 +230,8 @@ export function RegistrationPriceComparison({
     selectedAmount,
     appliedCoupon ? [appliedCoupon] : [],
   )
+  const confirmButtonLabel =
+    couponTotal.payableAmount > 0 ? "Proceed to Pay →" : "Confirm Registration ✓"
 
   function resetWizard() {
     setStep(1)
@@ -300,15 +343,31 @@ export function RegistrationPriceComparison({
             mobile: form.phone,
             city: form.city,
             hospital: form.institution,
+            medicalCouncilNumber: form.medicalCouncilNumber,
             couponCode: appliedCoupon?.code ?? "",
           }),
         })
         const payload = (await response.json()) as {
           message?: string
           registration?: { name: string }
+          payment?: {
+            keyId: string
+            orderId: string
+            amount: number
+            currency: string
+          } | null
         }
         if (!response.ok || !payload.registration) {
           throw new Error(payload.message || "Unable to save your registration.")
+        }
+
+        if (payload.payment) {
+          await openRazorpayCheckout({
+            idToken,
+            registrationName: payload.registration.name,
+            payment: payload.payment,
+            form,
+          })
         }
 
         setRegistrationId(payload.registration.name)
@@ -350,10 +409,10 @@ export function RegistrationPriceComparison({
           mobile?: string
           city?: string
           hospital?: string
+          custom_medical_council_number?: string
           category: string
           amount: number | string
           status?: string
-          payment_method?: string
           payment_status?: string
           transaction_id?: string
           registration_date?: string
@@ -373,17 +432,22 @@ export function RegistrationPriceComparison({
           mobile: payload.registration.mobile || "",
           city: payload.registration.city || "",
           institution: payload.registration.hospital || "",
+          medicalCouncilNumber: payload.registration.custom_medical_council_number || "",
           category: payload.registration.category,
           amount: formatPrice(payload.registration.amount),
           registrationStatus: payload.registration.status || "Not available",
-          payment: payload.registration.payment_method || "Not updated",
+          payment: "Razorpay",
           paymentStatus: payload.registration.payment_status || "Not updated",
           coupon: formatCouponDetails(
             payload.registration.custom_coupon_code,
             payload.registration.custom_coupon_amount,
             payload.registration.remarks,
           ),
-          transactionId: payload.registration.transaction_id || "Not updated",
+          transactionId: getOnlineTransactionId(
+            payload.registration.transaction_id,
+            payload.registration.payment_status,
+            payload.registration.amount,
+          ),
           registrationDate: formatDisplayDate(payload.registration.registration_date),
         })
       } else {
@@ -748,18 +812,30 @@ export function RegistrationPriceComparison({
                         onChange={(value) => setForm((current) => ({ ...current, city: value }))}
                       />
                     </div>
-                    <Field
-                      id="fInst"
-                      label="Institution / Hospital"
-                      value={form.institution}
-                      placeholder="Hospital or institute"
-                      error={errors.institution}
-                      onChange={(value) =>
-                        setForm((current) => ({ ...current, institution: value }))
-                      }
-                    />
-                  </div>
-                ) : null}
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Field
+                        id="fInst"
+                        label="Institution / Hospital"
+                        value={form.institution}
+                        placeholder="Hospital or institute"
+                        error={errors.institution}
+                        onChange={(value) =>
+                          setForm((current) => ({ ...current, institution: value }))
+                        }
+                      />
+                      <Field
+                        id="fMcn"
+                        label="Medical Council Number (MCN)"
+                        value={form.medicalCouncilNumber}
+                        placeholder="Enter MCN"
+                        error={errors.medicalCouncilNumber}
+                        onChange={(value) =>
+                          setForm((current) => ({ ...current, medicalCouncilNumber: value }))
+                        }
+                      />
+                    </div>
+                    </div>
+                  ) : null}
 
                 {step === 3 ? (
                   <div data-wizard-step className="animate-[swapIn_0.4s_cubic-bezier(.22,.9,.18,1)]">
@@ -773,24 +849,18 @@ export function RegistrationPriceComparison({
                         ["Mobile", form.phone ?? ""],
                         ["City", form.city],
                         ["Institution", form.institution],
+                        ["MCN", form.medicalCouncilNumber],
                         ["Category", selectedLabel],
-                        ["Registration cost", formatPrice(selectedAmount)],
                       ].map(([label, value]) => (
                         <div
                           key={label}
-                          className={`flex min-w-0 items-start justify-between gap-4 border-b border-black/5 py-2.5 last:border-b-0 sm:flex-col sm:justify-start sm:gap-1 ${
-                            label === "Registration cost" ? "sm:col-span-2" : ""
-                          }`}
+                          className="flex min-w-0 items-start justify-between gap-4 border-b border-black/5 py-2.5 last:border-b-0 sm:flex-col sm:justify-start sm:gap-1"
                         >
                           <span className="shrink-0 text-[10px] leading-5 font-medium text-[color:var(--cinopse-muted)] uppercase">
                             {label}
                           </span>
                           <b
-                            className={`min-w-0 truncate text-right text-[13px] leading-5 font-medium text-[color:var(--cinopse-ink)] sm:text-left ${
-                              label === "Registration cost"
-                                ? "font-display text-sm text-[color:var(--cinopse-primary)]"
-                                : ""
-                            }`}
+                            className="min-w-0 truncate text-right text-[13px] leading-5 font-medium text-[color:var(--cinopse-ink)] sm:text-left"
                           >
                             {value}
                           </b>
@@ -843,7 +913,12 @@ export function RegistrationPriceComparison({
                               {appliedCoupon.name}
                             </b>{" "}
                             <span className="text-[color:var(--cinopse-muted)]">
-                              ({appliedCoupon.code}) · −{formatPrice(appliedCoupon.discount)}
+                              ({appliedCoupon.code}) · −
+                              {formatPrice(
+                                appliedCoupon.type === "full"
+                                  ? selectedAmount
+                                  : appliedCoupon.discount,
+                              )}
                             </span>
                           </span>
                           <button
@@ -856,18 +931,42 @@ export function RegistrationPriceComparison({
                           </button>
                         </div>
                       ) : null}
-                      <div className="mt-3 flex items-center justify-between border-t border-[color:var(--cinopse-border)] pt-3">
-                        <span className="text-[11px] font-medium text-[color:var(--cinopse-text-secondary)]">
-                          Payable amount
-                        </span>
-                        <b className="font-display text-lg text-[color:var(--cinopse-primary)]">
-                          {formatPrice(couponTotal.payableAmount)}
-                        </b>
+                      <div className="mt-3 grid gap-2 border-t border-[color:var(--cinopse-border)] pt-3">
+                        {[
+                          ["Subtotal", formatPrice(selectedAmount)],
+                          ["Coupon Discount", `−${formatPrice(couponTotal.discount)}`],
+                          ["Total", formatPrice(couponTotal.payableAmount)],
+                        ].map(([label, value]) => (
+                          <div
+                            key={label}
+                            className={`flex items-center justify-between gap-3 ${
+                              label === "Total"
+                                ? "border-t border-[color:var(--cinopse-border)] pt-2"
+                                : ""
+                            }`}
+                          >
+                            <span
+                              className={`text-[11px] ${
+                                label === "Total"
+                                  ? "font-semibold text-[color:var(--cinopse-ink)]"
+                                  : "font-medium text-[color:var(--cinopse-text-secondary)]"
+                              }`}
+                            >
+                              {label}
+                            </span>
+                            <b
+                              className={`font-display ${
+                                label === "Total"
+                                  ? "text-xl font-bold text-[color:var(--cinopse-primary)]"
+                                  : "text-sm text-[color:var(--cinopse-ink)]"
+                              }`}
+                            >
+                              {value}
+                            </b>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    <p className="mt-3.5 rounded-xl border border-[color:var(--cinopse-border)] bg-white px-4 py-3 text-[10px] leading-4 font-light text-[color:var(--cinopse-faint)]">
-                      Payment instructions will be shared after your registration is reviewed.
-                    </p>
                     <label className="mt-3 flex items-start gap-3 rounded-xl border border-[color:var(--cinopse-border)] bg-white px-4 py-3 text-[11px] leading-5 text-[color:var(--cinopse-text-secondary)]">
                       <input
                         type="checkbox"
@@ -904,7 +1003,7 @@ export function RegistrationPriceComparison({
                     <p className="mt-2.5 text-[9.5px] leading-none font-normal tracking-[0.18em] text-[color:var(--cinopse-muted)] uppercase">
                       Your registration ID
                     </p>
-                    <p className="mt-1 font-mono text-2xl leading-tight font-semibold tracking-[0.04em] text-[color:var(--cinopse-primary)]">
+                    <p className="font-display mt-1 text-2xl leading-tight font-semibold text-[color:var(--cinopse-primary)]">
                       {registrationId}
                     </p>
                     <p className="mt-3.5 text-center text-[10px] leading-4 font-light text-[color:var(--cinopse-faint)]">
@@ -929,12 +1028,12 @@ export function RegistrationPriceComparison({
                     disabled={isSubmitting}
                     className="inline-flex items-center justify-center rounded-full bg-[color:var(--cinopse-primary)] px-6 py-3 text-[12.5px] leading-none font-medium text-white transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(27,75,150,0.35)] disabled:cursor-wait disabled:opacity-70"
                   >
-                    {isSubmitting
-                      ? "Saving…"
-                      : step === 3
-                      ? "Confirm Registration ✓"
-                      : step === 4
-                        ? "Done"
+	                    {isSubmitting
+	                      ? "Saving…"
+	                      : step === 3
+	                      ? confirmButtonLabel
+	                      : step === 4
+	                        ? "Done"
                         : "Continue →"}
                   </button>
                 </div>
@@ -1007,6 +1106,14 @@ function RegistrationStatusDetails({
   onBack: () => void
   onClose: () => void
 }) {
+  const paymentItems = [
+    ["Amount", details.amount],
+    ["Payment", details.payment],
+    ["Payment status", details.paymentStatus],
+    ["Coupon", details.coupon],
+    ...(details.transactionId ? [["Transaction ID", details.transactionId]] : []),
+  ]
+
   const detailSections = [
     {
       title: "Registration Details",
@@ -1024,18 +1131,13 @@ function RegistrationStatusDetails({
         ["Email", details.email],
         ["Mobile", details.mobile],
         ["City", details.city],
+        ["MCN", details.medicalCouncilNumber],
         ["Institution / Hospital", details.institution],
       ],
     },
     {
       title: "Payment Details",
-      items: [
-        ["Amount", details.amount],
-        ["Payment", details.payment],
-        ["Payment status", details.paymentStatus],
-        ["Coupon", details.coupon],
-        ["Transaction ID", details.transactionId],
-      ],
+      items: paymentItems,
     },
   ]
 
@@ -1111,6 +1213,109 @@ function RegistrationStatusDetails({
       </div>
     </section>
   )
+}
+
+async function loadRazorpayCheckout() {
+  if (window.Razorpay) return
+
+  await new Promise<void>((resolve, reject) => {
+    const existingScript = document.querySelector<HTMLScriptElement>(
+      'script[src="https://checkout.razorpay.com/v1/checkout.js"]',
+    )
+
+    if (existingScript) {
+      existingScript.addEventListener("load", () => resolve(), { once: true })
+      existingScript.addEventListener("error", () => reject(new Error("Unable to load Razorpay Checkout.")), { once: true })
+      return
+    }
+
+    const script = document.createElement("script")
+    script.src = "https://checkout.razorpay.com/v1/checkout.js"
+    script.async = true
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error("Unable to load Razorpay Checkout."))
+    document.body.appendChild(script)
+  })
+
+  if (!window.Razorpay) {
+    throw new Error("Razorpay Checkout is unavailable.")
+  }
+}
+
+async function openRazorpayCheckout({
+  idToken,
+  registrationName,
+  payment,
+  form,
+}: {
+  idToken: string
+  registrationName: string
+  payment: {
+    keyId: string
+    orderId: string
+    amount: number
+    currency: string
+  }
+  form: WizardForm
+}) {
+  await loadRazorpayCheckout()
+
+  await new Promise<void>((resolve, reject) => {
+    const Razorpay = window.Razorpay
+    if (!Razorpay) {
+      reject(new Error("Razorpay Checkout is unavailable."))
+      return
+    }
+
+    const checkout = new Razorpay({
+      key: payment.keyId,
+      amount: payment.amount,
+      currency: payment.currency,
+      name: "CiNOPSE India 2026",
+      description: "Conference registration",
+      order_id: payment.orderId,
+      prefill: {
+        name: form.name,
+        email: form.email,
+        contact: form.phone,
+      },
+      notes: {
+        registration: registrationName,
+        mcn: form.medicalCouncilNumber,
+      },
+      theme: {
+        color: "#1E4F9C",
+      },
+      handler: (razorpayResponse) => {
+        void fetch("/api/registrations/razorpay/verify", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            registrationName,
+            razorpay_order_id: razorpayResponse.razorpay_order_id,
+            razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+            razorpay_signature: razorpayResponse.razorpay_signature,
+          }),
+        })
+          .then(async (response) => {
+            const payload = (await response.json()) as { message?: string }
+            if (!response.ok) {
+              throw new Error(payload.message || "Unable to verify payment.")
+            }
+            resolve()
+          })
+          .catch(reject)
+      },
+      modal: {
+        ondismiss: () => reject(new Error("Payment was not completed.")),
+      },
+    })
+
+    checkout.open()
+  })
 }
 
 function Field({
@@ -1236,6 +1441,9 @@ function validateDetails(form: WizardForm) {
   if (!form.institution.trim()) {
     nextErrors.institution = "Please enter your institution or hospital."
   }
+  if (!form.medicalCouncilNumber.trim()) {
+    nextErrors.medicalCouncilNumber = "Please enter your Medical Council Number."
+  }
 
   return nextErrors
 }
@@ -1317,4 +1525,22 @@ function formatCouponDetails(
   }
 
   return getCouponFromRemarks(remarks)
+}
+
+function getOnlineTransactionId(
+  transactionId?: string,
+  paymentStatus?: string,
+  amount?: number | string,
+) {
+  const numericAmount = typeof amount === "number" ? amount : Number(amount || 0)
+
+  if (
+    transactionId?.trim() &&
+    paymentStatus === "Success" &&
+    numericAmount > 0
+  ) {
+    return transactionId.trim()
+  }
+
+  return ""
 }

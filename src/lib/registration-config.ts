@@ -7,6 +7,7 @@ export type RegistrationCoupon = {
   name: string
   code: string
   discount: number
+  type?: "fixed" | "full"
 }
 
 export const registrationCategories: RegistrationCategory[] = [
@@ -17,14 +18,15 @@ export const registrationCategories: RegistrationCategory[] = [
 
 export const registrationCoupons: RegistrationCoupon[] = [
   {
-    name: "Sample welcome discount",
-    code: "CINOPSE100",
-    discount: 100,
-  },
-  {
     name: "Sample academic discount",
     code: "ACADEMIC250",
-    discount: 250,
+    discount: 499,
+  },
+  {
+    name: "Full registration waiver",
+    code: "CINOPSE100OFF",
+    discount: 0,
+    type: "full",
   },
 ]
 
@@ -44,9 +46,13 @@ export function resolveRegistrationCoupon(code: string) {
 }
 
 export function calculateRegistrationTotal(baseAmount: number, coupons: RegistrationCoupon[]) {
-  const discount = coupons.reduce((total, coupon) => total + coupon.discount, 0)
+  const discount = coupons.reduce(
+    (total, coupon) =>
+      total + (coupon.type === "full" ? baseAmount : coupon.discount),
+    0,
+  )
   return {
-    discount,
+    discount: Math.min(discount, baseAmount),
     payableAmount: Math.max(baseAmount - discount, 0),
   }
 }

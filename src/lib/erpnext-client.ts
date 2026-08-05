@@ -14,12 +14,12 @@ export type ErpRegistration = {
   email?: string
   city?: string
   hospital?: string
-  payment_method?: string
-  payment_date?: string | null
+  payment_date?: string
   transaction_id?: string
   remarks?: string
   custom_coupon_amount?: number | string
   custom_coupon_code?: string
+  custom_medical_council_number?: string
 }
 
 type ErpResponse<T> = {
@@ -52,14 +52,47 @@ async function erpRequest<T>(path: string, init?: RequestInit) {
   })
 
   if (!response.ok) {
+    const errorBody = await response.text().catch(() => "")
+    const errorMessage = extractErpErrorMessage(errorBody)
     throw new Error(
       response.status === 401 || response.status === 403
         ? "ERPNext rejected the API credentials or DocType permissions."
-        : `ERPNext request failed with status ${response.status}.`,
+        : `ERPNext request failed with status ${response.status}${errorMessage ? `: ${errorMessage}` : "."}`,
     )
   }
 
   return (await response.json()) as ErpResponse<T>
+}
+
+function extractErpErrorMessage(body: string) {
+  if (!body) return ""
+
+  try {
+    const payload = JSON.parse(body) as {
+      exception?: string
+      exc_type?: string
+      message?: string
+      _server_messages?: string
+    }
+    if (payload._server_messages) {
+      const messages = JSON.parse(payload._server_messages) as string[]
+      const parsedMessages = messages
+        .map((message) => {
+          try {
+            const parsed = JSON.parse(message) as { message?: string }
+            return parsed.message
+          } catch {
+            return message
+          }
+        })
+        .filter(Boolean)
+      if (parsedMessages.length) return parsedMessages.join(" ")
+    }
+
+    return payload.message || payload.exception || payload.exc_type || body
+  } catch {
+    return body
+  }
 }
 
 export async function createErpRegistration(
@@ -69,20 +102,43 @@ export async function createErpRegistration(
     city: string
     hospital: string
     remarks: string
-    payment_method: string
-    payment_date: string | null
+    payment_date: string
     transaction_id: string
     uid: string
     google_name: string
     google_email: string
     custom_coupon_amount: number
     custom_coupon_code: string
+    custom_medical_council_number: string
   },
 ) {
   const response = await erpRequest<ErpRegistration>(
     `/api/resource/${encodeURIComponent(registrationDocType)}`,
     {
       method: "POST",
+      body: JSON.stringify(registration),
+    },
+  )
+
+  return response.data
+}
+
+export async function getErpRegistration(name: string) {
+  const response = await erpRequest<ErpRegistration>(
+    `/api/resource/${encodeURIComponent(registrationDocType)}/${encodeURIComponent(name)}`,
+  )
+
+  return response.data
+}
+
+export async function updateErpRegistration(
+  name: string,
+  registration: Partial<ErpRegistration>,
+) {
+  const response = await erpRequest<ErpRegistration>(
+    `/api/resource/${encodeURIComponent(registrationDocType)}/${encodeURIComponent(name)}`,
+    {
+      method: "PUT",
       body: JSON.stringify(registration),
     },
   )
@@ -104,12 +160,12 @@ export async function findErpRegistrationByGoogleEmail(email: string) {
       "email",
       "city",
       "hospital",
-      "payment_method",
       "payment_date",
       "transaction_id",
       "remarks",
       "custom_coupon_amount",
       "custom_coupon_code",
+      "custom_medical_council_number",
     ]),
     filters: JSON.stringify([["google_email", "=", email]]),
     order_by: "creation desc",

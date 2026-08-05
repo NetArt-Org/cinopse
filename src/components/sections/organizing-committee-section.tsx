@@ -1,3 +1,7 @@
+"use client"
+
+import { useState } from "react"
+
 export type CommitteeLeader = {
   initials: string
   name: string
@@ -27,6 +31,8 @@ export function OrganizingCommitteeSection({
   leaders,
   members,
 }: OrganizingCommitteeSectionProps) {
+  const [expandedLeader, setExpandedLeader] = useState("")
+
   return (
     <section
       id="leadership"
@@ -56,14 +62,25 @@ export function OrganizingCommitteeSection({
           data-reveal-group
           className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3"
         >
-          {leaders.map((leader) => (
-            <article
-              key={leader.name}
-              tabIndex={0}
-              data-reveal="scale"
-              className="group/leader relative outline-none [perspective:1400px]"
-            >
-              <div className="relative h-[360px] transition-transform duration-[850ms] ease-[cubic-bezier(.22,.9,.18,1)] [transform-style:preserve-3d] group-hover/leader:[transform:rotateY(180deg)] group-focus-within/leader:[transform:rotateY(180deg)] sm:h-[390px] lg:h-[400px]">
+          {leaders.map((leader) => {
+            const messageParagraphs =
+              leader.message?.split(/\n{2,}/).filter(Boolean) ?? []
+            const isExpanded = expandedLeader === leader.name
+
+            return (
+              <article
+                key={leader.name}
+                tabIndex={0}
+                data-reveal="scale"
+                className="group/leader relative outline-none [perspective:1400px]"
+                onMouseLeave={() => setExpandedLeader((current) => current === leader.name ? "" : current)}
+                onBlur={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget)) {
+                    setExpandedLeader((current) => current === leader.name ? "" : current)
+                  }
+                }}
+              >
+              <div className="relative h-[430px] transition-transform duration-[850ms] ease-[cubic-bezier(.22,.9,.18,1)] [transform-style:preserve-3d] group-hover/leader:[transform:rotateY(180deg)] group-focus-within/leader:[transform:rotateY(180deg)] sm:h-[450px] lg:h-[460px]">
                 <div className="absolute inset-0 flex flex-col items-center overflow-hidden rounded-[18px] bg-[color:var(--cinopse-cream)] px-6 pt-9 pb-[22px] text-center shadow-[0_8px_24px_rgba(12,40,84,0.08)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-[image:linear-gradient(90deg,var(--cinopse-accent),var(--cinopse-accent-hi))]">
                   <div
                     data-spin-ring
@@ -86,13 +103,37 @@ export function OrganizingCommitteeSection({
                 </div>
 
                 <div className="absolute inset-0 flex flex-col overflow-hidden rounded-[18px] bg-[image:var(--cinopse-gradient-reference-blue)] px-6 py-6 text-left text-white shadow-[0_20px_44px_rgba(12,40,84,0.30)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)]">
-                  <span className="font-display text-[42px] font-bold leading-[0.6] text-[color:var(--cinopse-accent)]">
+                  <span className="font-display text-[34px] font-bold leading-[0.45] text-[color:var(--cinopse-accent)]">
                     “
                   </span>
                   {leader.message ? (
-                    <p className="m-0 mt-2 text-[11.6px] leading-[1.68] font-light text-white/90">
-                      {leader.message}
-                    </p>
+                    <>
+                      <div
+                        className={`mt-0.5 text-[10.8px] leading-[1.55] font-light text-white/90 ${
+                          isExpanded
+                            ? "max-h-[286px] overflow-auto pr-2 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/25 [&::-webkit-scrollbar-track]:bg-transparent"
+                            : "max-h-[255px] overflow-hidden"
+                        }`}
+                      >
+                        {messageParagraphs.map((paragraph) => (
+                          <p key={paragraph} className="m-0 mb-2.5 last:mb-0">
+                            {paragraph}
+                          </p>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          setExpandedLeader((current) =>
+                            current === leader.name ? "" : leader.name,
+                          )
+                        }}
+                        className="mt-3 mb-2 self-start rounded-full border border-white/20 px-3 py-1.5 text-[10px] leading-none font-medium text-[color:var(--cinopse-accent)] transition-colors hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--cinopse-accent)]"
+                      >
+                        {isExpanded ? "Read less" : "Read more"}
+                      </button>
+                    </>
                   ) : null}
                   <div className="mt-auto border-t border-white/15 pt-3">
                     <b className="font-display block text-sm leading-5 font-semibold text-[color:var(--cinopse-accent)]">
@@ -104,8 +145,9 @@ export function OrganizingCommitteeSection({
                   </div>
                 </div>
               </div>
-            </article>
-          ))}
+              </article>
+            )
+          })}
         </div>
 
         <div

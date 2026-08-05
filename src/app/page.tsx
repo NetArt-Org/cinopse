@@ -76,6 +76,30 @@ const hero: HeroSectionProps = {
   ],
 }
 
+const founderMessage = `Medicine is evolving at an unprecedented pace. Every year, new evidence, updated clinical guidelines, and innovative therapies reshape the way we diagnose and treat disease. Yet one challenge remains—our patients do not live within the boundaries of a single specialty. Their care demands collaboration, shared expertise, and a unified approach.
+
+This vision gave birth to CiNOPSE.
+
+CiNOPSE was founded with a simple yet ambitious purpose: to create a world-class multidisciplinary platform where knowledge is shared without boundaries and where every discussion ultimately serves one goal—better patient care. We believe that when cardiologists, neurologists, nephrologists, pulmonologists, endocrinologists, obesity specialists, sleep physicians, and other healthcare professionals learn together, they deliver better outcomes together.
+
+At CiNOPSE, our scientific programme is built upon the latest international clinical guidelines, landmark research, and evidence-based recommendations from leading medical societies across the world. However, medicine is more than published evidence. It is also the wisdom gained through years of clinical practice. CiNOPSE therefore provides a platform where distinguished experts share not only what the guidelines recommend, but also how they apply those recommendations in real-world patient care. It is this integration of scientific evidence and clinical experience that transforms knowledge into better decision-making.
+
+Our commitment extends beyond today’s clinicians. We aspire to inspire the next generation of physicians by creating an environment where young doctors, postgraduate trainees, researchers, and academicians can learn directly from experienced leaders, exchange ideas, ask questions, and build the confidence to lead the future of healthcare.
+
+CiNOPSE is more than a medical conference—it is a growing academic community driven by curiosity, collaboration, innovation, and excellence. Every session, every discussion, and every interaction is designed to strengthen multidisciplinary thinking and advance the standards of patient care.
+
+As we continue this journey, I warmly invite you to become a part of CiNOPSE. Together, let us challenge conventional boundaries, embrace lifelong learning, and shape a future where collaboration is the foundation of exceptional healthcare.
+
+One Place. One Agenda. One Vision. Infinite Possibilities.`
+
+const cfoMessage = `Medicine is advancing rapidly, and every new guideline, therapy, and technology reinforces the need for multidisciplinary collaboration. CiNOPSE was created to bring specialists together on one platform where knowledge, experience, and innovation converge to improve patient outcomes. Our scientific programmes are grounded in global evidence and strengthened by real-world clinical insight, ensuring learning translates into practical bedside decision-making. As CFO, I believe academic excellence must be matched by financial discipline, transparent governance, and efficient resource allocation so every initiative delivers measurable value. CiNOPSE is committed to a sustainable model that supports high-quality education, broad participation, and long-term growth without compromising accessibility or impact. We also have a responsibility to nurture young clinicians and researchers, as investing in future leaders is essential to strengthening healthcare systems. I warmly invite you to join CiNOPSE as we combine collaboration, stewardship, and innovation to shape a future where better care is both clinically excellent and sustainably delivered. Together, we can build a stronger and more connected healthcare community.
+
+One Place. One Agenda. One Vision. Infinite Possibilities.`
+
+const cooMessage = `Medicine is evolving rapidly, driven by scientific discovery, technological innovation, and continuously updated clinical evidence. CiNOPSE was established to create a multidisciplinary platform where these advances are translated into meaningful improvements in patient care through collaboration across specialties. Our scientific programmes are developed around internationally recognized clinical guidelines, landmark research, and the collective expertise of distinguished clinicians. By combining evidence-based medicine with real-world clinical experience, we aim to bridge the gap between knowledge and practice. CiNOPSE also serves as a platform to mentor and inspire the next generation of healthcare professionals by facilitating learning from experienced experts and academic leaders. We are committed to fostering innovation, lifelong learning, and partnerships that strengthen healthcare delivery. Together, we can build a future where multidisciplinary collaboration becomes the foundation of clinical excellence. I warmly invite you to be a part of CiNOPSE and join us in shaping the future of medicine.
+
+One Place. One Agenda. One Vision. Infinite Possibilities.`
+
 const committee = {
   eyebrow: "Leadership",
   title: "Organizing Committee",
@@ -87,24 +111,21 @@ const committee = {
       name: "Dr. Santosh K M",
       role: "Founder & CEO",
       affiliation: "Organising Chairman · Narayana Health City",
-      message:
-        "Our patients do not live within the boundaries of a single specialty — their care demands collaboration, shared expertise, and a unified approach. This vision gave birth to CINOPSE: a world-class multidisciplinary platform where knowledge is shared without boundaries, and every discussion serves one goal — better patient care.",
+      message: founderMessage,
     },
     {
       initials: "VB",
       name: "Dr. Vinod Babu",
       role: "Chief Financial Officer",
       affiliation: "Organising Co-Chairperson · Dr Mohan's Diabetes Centre",
-      message:
-        "Academic excellence must be matched by financial discipline, transparent governance, and efficient resource allocation. CINOPSE is committed to a sustainable model that supports high-quality education, broad participation, and long-term growth — without compromising accessibility or impact.",
+      message: cfoMessage,
     },
     {
       initials: "KS",
       name: "Dr. Karthik S M",
       role: "Chief Operating Officer",
       affiliation: "Organising Treasurer · Apollo Hospitals",
-      message:
-        "By combining evidence-based medicine with real-world clinical experience, we bridge the gap between knowledge and practice — and mentor the next generation of healthcare professionals. Together, we can build a future where multidisciplinary collaboration becomes the foundation of clinical excellence.",
+      message: cooMessage,
     },
   ],
   members: [
@@ -264,8 +285,10 @@ const about = {
   eventLabel: "Sunday · 2026",
   locationLabel: "Bengaluru · India",
   paragraphs: [
-    "CiNOPSE is an independent multidisciplinary medical conference created to foster collaboration, clinical excellence, and continuous professional development across diverse healthcare specialties. It is a dynamic platform where physicians, researchers, academicians, and allied healthcare professionals exchange knowledge and discuss solutions to contemporary clinical challenges.",
-    "The scientific programme combines evidence-based updates, expert perspectives, real-world case discussions, and practical learning — with exposure to recent advances in diagnostics, therapeutics, digital health, and the technologies shaping the future of clinical practice.",
+    "CiNOPSE is an independent multidisciplinary medical conference created to foster collaboration, clinical excellence, and continuous professional development across diverse healthcare specialties. It provides a dynamic platform where physicians, researchers, academicians, and allied healthcare professionals come together to exchange knowledge, share experiences, and discuss solutions to contemporary clinical challenges.",
+    "By encouraging interactions between specialties, CiNOPSE promotes an integrated approach to patient care that reflects the realities of modern medicine. The scientific program combines evidence-based updates, expert perspectives, real-world case discussions, and practical learning opportunities across diagnostics, therapeutics, digital health, and emerging technologies.",
+    "Beyond scientific sessions, CiNOPSE aims to cultivate meaningful professional networks, encourage collaborative research, and inspire innovation across disciplines. Every edition reflects a shared commitment to lifelong learning, ethical medical practice, and the pursuit of excellence in healthcare.",
+    "Built on the philosophy of “One Place, One Agenda, One Vision – Infinite Possibilities,” CiNOPSE strives to connect ideas, expertise, and people to advance multidisciplinary medicine and welcomes healthcare professionals from across the country and beyond.",
   ],
   quote: {
     text: "One Place, One Agenda, One Vision —",

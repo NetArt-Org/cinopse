@@ -3,8 +3,10 @@ import { NextRequest, NextResponse } from "next/server"
 import {
   createErpRegistration,
   findErpRegistrationByGoogleEmail,
+  updateErpRegistration,
 } from "@/lib/erpnext-client"
 import { verifyFirebaseIdToken } from "@/lib/firebase-admin-rest"
+import { createRazorpayOrder } from "@/lib/razorpay-client"
 import {
   calculateRegistrationTotal,
   getRegistrationAmount,
@@ -17,6 +19,7 @@ type RegistrationRequest = {
   mobile?: unknown
   city?: unknown
   hospital?: unknown
+  medicalCouncilNumber?: unknown
   couponCode?: unknown
 }
 
@@ -69,12 +72,24 @@ export async function POST(request: NextRequest) {
     const mobile = typeof body.mobile === "string" ? body.mobile.trim() : ""
     const city = typeof body.city === "string" ? body.city.trim() : ""
     const hospital = typeof body.hospital === "string" ? body.hospital.trim() : ""
+    const medicalCouncilNumber =
+      typeof body.medicalCouncilNumber === "string"
+        ? body.medicalCouncilNumber.trim()
+        : ""
     const amount = getRegistrationAmount(category)
     const erpCategory = erpCategoryByRegistrationCategory[category]
     const couponCode = typeof body.couponCode === "string" ? body.couponCode : ""
     const coupon = resolveRegistrationCoupon(couponCode)
 
-    if (!fullName || !mobile || !city || !hospital || amount === null || !erpCategory) {
+    if (
+      !fullName ||
+      !mobile ||
+      !city ||
+      !hospital ||
+      !medicalCouncilNumber ||
+      amount === null ||
+      !erpCategory
+    ) {
       return badRequest("Please complete all required registration details.")
     }
 
@@ -110,19 +125,63 @@ export async function POST(request: NextRequest) {
         `Coupon discount: ₹${discount}.`,
         coupon ? `Coupon: ${coupon.name} (${coupon.code}).` : "Coupon: none.",
       ].join(" "),
-      payment_method: "",
       amount: payableAmount,
-      payment_date: null,
-      payment_status: "Pending",
+      payment_date: payableAmount > 0 ? "" : toErpDate(),
+      payment_status: payableAmount > 0 ? "Pending" : "Success",
       transaction_id: "",
       uid: user.uid,
       google_name: user.name,
       google_email: user.email,
       custom_coupon_amount: discount,
       custom_coupon_code: coupon?.code ?? "",
+      custom_medical_council_number: medicalCouncilNumber,
     })
 
-    return NextResponse.json({ registration }, { status: 201 })
+    if (payableAmount <= 0) {
+      const confirmedRegistration = await updateErpRegistration(registration.name, {
+        status: "Confirmed",
+        payment_status: "Success",
+        payment_date: toErpDate(),
+      })
+
+      return NextResponse.json(
+        {
+          registration: {
+            ...confirmedRegistration,
+            name: registration.name,
+          },
+          payment: null,
+        },
+        { status: 201 },
+      )
+    }
+
+    const order = await createRazorpayOrder({
+      amount: payableAmount,
+      receipt: registration.name,
+      notes: {
+        registration: registration.name,
+        email: user.email,
+        category: erpCategory,
+      },
+    })
+
+    await updateErpRegistration(registration.name, {
+      transaction_id: order.id,
+    })
+
+    return NextResponse.json(
+      {
+        registration,
+        payment: {
+          keyId: process.env.RAZORPAY_KEY_ID,
+          orderId: order.id,
+          amount: order.amount,
+          currency: order.currency,
+        },
+      },
+      { status: 201 },
+    )
   } catch (error) {
     console.error("Registration creation failed", error)
     return NextResponse.json(
