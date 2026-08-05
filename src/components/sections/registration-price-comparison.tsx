@@ -156,6 +156,10 @@ export function RegistrationPriceComparison({
   >(null)
   const [googleProfile, setGoogleProfile] = useState<GoogleProfile | null>(null)
   const [isSigningIn, setIsSigningIn] = useState(false)
+  const [emailPasswordForm, setEmailPasswordForm] = useState({
+    email: "",
+    password: "",
+  })
   const [authError, setAuthError] = useState("")
   const firebaseUnsubscribe = useRef<(() => void) | null>(null)
 
@@ -271,6 +275,39 @@ export function RegistrationPriceComparison({
           : error instanceof Error
             ? error.message
             : "Unable to sign in with Google. Please try again.",
+      )
+    } finally {
+      setIsSigningIn(false)
+    }
+  }
+
+  async function handleEmailPasswordSignIn() {
+    const email = emailPasswordForm.email.trim()
+
+    if (!emailPattern.test(email) || !emailPasswordForm.password) {
+      setAuthError("Enter a valid email and password to continue.")
+      return
+    }
+
+    setIsSigningIn(true)
+    setAuthError("")
+
+    try {
+      const { signInWithEmailPassword } = await import("@/lib/firebase-client")
+      const profile = await signInWithEmailPassword(email, emailPasswordForm.password)
+      setGoogleProfile(profile)
+      setForm((current) => ({
+        ...current,
+        name: current.name || profile.name,
+        email: profile.email,
+      }))
+      setLookupEmail(profile.email)
+      setEmailPasswordForm({ email: "", password: "" })
+    } catch (error) {
+      setAuthError(
+        error instanceof Error
+          ? error.message
+          : "Unable to sign in with email and password.",
       )
     } finally {
       setIsSigningIn(false)
@@ -652,6 +689,55 @@ export function RegistrationPriceComparison({
                   <GoogleIcon className="size-5" />
                   {isSigningIn ? "Connecting to Google…" : "Sign in with Google"}
                 </button>
+                <div className="mt-6 border-t border-[color:var(--cinopse-border)] pt-5 text-left">
+                  <p className="m-0 text-center text-[10px] leading-4 font-medium tracking-[0.12em] text-[color:var(--cinopse-muted)] uppercase">
+                    Or sign in with email
+                  </p>
+                  <div className="mt-3 grid gap-3">
+                    <input
+                      type="email"
+                      value={emailPasswordForm.email}
+                      onChange={(event) => {
+                        setEmailPasswordForm((current) => ({
+                          ...current,
+                          email: event.target.value,
+                        }))
+                        setAuthError("")
+                      }}
+                      placeholder="Email address"
+                      autoComplete="email"
+                      className="w-full rounded-[10px] border-[1.5px] border-[color:var(--cinopse-border)] bg-white px-3.5 py-3 text-[13px] leading-5 text-[color:var(--cinopse-ink)] outline-none transition-[border-color,box-shadow] duration-300 placeholder:text-[color:var(--cinopse-faint)] focus:border-[color:var(--cinopse-primary)] focus:shadow-[0_0_0_3px_rgba(27,75,150,0.1)]"
+                    />
+                    <input
+                      type="password"
+                      value={emailPasswordForm.password}
+                      onChange={(event) => {
+                        setEmailPasswordForm((current) => ({
+                          ...current,
+                          password: event.target.value,
+                        }))
+                        setAuthError("")
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault()
+                          void handleEmailPasswordSignIn()
+                        }
+                      }}
+                      placeholder="Password"
+                      autoComplete="current-password"
+                      className="w-full rounded-[10px] border-[1.5px] border-[color:var(--cinopse-border)] bg-white px-3.5 py-3 text-[13px] leading-5 text-[color:var(--cinopse-ink)] outline-none transition-[border-color,box-shadow] duration-300 placeholder:text-[color:var(--cinopse-faint)] focus:border-[color:var(--cinopse-primary)] focus:shadow-[0_0_0_3px_rgba(27,75,150,0.1)]"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleEmailPasswordSignIn}
+                      disabled={isSigningIn}
+                      className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[color:var(--cinopse-primary)] px-6 text-[13px] font-medium text-white transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(27,75,150,0.28)] disabled:cursor-wait disabled:opacity-70"
+                    >
+                      {isSigningIn ? "Signing in…" : "Sign in with Email"}
+                    </button>
+                  </div>
+                </div>
                 {authError ? (
                   <p role="alert" className="mt-4 text-sm leading-5 text-[#c0392b]">
                     {authError}

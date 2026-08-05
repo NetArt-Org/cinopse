@@ -5,6 +5,7 @@ import {
   onAuthStateChanged,
   signOut,
   signInWithPopup,
+  signInWithEmailAndPassword,
   type User,
 } from "firebase/auth"
 
@@ -72,6 +73,24 @@ export async function signInWithGoogle() {
 
   if (!profile) {
     throw new Error("Your Google account did not provide an email address.")
+  }
+
+  return profile
+}
+
+export async function signInWithEmailPassword(email: string, password: string) {
+  const auth = getFirebaseAuth()
+  if (!auth) {
+    throw new Error(
+      "Firebase is not configured. Add the NEXT_PUBLIC_FIREBASE_* values before enabling email sign-in.",
+    )
+  }
+
+  const result = await signInWithEmailAndPassword(auth, email, password)
+  const profile = toGoogleProfile(result.user)
+
+  if (!profile) {
+    throw new Error("This Firebase account does not have an email address.")
   }
 
   return profile
