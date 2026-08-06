@@ -249,22 +249,22 @@ const associatePartners = {
   committee: [
     {
       initials: "SK",
-      name: "Dr. Santosh KM",
-      role: "Organising Chairman",
+      name: "Dr. Santosh K M",
+      role: "Founder & CEO",
       affiliation: "Narayana Health City",
       message: founderMessage,
     },
     {
       initials: "VB",
       name: "Dr. Vinod Babu",
-      role: "Organising Co-Chairperson",
+      role: "Chief Financial Officer",
       affiliation: "Dr Mohan's Diabetes Centre",
       message: cfoMessage,
     },
     {
       initials: "KS",
-      name: "Dr. Karthik SM",
-      role: "Organising Treasurer",
+      name: "Dr. Karthik S M",
+      role: "Chief Operating Officer",
       affiliation: "Apollo Hospitals",
       message: cooMessage,
     },

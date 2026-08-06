@@ -86,9 +86,6 @@ export function AssociatePartnersSection({
                     <p className="mt-1.5 text-[11px] leading-5 font-medium tracking-[0.1em] text-[color:var(--cinopse-accent-deep)] uppercase">
                       {member.role}
                     </p>
-                    <p className="mt-1.5 text-[11px] leading-5 text-[color:var(--cinopse-muted)]">
-                      {member.affiliation}
-                    </p>
                     <p className="mt-auto pt-4 text-[9.5px] leading-none tracking-[0.14em] text-[color:var(--cinopse-faint)] uppercase">
                       Hover to read their message
                     </p>
