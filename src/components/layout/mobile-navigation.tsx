@@ -88,11 +88,17 @@ export function MobileNavigation({
               height={40}
               className="size-10 rounded-full bg-white object-cover shadow-[0_3px_10px_rgba(6,26,58,0.3)]"
             />
-            <span className="font-display text-base font-semibold">
-              CINOPSE{" "}
-              <em className="block font-sans text-[10px] tracking-[0.18em] text-[color:var(--cinopse-accent)] not-italic">
-                INDIA 2026
-              </em>
+            <span className="grid gap-1">
+              <span className="font-display text-base font-semibold">
+                CINOPSE{" "}
+                <em className="block font-sans text-[10px] tracking-[0.18em] text-[color:var(--cinopse-accent)] not-italic">
+                  INDIA 2026
+                </em>
+              </span>
+              <span className="max-w-[220px] font-sans text-[8px] leading-[1.35] tracking-[0.08em] text-white/60 uppercase">
+                Combined Initiative for Nurturing Outcomes through Precision
+                Medicine with Scientific Evidence
+              </span>
             </span>
           </div>
           <button
@@ -138,8 +144,9 @@ export function MobileNavigation({
           </button>
         </nav>
 
-        <p className="text-[11px] tracking-[0.14em] text-white/55 uppercase">
-          One Place. One Agenda. One Vision.
+        <p className="text-[11px] leading-5 tracking-[0.14em] text-white/55 uppercase">
+          Combined Initiative for Nurturing Outcomes through Precision Medicine
+          with Scientific Evidence
         </p>
       </div>
     </div>

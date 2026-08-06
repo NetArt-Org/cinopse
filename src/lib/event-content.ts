@@ -20,7 +20,7 @@ export const eventContent = {
   enquiryPhone: "+91 63817 86183",
   alternatePhone: "+91 9902340225",
   email: "cinopseindiamedical@gmail.com",
-  website: "www.cinopse.com",
+  website: "www.cinopse.in",
   pillars: [
     {
       title: "Comprehensive",
@@ -65,7 +65,7 @@ export const eventContent = {
   highlights: [
     "Latest Updates: ADA 2026, Easd, ESC, Ace, AHA, AASM & IOF Guidelines",
     "Artificial Intelligence in Clinical Practice",
-    "Obstructive Sleep Apnea & Cardiometabolic Risk",
+    "Sleep Disorder & Cardiometabolic Risk",
     "GLP-1, Fatty & Triple Agonist The Future of Obesity & Diabetes Care",
     "MASLD / Fatty Liver Disease: From Screening to Management",
     "Osteoporosis, Sarcopenia & Healthy Aging",

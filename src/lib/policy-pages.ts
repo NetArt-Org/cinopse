@@ -7,7 +7,7 @@ export const policyNavItems = [
   { label: "Committee", href: "/#leadership" },
   { label: "Venue", href: "/#venue" },
   { label: "Destination", href: "/#destination" },
-  { label: "Partners", href: "/#partners" },
+  { label: "Organizers", href: "/#partners" },
 ]
 
 export const policyFooterLinks: FooterLinkItem[] = [
@@ -32,6 +32,7 @@ export const policyFooter = {
         alt: "CINOPSE logo",
       },
       paragraphs: [
+        "Combined Initiative for Nurturing Outcomes through Precision Medicine with Scientific Evidence",
         "CME Summit for Cardio, Renal, Obesity, Pulmonary & Sleep Medicine — Sunday, 27 September 2026, Jawaharlal Nehru Planetarium, Bengaluru.",
       ],
     },
@@ -43,7 +44,7 @@ export const policyFooter = {
     "+91 63817 86183",
     "+91 99023 40225",
     "cinopseindiamedical@gmail.com",
-    "www.cinopse.com",
+    "www.cinopse.in",
   ],
   socialLinks: [],
   copyright: "© 2026 CINOPSE India. All rights reserved.",
@@ -54,33 +55,7 @@ export const policyRegistrationComparison = {
   eventDateLabel: "Sunday, 27 September 2026",
   eventDate: "2026-09-27T08:00:00+05:30",
   windowStart: "2026-07-24T00:00:00+05:30",
-  phases: [
-    {
-      name: "Early",
-      window: "Open now",
-      status: "Open now" as const,
-      prices: ["₹1,000", "₹500", "₹2,500"],
-    },
-    {
-      name: "Standard",
-      window: "To be announced",
-      status: "Upcoming" as const,
-      prices: ["₹1,000", "₹500", "₹2,500"],
-    },
-    {
-      name: "Late",
-      window: "To be announced",
-      status: "Upcoming" as const,
-      prices: ["₹1,000", "₹500", "₹2,500"],
-    },
-    {
-      name: "On-site",
-      window: "27 Sep, at the venue",
-      status: "Upcoming" as const,
-      prices: ["₹1,000", "₹500", "₹2,500"],
-    },
-  ],
-  note: "Registration cost: ₹1,000 for Delegates, ₹500 for PG and Others, and ₹2,500 for International Delegates.",
+  note: "Fees are selected automatically by category and date: Delegate ₹750/₹1,000/₹1,250, PG ₹500/₹750, International ₹2,500.",
   ctaLabel: "Register Now",
 }
 

@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ChevronDown, LogOut, UserRound } from "lucide-react"
+import { LogOut, UserRound } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
 import { MobileNavigation } from "@/components/layout/mobile-navigation"
@@ -50,6 +50,7 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
     label: registerCtaLabel,
     openRegistrationOrTicket,
   } = useRegistrationTicketCta()
+  const solidHeader = scrolled || pathname !== "/"
 
   useEffect(() => {
     const onScroll = () => {
@@ -103,7 +104,7 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
         <nav
           aria-label="Main navigation"
           className={`transition-[background,box-shadow,padding] duration-500 ease-[cubic-bezier(.22,.9,.18,1)] ${
-            scrolled
+            solidHeader
               ? "bg-[rgba(13,49,105,0.86)] py-3 shadow-[0_8px_30px_rgba(6,26,58,0.25)] backdrop-blur-[14px]"
               : "py-5"
           }`}
@@ -111,7 +112,7 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
           <div className="mx-auto flex max-w-[1160px] items-center justify-between gap-6 px-7">
             <Link
               href="/#home"
-              className="flex items-center gap-2.5 font-display text-xl leading-none font-semibold tracking-[0.01em] text-white"
+              className="flex items-center gap-2.5 text-white"
               aria-label="CINOPSE India 2026 home"
             >
               <Image
@@ -122,11 +123,17 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
                 priority
                 className="size-9 shrink-0 rounded-full bg-white object-cover shadow-[0_3px_10px_rgba(6,26,58,0.3)]"
               />
-              <span>
-                CINOPSE{" "}
-                <em className="align-baseline font-sans text-[11px] leading-none font-medium tracking-[0.18em] text-[color:var(--cinopse-accent)] not-italic">
-                  INDIA 2026
-                </em>
+              <span className="grid max-w-[285px] gap-1">
+                <span className="font-display text-xl leading-none font-semibold tracking-[0.01em]">
+                  CINOPSE{" "}
+                  <em className="align-baseline font-sans text-[11px] leading-none font-medium tracking-[0.18em] text-[color:var(--cinopse-accent)] not-italic">
+                    INDIA 2026
+                  </em>
+                </span>
+                <span className="hidden font-sans text-[8.5px] leading-[1.25] font-medium tracking-[0.08em] text-white/62 uppercase min-[1120px]:block">
+                  Combined Initiative for Nurturing Outcomes through Precision
+                  Medicine with Scientific Evidence
+                </span>
               </span>
             </Link>
 
@@ -172,7 +179,7 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
                     aria-expanded={accountOpen}
                     aria-haspopup="menu"
                     aria-label="Open account menu"
-                    className="flex items-center gap-1.5 rounded-full border border-white/30 py-1 pr-2 pl-1 text-white transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    className="grid size-11 place-items-center rounded-full border border-white/30 text-white transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   >
                     {googleUser.photoUrl ? (
                       <GoogleAvatar
@@ -184,12 +191,6 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
                         <UserRound className="size-4" aria-hidden="true" />
                       </span>
                     )}
-                    <ChevronDown
-                      className={`size-3.5 transition-transform duration-200 ${
-                        accountOpen ? "rotate-180" : ""
-                      }`}
-                      aria-hidden="true"
-                    />
                   </button>
                   {accountOpen ? (
                     <div

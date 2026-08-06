@@ -18,7 +18,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.cinopse.com"),
+  metadataBase: new URL("https://www.cinopse.in"),
   title: {
     default: "CiNOPSE India 2026",
     template: "%s | CiNOPSE India 2026",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     title: "CiNOPSE India 2026",
     description:
       "A multidisciplinary CME summit for cardio, renal, obesity, pulmonary and sleep medicine on Sunday, 27 September 2026 in Bengaluru.",
-    url: "https://www.cinopse.com",
+    url: "https://www.cinopse.in",
     siteName: "CiNOPSE India 2026",
     images: [
       {

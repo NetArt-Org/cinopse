@@ -9,7 +9,9 @@ import { GoogleIcon } from "@/components/icons/google-icon"
 import { useRegistrationTicketCta } from "@/hooks/use-registration-ticket-cta"
 import {
   calculateRegistrationTotal,
+  getActiveRegistrationOption,
   getRegistrationAmount,
+  getRegistrationPricing,
   registrationCoupons,
   type RegistrationCoupon,
 } from "@/lib/registration-config"
@@ -19,19 +21,11 @@ import PhoneInput, {
 } from "react-phone-number-input"
 import flags from "react-phone-number-input/flags"
 
-export type RegistrationPhase = {
-  name: string
-  window: string
-  status: "Closed" | "Open now" | "Upcoming"
-  prices: string[]
-}
-
 export type RegistrationPriceComparisonProps = {
   audiences: string[]
   eventDateLabel: string
   eventDate: string
   windowStart: string
-  phases: RegistrationPhase[]
   note: string
   ctaLabel: string
   dialogOnly?: boolean
@@ -69,12 +63,6 @@ type RegistrationLookupDetails = {
   transactionId: string
   registrationDate: string
 }
-
-const categoryDescriptions = [
-  "Practicing physicians & consultants",
-  "Postgraduates, trainees & allied healthcare professionals",
-  "Delegates joining from outside India",
-]
 
 const initialForm: WizardForm = {
   name: "",
@@ -130,7 +118,6 @@ export function RegistrationPriceComparison({
   eventDateLabel,
   eventDate,
   windowStart,
-  phases,
   note,
   ctaLabel,
   dialogOnly = false,
@@ -249,9 +236,16 @@ export function RegistrationPriceComparison({
     }
   }, [dialogOnly, modalOpen])
 
-  const openPhase = phases.find((phase) => phase.status === "Open now") ?? phases[0]
+  const pricingCategories = useMemo(
+    () => getRegistrationPricing(new Date(now)),
+    [now],
+  )
   const selectedLabel = selectedCategory >= 0 ? audiences[selectedCategory] : ""
-  const selectedAmount = getRegistrationAmount(selectedLabel) ?? 0
+  const selectedAmount = getRegistrationAmount(selectedLabel, new Date(now)) ?? 0
+  const selectedActiveOption = getActiveRegistrationOption(
+    selectedLabel,
+    new Date(now),
+  )
   const couponTotal = calculateRegistrationTotal(
     selectedAmount,
     appliedCoupon ? [appliedCoupon] : [],
@@ -584,15 +578,15 @@ export function RegistrationPriceComparison({
 
         <div
           data-reveal
-          className="relative z-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+          className="relative z-10 flex flex-wrap justify-center gap-3"
         >
-          {phases.map((phase) => {
+          {pricingCategories[audience]?.options.map((phase) => {
             const isOpen = phase.status === "Open now"
 
             return (
               <article
-                key={phase.name}
-                className={`relative rounded-[14px] border px-4 py-[22px] text-center transition-[background,transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(.22,.9,.18,1)] ${
+                key={phase.id}
+                className={`relative w-full max-w-[430px] rounded-[14px] border px-4 py-[22px] text-center transition-[background,transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(.22,.9,.18,1)] sm:w-[calc(50%-6px)] lg:w-[300px] ${
                   isOpen
                     ? "-translate-y-1 border-white bg-white shadow-[0_16px_32px_rgba(6,26,58,0.28)]"
                     : "border-white/15 bg-white/[0.07]"
@@ -624,12 +618,12 @@ export function RegistrationPriceComparison({
                 </p>
                 <div className="h-8 overflow-hidden">
                   <p
-                    key={`${phase.name}-${audience}`}
+                    key={`${phase.id}-${audience}`}
                     className={`font-display m-0 animate-[swapIn_0.38s_cubic-bezier(.2,.85,.2,1)] text-2xl leading-8 font-semibold tabular-nums ${
                       isOpen ? "text-[color:var(--cinopse-primary)]" : "text-white"
                     }`}
                   >
-                    {phase.prices[audience]}
+                    {formatPrice(phase.amount)}
                   </p>
                 </div>
                 <p
@@ -637,7 +631,7 @@ export function RegistrationPriceComparison({
                     isOpen ? "text-[#3f9150]" : "text-white/45"
                   }`}
                 >
-                  {getDelta(phase.prices[audience], phases[0].prices[audience])}
+                  {phase.status}
                 </p>
               </article>
             )
@@ -914,9 +908,15 @@ export function RegistrationPriceComparison({
                       Choose your category
                     </h3>
                     <div className="grid gap-2.5">
-                      {audiences.map((item, index) => (
+                      {pricingCategories.map((category, index) => {
+                        const activeOption =
+                          category.options.find(
+                            (option) => option.status === "Open now",
+                          ) ?? category.options[0]
+
+                        return (
                         <button
-                          key={item}
+                          key={category.name}
                           type="button"
                           onClick={() => {
                             setSelectedCategory(index)
@@ -930,17 +930,18 @@ export function RegistrationPriceComparison({
                         >
                           <span className="min-w-0">
                             <b className="block text-[13.5px] leading-5 font-medium whitespace-nowrap text-[color:var(--cinopse-ink)]">
-                              {item}
+                              {category.name}
                             </b>
                             <i className="mt-0.5 block text-[10.5px] leading-4 font-light text-[color:var(--cinopse-muted)] not-italic">
-                              {categoryDescriptions[index]}
+                              {category.description}
                             </i>
                           </span>
                           <span className="font-display shrink-0 text-[17px] leading-none font-semibold text-[color:var(--cinopse-primary)]">
-                            {openPhase.prices[index]}
+                            {formatPrice(activeOption.amount)}
                           </span>
                         </button>
-                      ))}
+                        )
+                      })}
                     </div>
                     {errors.category ? <ErrorText>{errors.category}</ErrorText> : null}
                     <p className="mt-3.5 text-[10px] leading-4 font-light text-[color:var(--cinopse-faint)]">
@@ -1032,7 +1033,8 @@ export function RegistrationPriceComparison({
                         ["City", form.city],
                         ["Institution", form.institution],
                         ["MCN", form.medicalCouncilNumber],
-                        ["Category", selectedLabel],
+                          ["Category", selectedLabel],
+                          ["Fee window", selectedActiveOption?.name ?? ""],
                       ].map(([label, value]) => (
                         <div
                           key={label}
@@ -1658,18 +1660,6 @@ function useCountdown(deadline: number, now: number) {
   const seconds = Math.floor(remaining / 1000)
 
   return `${days}d ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`
-}
-
-function getDelta(price: string, basePrice: string) {
-  const base = numberFromPrice(basePrice)
-  const current = numberFromPrice(price)
-  const diff = Math.round(((current - base) / base) * 100)
-
-  return diff === 0 ? "LOWEST RATE" : `+${diff}% vs early`
-}
-
-function numberFromPrice(value: string) {
-  return Number.parseFloat(value.replace(/[^0-9.]/g, ""))
 }
 
 function formatPrice(amount: number | string) {

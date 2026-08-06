@@ -20,7 +20,7 @@ const navItems = [
   { label: "Committee", href: "/#leadership" },
   { label: "Venue", href: "/#venue" },
   { label: "Destination", href: "/#destination" },
-  { label: "Partners", href: "/#partners" },
+  { label: "Organizers", href: "/#partners" },
 ]
 
 const hero: HeroSectionProps = {
@@ -108,38 +108,37 @@ const committee = {
     "The people shaping the agenda, the science, and the experience of CINOPSE India 2026.",
   leaders: [
     {
+      initials: "MM",
+      name: "Dr Murali Mohan BV",
+      role: "President",
+      affiliation: "Narayana Health City",
+    },
+    {
       initials: "SK",
-      name: "Dr. Santosh K M",
-      role: "Founder & CEO",
-      affiliation: "Organising Chairman · Narayana Health City",
-      message: founderMessage,
+      name: "Dr Santosh KM",
+      role: "Organising Chairman",
+      affiliation: "Narayana Health City",
     },
     {
       initials: "VB",
-      name: "Dr. Vinod Babu",
-      role: "Chief Financial Officer",
-      affiliation: "Organising Co-Chairperson · Dr Mohan's Diabetes Centre",
-      message: cfoMessage,
-    },
-    {
-      initials: "KS",
-      name: "Dr. Karthik S M",
-      role: "Chief Operating Officer",
-      affiliation: "Organising Treasurer · Apollo Hospitals",
-      message: cooMessage,
-    },
-  ],
-  members: [
-    {
-      initials: "MM",
-      name: "Dr Murali Mohan BV",
-      caption: "President · Narayana Health City",
+      name: "Dr Vinod Babu Veerapalli",
+      role: "Organising Co-Chairperson",
+      affiliation: "Dr Mohan's Diabetes Centre",
     },
     {
       initials: "SK",
       name: "Dr Sheetal Kamat",
-      caption: "Organising Secretary · Apollo Hospitals",
+      role: "Organising Secretary",
+      affiliation: "Apollo Hospitals",
     },
+    {
+      initials: "KS",
+      name: "Dr Karthik SM",
+      role: "Organising Treasurer",
+      affiliation: "Apollo Hospitals",
+    },
+  ],
+  members: [
     {
       initials: "UH",
       name: "Dr Usha Humbi",
@@ -156,9 +155,16 @@ const committee = {
       caption: "Scientific Committee · Dr Mohan's Diabetes Centre",
     },
     {
+      initials: "PM",
+      name: "Dr Prathima Murthy",
+      caption: "Scientific Committee · Apollo Hospitals",
+    },
+    {
       initials: "✣",
-      name: "Vishnu · Stephen · Akash · Bhavishya",
+      name: "Hospitality & Logistics",
       caption: "Hospitality & Logistics",
+      variant: "logistics" as const,
+      names: ["Mr Vishnu", "Mr Akash", "Mr Stephen", "Ms Bhavishya"],
     },
   ],
 }
@@ -197,33 +203,7 @@ const registration = {
     eventDateLabel: "Sunday, 27 September 2026",
     eventDate: "2026-09-27T08:00:00+05:30",
     windowStart: "2026-07-24T00:00:00+05:30",
-    phases: [
-      {
-        name: "Early",
-        window: "Open now",
-        status: "Open now" as const,
-        prices: ["₹1,000", "₹500", "₹2,500"],
-      },
-      {
-        name: "Standard",
-        window: "To be announced",
-        status: "Upcoming" as const,
-        prices: ["₹1,000", "₹500", "₹2,500"],
-      },
-      {
-        name: "Late",
-        window: "To be announced",
-        status: "Upcoming" as const,
-        prices: ["₹1,000", "₹500", "₹2,500"],
-      },
-      {
-        name: "On-site",
-        window: "27 Sep, at the venue",
-        status: "Upcoming" as const,
-        prices: ["₹1,000", "₹500", "₹2,500"],
-      },
-    ],
-    note: "Registration cost: ₹1,000 for Delegates, ₹500 for PG and Others, and ₹2,500 for International Delegates.",
+    note: "Fees are selected automatically by category and date: Delegate ₹750/₹1,000/₹1,250, PG ₹500/₹750, International ₹2,500.",
     ctaLabel: "Register Now",
   },
 }
@@ -262,19 +242,32 @@ const popularDestination = {
 }
 
 const associatePartners = {
-  eyebrow: "Trusted By",
-  title: "Our Associate Partners",
+  eyebrow: "Committee",
+  title: "Organizing Committee",
   description:
-    "Partner announcements are underway — logos below are placeholders until confirmed.",
-  partners: [
-    "Partner Logo",
-    "Partner Logo",
-    "Partner Logo",
-    "Partner Logo",
-    "Partner Logo",
-    "Partner Logo",
-    "Partner Logo",
-    "Partner Logo",
+    "Core organizing leadership for CINOPSE India 2026.",
+  committee: [
+    {
+      initials: "SK",
+      name: "Dr. Santosh KM",
+      role: "Organising Chairman",
+      affiliation: "Narayana Health City",
+      message: founderMessage,
+    },
+    {
+      initials: "VB",
+      name: "Dr. Vinod Babu",
+      role: "Organising Co-Chairperson",
+      affiliation: "Dr Mohan's Diabetes Centre",
+      message: cfoMessage,
+    },
+    {
+      initials: "KS",
+      name: "Dr. Karthik SM",
+      role: "Organising Treasurer",
+      affiliation: "Apollo Hospitals",
+      message: cooMessage,
+    },
   ],
 }
 
@@ -380,7 +373,7 @@ const conferenceHighlights = {
     },
     {
       number: "09",
-      title: "Obstructive Sleep Apnea",
+      title: "Sleep Disorder",
       description: "The cardiometabolic risk connection",
     },
     {
@@ -418,51 +411,9 @@ const programme = {
   eyebrow: "Programme",
   title: "The Programme — At a Glance",
   description:
-    "Sunday, 27 September 2026 · Jawaharlal Nehru Planetarium, Bengaluru. A provisional one-day plan — final timings, halls, and faculty will be published with the official scientific programme.",
-  dayLabel: "Day 1",
-  dateLabel: "Sun, 27 Sep",
-  items: [
-    {
-      time: "09:00",
-      period: "AM",
-      title: "Obstructive Sleep Apnea & Cardiometabolic Risk",
-      description:
-        "The sleep–heart–metabolism connection every specialty should screen for.",
-      tags: ["09"],
-    },
-    {
-      time: "10:30",
-      period: "AM",
-      title: "Osteoporosis, Sarcopenia & Healthy Aging",
-      description:
-        "Bone health across specialties — screening, treating, preventing the first fracture.",
-      tags: ["10"],
-    },
-    {
-      time: "11:30",
-      period: "AM",
-      title: "Interactive Case Discussions & Panel Debate",
-      description: "Real cases, real decisions — the panel debates, the audience votes.",
-      tags: ["11"],
-    },
-    {
-      time: "02:00",
-      period: "PM",
-      title: "Young Investigator Awards",
-      description: "The next generation presents — award session and jury felicitation.",
-      tags: ["12"],
-    },
-    {
-      time: "04:00",
-      period: "PM",
-      title: "Valedictory & Networking High Tea",
-      description:
-        "Closing remarks, take-home messages, and see you at CINOPSE 2027.",
-    },
-  ],
+    "Sunday, 27 September 2026 · Jawaharlal Nehru Planetarium, Bengaluru. The detailed scientific programme is available in the agenda PDF.",
   ctaLabel: "Explore the Full Agenda",
   ctaHref: "/agenda",
-  note: "Provisional programme for preview — subject to change until the official agenda is released.",
 }
 
 const footer = {
@@ -475,6 +426,7 @@ const footer = {
         alt: "CINOPSE logo",
       },
       paragraphs: [
+        "Combined Initiative for Nurturing Outcomes through Precision Medicine with Scientific Evidence",
         "CME Summit for Cardio, Renal, Obesity, Pulmonary & Sleep Medicine — Sunday, 27 September 2026, Jawaharlal Nehru Planetarium, Bengaluru.",
       ],
     },
@@ -486,7 +438,7 @@ const footer = {
     "+91 63817 86183",
     "+91 99023 40225",
     "cinopseindiamedical@gmail.com",
-    "www.cinopse.com",
+    "www.cinopse.in",
   ],
   socialLinks: [],
   copyright: "© 2026 CINOPSE India. All rights reserved.",

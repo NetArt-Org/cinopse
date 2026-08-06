@@ -1,6 +1,22 @@
-export type RegistrationCategory = {
+export type RegistrationCategoryName =
+  | "Delegates"
+  | "PG and Others"
+  | "International Delegates"
+
+export type RegistrationPriceOption = {
+  id: string
   name: string
   amount: number
+  window: string
+  status: "Closed" | "Open now" | "Upcoming"
+  startsAt?: string
+  endsAt?: string
+}
+
+export type RegistrationCategory = {
+  name: RegistrationCategoryName
+  description: string
+  options: RegistrationPriceOption[]
 }
 
 export type RegistrationCoupon = {
@@ -10,10 +26,79 @@ export type RegistrationCoupon = {
   type?: "fixed" | "full"
 }
 
+const earlyBirdEndsAt = "2026-09-10T23:59:59+05:30"
+const eventStartsAt = "2026-09-27T00:00:00+05:30"
+const eventEndsAt = "2026-09-27T23:59:59+05:30"
+
 export const registrationCategories: RegistrationCategory[] = [
-  { name: "Delegates", amount: 1000 },
-  { name: "PG and Others", amount: 500 },
-  { name: "International Delegates", amount: 2500 },
+  {
+    name: "Delegates",
+    description: "Practicing physicians & consultants",
+    options: [
+      {
+        id: "delegate-early-bird",
+        name: "Early Bird",
+        amount: 750,
+        window: "Valid until September 10",
+        status: "Upcoming",
+        endsAt: earlyBirdEndsAt,
+      },
+      {
+        id: "delegate-standard",
+        name: "Standard",
+        amount: 1000,
+        window: "After September 10 until the event",
+        status: "Upcoming",
+        startsAt: "2026-09-11T00:00:00+05:30",
+        endsAt: "2026-09-26T23:59:59+05:30",
+      },
+      {
+        id: "delegate-on-site",
+        name: "On-site",
+        amount: 1250,
+        window: "Available only during the event",
+        status: "Upcoming",
+        startsAt: eventStartsAt,
+        endsAt: eventEndsAt,
+      },
+    ],
+  },
+  {
+    name: "PG and Others",
+    description: "Postgraduates, trainees & allied healthcare professionals",
+    options: [
+      {
+        id: "pg-standard",
+        name: "Standard",
+        amount: 500,
+        window: "Available throughout",
+        status: "Upcoming",
+        endsAt: "2026-09-26T23:59:59+05:30",
+      },
+      {
+        id: "pg-on-site",
+        name: "On-site",
+        amount: 750,
+        window: "During the event",
+        status: "Upcoming",
+        startsAt: eventStartsAt,
+        endsAt: eventEndsAt,
+      },
+    ],
+  },
+  {
+    name: "International Delegates",
+    description: "Delegates joining from outside India",
+    options: [
+      {
+        id: "international-standard",
+        name: "Standard",
+        amount: 2500,
+        window: "Available throughout",
+        status: "Upcoming",
+      },
+    ],
+  },
 ]
 
 export const registrationCoupons: RegistrationCoupon[] = [
@@ -30,8 +115,31 @@ export const registrationCoupons: RegistrationCoupon[] = [
   },
 ]
 
-export function getRegistrationAmount(category: string) {
-  return registrationCategories.find((item) => item.name === category)?.amount ?? null
+export function getRegistrationPricing(now = new Date()) {
+  return registrationCategories.map((category) => ({
+    ...category,
+    options: category.options.map((option) => ({
+      ...option,
+      status: getOptionStatus(option, now),
+    })),
+  }))
+}
+
+export function getActiveRegistrationOption(category: string, now = new Date()) {
+  const pricingCategory = getRegistrationPricing(now).find(
+    (item) => item.name === category,
+  )
+  if (!pricingCategory) return null
+
+  return (
+    pricingCategory.options.find((option) => option.status === "Open now") ??
+    pricingCategory.options[0] ??
+    null
+  )
+}
+
+export function getRegistrationAmount(category: string, now = new Date()) {
+  return getActiveRegistrationOption(category, now)?.amount ?? null
 }
 
 export function resolveRegistrationCoupon(code: string) {
@@ -55,4 +163,15 @@ export function calculateRegistrationTotal(baseAmount: number, coupons: Registra
     discount: Math.min(discount, baseAmount),
     payableAmount: Math.max(baseAmount - discount, 0),
   }
+}
+
+function getOptionStatus(option: RegistrationPriceOption, now: Date) {
+  const currentTime = now.getTime()
+  const startsAt = option.startsAt ? new Date(option.startsAt).getTime() : -Infinity
+  const endsAt = option.endsAt ? new Date(option.endsAt).getTime() : Infinity
+
+  if (currentTime < startsAt) return "Upcoming"
+  if (currentTime > endsAt) return "Closed"
+
+  return "Open now"
 }
