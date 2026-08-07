@@ -2,6 +2,20 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+## Environment
+
+Server-side integrations use the following environment variables:
+
+```bash
+WHAPI_TOKEN=your_whapi_channel_token
+WHAPI_API_URL=https://gate.whapi.cloud
+```
+
+`WHAPI_TOKEN` is used only by server routes to send WhatsApp registration
+notifications through Whapi Cloud. Do not expose it to client-side code.
+
+`WHAPI_API_URL` defaults to `https://gate.whapi.cloud` if it is not set.
+
 First, run the development server:
 
 ```bash

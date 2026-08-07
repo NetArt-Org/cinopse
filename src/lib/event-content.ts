@@ -18,7 +18,7 @@ export const eventContent = {
     "CME Summit for Cardio • Renal • Obesity Pulmonary • Sleep Medicine",
   registrationStatus: "Registration Opening Soon",
   enquiryPhone: "+91 63817 86183",
-  alternatePhone: "+91 9902340225",
+  alternatePhone: "+91 99023 40225",
   email: "cinopseindiamedical@gmail.com",
   website: "www.cinopse.in",
   pillars: [

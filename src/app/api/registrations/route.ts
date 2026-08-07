@@ -14,6 +14,7 @@ import {
   normalizeCouponCode,
   resolveRegistrationCoupon,
 } from "@/lib/registration-config"
+import { sendRegistrationWhatsAppNotificationSafely } from "@/lib/whapi-client"
 
 type RegistrationRequest = {
   fullName?: unknown
@@ -30,6 +31,9 @@ const erpCategoryByRegistrationCategory: Record<string, string> = {
   "PG and Others": "Student",
   "International Delegates": "International",
 }
+
+const eventDateLabel = "Sunday, 27 September 2026"
+const venue = "Jawaharlal Nehru Planetarium, Sankey Road, Bengaluru"
 
 function getBearerToken(request: NextRequest) {
   const value = request.headers.get("authorization")
@@ -159,6 +163,19 @@ export async function POST(request: NextRequest) {
         payment_date: toErpDate(),
       })
 
+      await sendRegistrationWhatsAppNotificationSafely({
+        kind: "confirmed",
+        registration: {
+          ...confirmedRegistration,
+          name: registration.name,
+          mobile,
+          amount: payableAmount,
+          payment_status: "Success",
+        },
+        eventDateLabel,
+        venue,
+      })
+
       return NextResponse.json(
         {
           registration: {
@@ -183,6 +200,16 @@ export async function POST(request: NextRequest) {
 
     await updateErpRegistration(registration.name, {
       transaction_id: order.id,
+    })
+
+    await sendRegistrationWhatsAppNotificationSafely({
+      kind: "payment-pending",
+      registration: {
+        ...registration,
+        transaction_id: order.id,
+      },
+      eventDateLabel,
+      venue,
     })
 
     return NextResponse.json(

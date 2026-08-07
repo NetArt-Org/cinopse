@@ -6,6 +6,7 @@ import {
 } from "@/lib/erpnext-client"
 import { verifyFirebaseIdToken } from "@/lib/firebase-admin-rest"
 import { verifyRazorpayPaymentSignature } from "@/lib/razorpay-client"
+import { sendRegistrationWhatsAppNotificationSafely } from "@/lib/whapi-client"
 
 type VerifyPaymentRequest = {
   registrationName?: unknown
@@ -22,6 +23,9 @@ function getBearerToken(request: NextRequest) {
 function toErpDate(date = new Date()) {
   return date.toISOString().slice(0, 19).replace("T", " ")
 }
+
+const eventDateLabel = "Sunday, 27 September 2026"
+const venue = "Jawaharlal Nehru Planetarium, Sankey Road, Bengaluru"
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,6 +71,16 @@ export async function POST(request: NextRequest) {
       payment_status: "Success",
       payment_date: toErpDate(),
       transaction_id: paymentId,
+    })
+
+    await sendRegistrationWhatsAppNotificationSafely({
+      kind: "payment-confirmed",
+      registration: {
+        ...updatedRegistration,
+        transaction_id: paymentId,
+      },
+      eventDateLabel,
+      venue,
     })
 
     return NextResponse.json({ registration: updatedRegistration })
