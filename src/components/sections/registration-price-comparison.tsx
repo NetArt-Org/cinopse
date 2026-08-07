@@ -56,6 +56,7 @@ type RegistrationLookupDetails = {
   medicalCouncilNumber: string
   category: string
   amount: string
+  amountValue: number
   registrationStatus: string
   payment: string
   paymentStatus: string
@@ -139,6 +140,8 @@ export function RegistrationPriceComparison({
   const [couponError, setCouponError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isCheckingRegistration, setIsCheckingRegistration] = useState(false)
+  const [isRetryingPayment, setIsRetryingPayment] = useState(false)
+  const [retryPaymentError, setRetryPaymentError] = useState("")
   const [lookupEmail, setLookupEmail] = useState("")
   const [lookupResult, setLookupResult] = useState<
     | ({ state: "found" } & RegistrationLookupDetails)
@@ -488,6 +491,7 @@ export function RegistrationPriceComparison({
           medicalCouncilNumber: payload.registration.custom_medical_council_number || "",
           category: payload.registration.category,
           amount: formatPrice(payload.registration.amount),
+          amountValue: Number(payload.registration.amount) || 0,
           registrationStatus: payload.registration.status || "Not available",
           payment: "Razorpay",
           paymentStatus: payload.registration.payment_status || "Not updated",
@@ -538,6 +542,63 @@ export function RegistrationPriceComparison({
   ])
 
   const foundLookup = lookupResult?.state === "found" ? lookupResult : null
+
+  async function handleRetryPayment(details: RegistrationLookupDetails) {
+    setIsRetryingPayment(true)
+    setRetryPaymentError("")
+
+    try {
+      const { getFirebaseIdToken } = await import("@/lib/firebase-client")
+      const idToken = await getFirebaseIdToken()
+      const response = await fetch("/api/registrations/razorpay/order", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ registrationName: details.id }),
+      })
+      const payload = (await response.json()) as {
+        message?: string
+        payment?: {
+          keyId: string
+          orderId: string
+          amount: number
+          currency: string
+        }
+      }
+
+      if (!response.ok || !payload.payment) {
+        throw new Error(payload.message || "Unable to start payment.")
+      }
+
+      await openRazorpayCheckout({
+        idToken,
+        registrationName: details.id,
+        payment: payload.payment,
+        form: {
+          name: details.name,
+          email: details.email,
+          phone: details.mobile as Value,
+          city: details.city,
+          institution: details.institution,
+          medicalCouncilNumber: details.medicalCouncilNumber,
+          terms: true,
+        },
+      })
+
+      window.dispatchEvent(new Event("cinopse:registration-updated"))
+      await checkRegistration()
+    } catch (error) {
+      setRetryPaymentError(
+        error instanceof Error
+          ? error.message
+          : "Unable to complete payment. Please try again.",
+      )
+    } finally {
+      setIsRetryingPayment(false)
+    }
+  }
 
   return (
     <>
@@ -787,6 +848,9 @@ export function RegistrationPriceComparison({
                 }}
                 onClose={closeModal}
                 showBack={!statusOnlyView}
+                isRetryingPayment={isRetryingPayment}
+                retryPaymentError={retryPaymentError}
+                onPayNow={() => handleRetryPayment(foundLookup)}
               />
             ) : statusOnlyView ? (
               <section
@@ -1290,12 +1354,22 @@ function RegistrationStatusDetails({
   onBack,
   onClose,
   showBack = true,
+  isRetryingPayment = false,
+  retryPaymentError = "",
+  onPayNow,
 }: {
   details: RegistrationLookupDetails
   onBack: () => void
   onClose: () => void
   showBack?: boolean
+  isRetryingPayment?: boolean
+  retryPaymentError?: string
+  onPayNow?: () => void
 }) {
+  const canPayNow =
+    details.registrationStatus === "Pending" &&
+    details.paymentStatus === "Pending" &&
+    details.amountValue > 0
   const paymentItems = [
     ["Amount", details.amount],
     ["Payment", details.payment],
@@ -1385,6 +1459,19 @@ function RegistrationStatusDetails({
         ))}
       </div>
 
+      {canPayNow ? (
+        <div className="mt-4 rounded-[14px] border border-[rgba(217,164,65,0.45)] bg-[#fdf8ee] px-4 py-3">
+          <p className="m-0 text-[12px] leading-5 font-light text-[color:var(--cinopse-text-secondary)]">
+            Payment is pending. Complete payment now to confirm your registration.
+          </p>
+          {retryPaymentError ? (
+            <p role="alert" className="mt-2 text-[11px] leading-4 text-[#c0392b]">
+              {retryPaymentError}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="mt-4 flex flex-col-reverse justify-between gap-3 sm:flex-row">
         {showBack ? (
           <button
@@ -1397,13 +1484,25 @@ function RegistrationStatusDetails({
         ) : (
           <span aria-hidden="true" />
         )}
-        <button
-          type="button"
-          onClick={onClose}
-          className="inline-flex items-center justify-center rounded-full bg-[color:var(--cinopse-primary)] px-5 py-2.5 text-[13px] leading-none font-medium text-white transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(27,75,150,0.35)]"
-        >
-          Close
-        </button>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          {canPayNow ? (
+            <button
+              type="button"
+              onClick={onPayNow}
+              disabled={isRetryingPayment}
+              className="inline-flex items-center justify-center rounded-full bg-[color:var(--cinopse-accent)] px-5 py-2.5 text-[13px] leading-none font-semibold text-[color:var(--cinopse-primary-deep)] transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(217,164,65,0.35)] disabled:cursor-wait disabled:opacity-70"
+            >
+              {isRetryingPayment ? "Opening Payment…" : "Pay Now"}
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center justify-center rounded-full bg-[color:var(--cinopse-primary)] px-5 py-2.5 text-[13px] leading-none font-medium text-white transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(27,75,150,0.35)]"
+          >
+            Close
+          </button>
+        </div>
       </div>
     </section>
   )

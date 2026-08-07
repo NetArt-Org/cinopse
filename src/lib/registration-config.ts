@@ -23,7 +23,7 @@ export type RegistrationCoupon = {
   name: string
   code: string
   discount: number
-  type?: "fixed" | "full"
+  type?: "fixed" | "full" | "payable"
   maxUses?: number
 }
 
@@ -128,6 +128,20 @@ export const registrationCoupons: RegistrationCoupon[] = [
     type: "full",
     maxUses: 400,
   },
+  {
+    name: "CINOPSE-TEST-FREE full waiver",
+    code: "CINOPSE-TEST-AX7F9",
+    discount: 0,
+    type: "full",
+    maxUses: 1,
+  },
+  {
+    name: "CINOPSE-TEST-ONE pay ₹1",
+    code: "CINOPSE-ONE-AX7F9",
+    discount: 1,
+    type: "payable",
+    maxUses: 1,
+  },
 ]
 
 export function getRegistrationPricing(now = new Date()) {
@@ -173,14 +187,24 @@ export function normalizeCouponCode(code: string) {
 }
 
 export function calculateRegistrationTotal(baseAmount: number, coupons: RegistrationCoupon[]) {
-  const discount = coupons.reduce(
-    (total, coupon) =>
-      total + (coupon.type === "full" ? baseAmount : coupon.discount),
-    0,
+  const targetPayableAmount = coupons.reduce<number | null>(
+    (target, coupon) =>
+      coupon.type === "payable" ? Math.min(target ?? coupon.discount, coupon.discount) : target,
+    null,
   )
+  const discount = coupons.reduce((total, coupon) => {
+    if (coupon.type === "full") return total + baseAmount
+    if (coupon.type === "payable") return total + Math.max(baseAmount - coupon.discount, 0)
+    return total + coupon.discount
+  }, 0)
+  const payableAmount =
+    targetPayableAmount === null
+      ? Math.max(baseAmount - Math.min(discount, baseAmount), 0)
+      : Math.max(targetPayableAmount, 0)
+
   return {
     discount: Math.min(discount, baseAmount),
-    payableAmount: Math.max(baseAmount - discount, 0),
+    payableAmount,
   }
 }
 
