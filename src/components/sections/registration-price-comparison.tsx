@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { ReactNode } from "react"
 import { createPortal } from "react-dom"
 import { ArrowRight, Check, X } from "lucide-react"
+import { toast } from "sonner"
 import { GoogleIcon } from "@/components/icons/google-icon"
 import { useRegistrationTicketCta } from "@/hooks/use-registration-ticket-cta"
 import {
@@ -138,6 +139,7 @@ export function RegistrationPriceComparison({
   const [couponInput, setCouponInput] = useState("")
   const [appliedCoupon, setAppliedCoupon] = useState<RegistrationCoupon | null>(null)
   const [couponError, setCouponError] = useState("")
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isCheckingRegistration, setIsCheckingRegistration] = useState(false)
   const [isRetryingPayment, setIsRetryingPayment] = useState(false)
@@ -150,10 +152,6 @@ export function RegistrationPriceComparison({
   >(null)
   const [googleProfile, setGoogleProfile] = useState<GoogleProfile | null>(null)
   const [isSigningIn, setIsSigningIn] = useState(false)
-  const [emailPasswordForm, setEmailPasswordForm] = useState({
-    email: "",
-    password: "",
-  })
   const [authError, setAuthError] = useState("")
   const autoCheckRequested = useRef(false)
   const firebaseUnsubscribe = useRef<(() => void) | null>(null)
@@ -253,6 +251,11 @@ export function RegistrationPriceComparison({
     selectedAmount,
     appliedCoupon ? [appliedCoupon] : [],
   )
+  const couponApplyDisabled =
+    Boolean(appliedCoupon) ||
+    isApplyingCoupon ||
+    Boolean(couponError) ||
+    !couponInput.trim()
   const confirmButtonLabel =
     couponTotal.payableAmount > 0 ? "Proceed to Pay →" : "Confirm Registration ✓"
 
@@ -264,6 +267,7 @@ export function RegistrationPriceComparison({
     setLookupResult(null)
     setStatusOnlyView(false)
     setStatusOnlyLoading(false)
+    setRetryPaymentError("")
     setCouponInput("")
     setAppliedCoupon(null)
     setCouponError("")
@@ -302,65 +306,63 @@ export function RegistrationPriceComparison({
     }
   }
 
-  async function handleEmailPasswordSignIn() {
-    const email = emailPasswordForm.email.trim()
-
-    if (!emailPattern.test(email) || !emailPasswordForm.password) {
-      setAuthError("Enter a valid email and password to continue.")
-      return
-    }
-
-    setIsSigningIn(true)
-    setAuthError("")
-
-    try {
-      const { signInWithEmailPassword } = await import("@/lib/firebase-client")
-      const profile = await signInWithEmailPassword(email, emailPasswordForm.password)
-      setGoogleProfile(profile)
-      setForm((current) => ({
-        ...current,
-        name: current.name || profile.name,
-        email: profile.email,
-      }))
-      setLookupEmail(profile.email)
-      setEmailPasswordForm({ email: "", password: "" })
-    } catch (error) {
-      setAuthError(
-        error instanceof Error
-          ? error.message
-          : "Unable to sign in with email and password.",
-      )
-    } finally {
-      setIsSigningIn(false)
-    }
-  }
-
-  function applyCoupon() {
+  async function applyCoupon() {
     const coupon = resolveRegistrationCoupon(couponInput)
 
     if (!coupon) {
-      setCouponError("This coupon code is not available.")
+      const message = "This coupon code is not available."
+      setCouponError(message)
+      toast.error(message)
       return
     }
     if (appliedCoupon) {
-      setCouponError("Only one coupon can be applied to a registration.")
+      const message = "Only one coupon can be applied to a registration."
+      setCouponError(message)
+      toast.error(message)
       return
     }
 
-    setAppliedCoupon(coupon)
-    setCouponInput("")
-    setCouponError("")
+    setIsApplyingCoupon(true)
+    try {
+      const response = await fetch("/api/registrations/coupons/validate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ couponCode: couponInput }),
+      })
+      const payload = (await response.json()) as { message?: string }
+
+      if (!response.ok) {
+        throw new Error(payload.message || "Unable to apply coupon.")
+      }
+
+      setAppliedCoupon(coupon)
+      setCouponInput("")
+      setCouponError("")
+      toast.success("Coupon applied.")
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unable to apply coupon."
+      setCouponError(message)
+      toast.error(message)
+    } finally {
+      setIsApplyingCoupon(false)
+    }
   }
 
   function removeCoupon() {
     setAppliedCoupon(null)
     setCouponError("")
+    toast.info("Coupon removed.")
   }
 
   async function nextStep() {
     if (step === 1) {
       if (selectedCategory < 0) {
-        setErrors({ category: "Please choose a category to continue." })
+        const message = "Please choose a category to continue."
+        setErrors({ category: message })
+        toast.error(message)
         return
       }
       setErrors({})
@@ -371,14 +373,19 @@ export function RegistrationPriceComparison({
     if (step === 2) {
       const nextErrors = validateDetails(form)
       setErrors(nextErrors)
-      if (Object.keys(nextErrors).length) return
+      if (Object.keys(nextErrors).length) {
+        toast.error(Object.values(nextErrors)[0])
+        return
+      }
       setStep(3)
       return
     }
 
     if (step === 3) {
       if (!form.terms) {
-        setErrors({ terms: "Please agree to terms and conditions." })
+        const message = "Please agree to terms and conditions."
+        setErrors({ terms: message })
+        toast.error(message)
         return
       }
 
@@ -417,12 +424,16 @@ export function RegistrationPriceComparison({
         }
 
         if (payload.payment) {
+          toast.info("Registration saved. Complete payment to confirm.")
           await openRazorpayCheckout({
             idToken,
             registrationName: payload.registration.name,
             payment: payload.payment,
             form,
           })
+          toast.success("Payment successful. Registration confirmed.")
+        } else {
+          toast.success("Registration confirmed.")
         }
 
         setRegistrationId(payload.registration.name)
@@ -430,12 +441,14 @@ export function RegistrationPriceComparison({
         setErrors({})
         setStep(4)
       } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Unable to save your registration. Please try again."
         setErrors({
-          submit:
-            error instanceof Error
-              ? error.message
-              : "Unable to save your registration. Please try again.",
+          submit: message,
         })
+        toast.error(message)
       } finally {
         setIsSubmitting(false)
       }
@@ -507,20 +520,25 @@ export function RegistrationPriceComparison({
           ),
           registrationDate: formatDisplayDate(payload.registration.registration_date),
         })
+        toast.success("Registration found.")
       } else {
+        const message = "No registration was found for your Google account."
         setLookupResult({
           state: "missing",
-          message: "No registration was found for your Google account.",
+          message,
         })
+        toast.error(message)
       }
     } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to check your registration right now."
       setLookupResult({
         state: "missing",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unable to check your registration right now.",
+        message,
       })
+      toast.error(message)
     } finally {
       setIsCheckingRegistration(false)
     }
@@ -589,12 +607,14 @@ export function RegistrationPriceComparison({
 
       window.dispatchEvent(new Event("cinopse:registration-updated"))
       await checkRegistration()
+      toast.success("Payment successful. Registration confirmed.")
     } catch (error) {
-      setRetryPaymentError(
+      const message =
         error instanceof Error
           ? error.message
-          : "Unable to complete payment. Please try again.",
-      )
+          : "Unable to complete payment. Please try again."
+      setRetryPaymentError(message)
+      toast.error(message)
     } finally {
       setIsRetryingPayment(false)
     }
@@ -781,55 +801,6 @@ export function RegistrationPriceComparison({
                   <GoogleIcon className="size-5" />
                   {isSigningIn ? "Connecting to Google…" : "Sign in with Google"}
                 </button>
-                <div className="mt-6 border-t border-[color:var(--cinopse-border)] pt-5 text-left">
-                  <p className="m-0 text-center text-[10px] leading-4 font-medium tracking-[0.12em] text-[color:var(--cinopse-muted)] uppercase">
-                    Or sign in with email
-                  </p>
-                  <div className="mt-3 grid gap-3">
-                    <input
-                      type="email"
-                      value={emailPasswordForm.email}
-                      onChange={(event) => {
-                        setEmailPasswordForm((current) => ({
-                          ...current,
-                          email: event.target.value,
-                        }))
-                        setAuthError("")
-                      }}
-                      placeholder="Email address"
-                      autoComplete="email"
-                      className="w-full rounded-[10px] border-[1.5px] border-[color:var(--cinopse-border)] bg-white px-3.5 py-3 text-[13px] leading-5 text-[color:var(--cinopse-ink)] outline-none transition-[border-color,box-shadow] duration-300 placeholder:text-[color:var(--cinopse-faint)] focus:border-[color:var(--cinopse-primary)] focus:shadow-[0_0_0_3px_rgba(27,75,150,0.1)]"
-                    />
-                    <input
-                      type="password"
-                      value={emailPasswordForm.password}
-                      onChange={(event) => {
-                        setEmailPasswordForm((current) => ({
-                          ...current,
-                          password: event.target.value,
-                        }))
-                        setAuthError("")
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.preventDefault()
-                          void handleEmailPasswordSignIn()
-                        }
-                      }}
-                      placeholder="Password"
-                      autoComplete="current-password"
-                      className="w-full rounded-[10px] border-[1.5px] border-[color:var(--cinopse-border)] bg-white px-3.5 py-3 text-[13px] leading-5 text-[color:var(--cinopse-ink)] outline-none transition-[border-color,box-shadow] duration-300 placeholder:text-[color:var(--cinopse-faint)] focus:border-[color:var(--cinopse-primary)] focus:shadow-[0_0_0_3px_rgba(27,75,150,0.1)]"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleEmailPasswordSignIn}
-                      disabled={isSigningIn}
-                      className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[color:var(--cinopse-primary)] px-6 text-[13px] font-medium text-white transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(27,75,150,0.28)] disabled:cursor-wait disabled:opacity-70"
-                    >
-                      {isSigningIn ? "Signing in…" : "Sign in with Email"}
-                    </button>
-                  </div>
-                </div>
                 {authError ? (
                   <p role="alert" className="mt-4 text-sm leading-5 text-[#c0392b]">
                     {authError}
@@ -1069,9 +1040,9 @@ export function RegistrationPriceComparison({
                       />
                       <Field
                         id="fMcn"
-                        label="Medical Council Number (MCN)"
+                        label="Karnataka Medical Council Number"
                         value={form.medicalCouncilNumber}
-                        placeholder="Enter MCN"
+                        placeholder="Enter Karnataka Medical Council number"
                         error={errors.medicalCouncilNumber}
                         onChange={(value) =>
                           setForm((current) => ({ ...current, medicalCouncilNumber: value }))
@@ -1093,7 +1064,7 @@ export function RegistrationPriceComparison({
                         ["Mobile", form.phone ?? ""],
                         ["City", form.city],
                         ["Institution", form.institution],
-                        ["MCN", form.medicalCouncilNumber],
+                        ["KMC", form.medicalCouncilNumber],
                           ["Category", selectedLabel],
                           ["Fee window", selectedActiveOption?.name ?? ""],
                       ].map(([label, value]) => (
@@ -1133,21 +1104,21 @@ export function RegistrationPriceComparison({
                           onKeyDown={(event) => {
                             if (event.key === "Enter") {
                               event.preventDefault()
-                              applyCoupon()
+                              if (!couponApplyDisabled) void applyCoupon()
                             }
                           }}
-                          disabled={Boolean(appliedCoupon)}
+                          disabled={Boolean(appliedCoupon) || isApplyingCoupon}
                           placeholder="Enter coupon code"
                           aria-describedby={couponError ? "coupon-error" : undefined}
                           className="min-w-0 flex-1 rounded-full border border-[color:var(--cinopse-border)] px-4 py-2.5 text-xs uppercase outline-none transition-[border-color,box-shadow] placeholder:normal-case focus:border-[color:var(--cinopse-primary)] focus:shadow-[0_0_0_3px_rgba(27,75,150,0.1)] disabled:cursor-not-allowed disabled:bg-[color:var(--cinopse-cream)]"
                         />
                         <button
                           type="button"
-                          onClick={applyCoupon}
-                          disabled={Boolean(appliedCoupon)}
+                          onClick={() => void applyCoupon()}
+                          disabled={couponApplyDisabled}
                           className="rounded-full bg-[color:var(--cinopse-primary)] px-4 py-2.5 text-xs font-medium text-white transition-colors hover:bg-[color:var(--cinopse-secondary)] disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                          Apply
+                          {isApplyingCoupon ? "Checking…" : "Apply"}
                         </button>
                       </div>
                       {couponError ? <ErrorText id="coupon-error">{couponError}</ErrorText> : null}
@@ -1395,7 +1366,7 @@ function RegistrationStatusDetails({
         ["Email", details.email],
         ["Mobile", details.mobile],
         ["City", details.city],
-        ["MCN", details.medicalCouncilNumber],
+        ["KMC", details.medicalCouncilNumber],
         ["Institution / Hospital", details.institution],
       ],
     },
@@ -1735,7 +1706,7 @@ function validateDetails(form: WizardForm) {
     nextErrors.institution = "Please enter your institution or hospital."
   }
   if (!form.medicalCouncilNumber.trim()) {
-    nextErrors.medicalCouncilNumber = "Please enter your Medical Council Number."
+    nextErrors.medicalCouncilNumber = "Please enter your Karnataka Medical Council number."
   }
 
   return nextErrors

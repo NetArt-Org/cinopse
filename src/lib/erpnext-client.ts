@@ -220,3 +220,14 @@ export async function countErpRegistrationsByCouponCode(couponCode: string) {
 
   return response.message
 }
+
+export async function countErpRegistrationsByCouponCodes(couponCodes: string[]) {
+  const uniqueCouponCodes = Array.from(new Set(couponCodes.filter(Boolean)))
+  const counts = await Promise.all(
+    uniqueCouponCodes.map((couponCode) =>
+      countErpRegistrationsByCouponCode(couponCode),
+    ),
+  )
+
+  return counts.reduce((total, count) => total + count, 0)
+}

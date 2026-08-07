@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 import {
-  countErpRegistrationsByCouponCode,
+  countErpRegistrationsByCouponCodes,
   createErpRegistration,
   findErpRegistrationByGoogleEmail,
   updateErpRegistration,
@@ -10,6 +10,7 @@ import { verifyFirebaseIdToken } from "@/lib/firebase-admin-rest"
 import { createRazorpayOrder } from "@/lib/razorpay-client"
 import {
   calculateRegistrationTotal,
+  getCouponUsageCodes,
   getRegistrationAmount,
   normalizeCouponCode,
   resolveRegistrationCoupon,
@@ -118,8 +119,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (coupon?.maxUses) {
-      const couponUsage = await countErpRegistrationsByCouponCode(
-        normalizedCouponCode,
+      const couponUsage = await countErpRegistrationsByCouponCodes(
+        getCouponUsageCodes(coupon).map(normalizeCouponCode),
       )
 
       if (couponUsage >= coupon.maxUses) {

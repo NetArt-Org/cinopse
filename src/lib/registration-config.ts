@@ -25,6 +25,7 @@ export type RegistrationCoupon = {
   discount: number
   type?: "fixed" | "full" | "payable"
   maxUses?: number
+  aliases?: string[]
 }
 
 const earlyBirdEndsAt = "2026-09-10T23:59:59+05:30"
@@ -133,14 +134,16 @@ export const registrationCoupons: RegistrationCoupon[] = [
     code: "CINOPSE-TEST-AX7F9",
     discount: 0,
     type: "full",
-    maxUses: 1,
+    maxUses: 2,
+    aliases: ["CINOPSE-TEST-FREE"],
   },
   {
     name: "CINOPSE-TEST-ONE pay ₹1",
     code: "CINOPSE-ONE-AX7F9",
     discount: 1,
     type: "payable",
-    maxUses: 1,
+    maxUses: 2,
+    aliases: ["CINOPSE-TEST-ONE"],
   },
 ]
 
@@ -177,9 +180,16 @@ export function resolveRegistrationCoupon(code: string) {
 
   return (
     registrationCoupons.find(
-      (item) => normalizeCouponCode(item.code) === normalizedCode,
+      (item) =>
+        getCouponUsageCodes(item).some(
+          (code) => normalizeCouponCode(code) === normalizedCode,
+        ),
     ) ?? null
   )
+}
+
+export function getCouponUsageCodes(coupon: RegistrationCoupon) {
+  return Array.from(new Set([coupon.code, ...(coupon.aliases ?? [])]))
 }
 
 export function normalizeCouponCode(code: string) {

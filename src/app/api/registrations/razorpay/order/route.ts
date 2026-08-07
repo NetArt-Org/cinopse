@@ -6,14 +6,10 @@ import {
 } from "@/lib/erpnext-client"
 import { verifyFirebaseIdToken } from "@/lib/firebase-admin-rest"
 import { createRazorpayOrder } from "@/lib/razorpay-client"
-import { sendRegistrationWhatsAppNotificationSafely } from "@/lib/whapi-client"
 
 type RetryPaymentRequest = {
   registrationName?: unknown
 }
-
-const eventDateLabel = "Sunday, 27 September 2026"
-const venue = "Jawaharlal Nehru Planetarium, Sankey Road, Bengaluru"
 
 function getBearerToken(request: NextRequest) {
   const value = request.headers.get("authorization")
@@ -68,16 +64,6 @@ export async function POST(request: NextRequest) {
       status: "Pending",
       payment_status: "Pending",
       transaction_id: order.id,
-    })
-
-    await sendRegistrationWhatsAppNotificationSafely({
-      kind: "payment-pending",
-      registration: {
-        ...updatedRegistration,
-        transaction_id: order.id,
-      },
-      eventDateLabel,
-      venue,
     })
 
     return NextResponse.json({

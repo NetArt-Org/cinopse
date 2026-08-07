@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
+import { Toaster } from "sonner";
 import "react-phone-number-input/style.css";
 import "./globals.css";
 
@@ -76,7 +77,10 @@ export default function RootLayout({
       lang="en"
       className={`h-full antialiased ${inter.variable} ${fraunces.variable}`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <Toaster richColors position="top-right" closeButton />
+      </body>
     </html>
   );
 }
