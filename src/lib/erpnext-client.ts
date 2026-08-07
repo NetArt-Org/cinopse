@@ -26,6 +26,10 @@ type ErpResponse<T> = {
   data: T
 }
 
+type ErpMethodResponse<T> = {
+  message: T
+}
+
 function getErpConfig() {
   const baseUrl = process.env.ERP_NEXT_BASE_URL?.replace(/\/$/, "")
   const apiKey = process.env.ERP_NEXT_API_KEY
@@ -63,6 +67,33 @@ async function erpRequest<T>(path: string, init?: RequestInit) {
 
   return (await response.json()) as ErpResponse<T>
 }
+
+async function erpMethodRequest<T>(path: string, init?: RequestInit) {
+  const { baseUrl, apiKey, apiSecret } = getErpConfig()
+  const response = await fetch(`${baseUrl}${path}`, {
+    ...init,
+    headers: {
+      Accept: "application/json",
+      Authorization: `token ${apiKey}:${apiSecret}`,
+      "Content-Type": "application/json",
+      ...init?.headers,
+    },
+    cache: "no-store",
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => "")
+    const errorMessage = extractErpErrorMessage(errorBody)
+    throw new Error(
+      response.status === 401 || response.status === 403
+        ? "ERPNext rejected the API credentials or method permissions."
+        : `ERPNext request failed with status ${response.status}${errorMessage ? `: ${errorMessage}` : "."}`,
+    )
+  }
+
+  return (await response.json()) as ErpMethodResponse<T>
+}
+
 
 function extractErpErrorMessage(body: string) {
   if (!body) return ""
@@ -176,4 +207,16 @@ export async function findErpRegistrationByGoogleEmail(email: string) {
   )
 
   return response.data[0] ?? null
+}
+
+export async function countErpRegistrationsByCouponCode(couponCode: string) {
+  const query = new URLSearchParams({
+    doctype: registrationDocType,
+    filters: JSON.stringify({ custom_coupon_code: couponCode }),
+  })
+  const response = await erpMethodRequest<number>(
+    `/api/method/frappe.client.get_count?${query.toString()}`,
+  )
+
+  return response.message
 }

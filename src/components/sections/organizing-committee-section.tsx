@@ -1,15 +1,19 @@
+import Image from "next/image"
+
 export type CommitteeLeader = {
   initials: string
   name: string
   role: string
   affiliation: string
   message?: string
+  image?: string
 }
 
 export type CommitteeMember = {
   initials: string
   name: string
   caption: string
+  image?: string
   variant?: "standard" | "logistics"
   names?: string[]
 }
@@ -34,6 +38,7 @@ export function OrganizingCommitteeSection({
       initials: leader.initials,
       name: leader.name,
       caption: `${leader.role} · ${leader.affiliation}`,
+      image: leader.image,
       variant: "standard" as const,
     })),
     ...members.filter((member) => member.variant !== "logistics"),
@@ -73,10 +78,28 @@ export function OrganizingCommitteeSection({
             <article
               key={member.name}
               data-reveal
-              className="flex min-h-[178px] flex-col items-center justify-center rounded-[18px] bg-[color:var(--cinopse-cream)] px-8 py-7 text-center transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-1 hover:shadow-[0_14px_28px_rgba(12,40,84,0.12)]"
+              className={`flex min-h-[178px] flex-col items-center rounded-[18px] bg-[color:var(--cinopse-cream)] text-center transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-1 hover:shadow-[0_14px_28px_rgba(12,40,84,0.12)] ${
+                member.image ? "px-4 pt-4 pb-7" : "justify-center px-8 py-7"
+              }`}
             >
-              <div className="grid size-16 shrink-0 place-items-center rounded-full bg-[image:var(--cinopse-gradient-reference-blue)] font-display text-[22px] leading-none font-semibold text-[color:var(--cinopse-accent)]">
-                {member.initials}
+              <div
+                className={`grid shrink-0 place-items-center overflow-hidden bg-[image:var(--cinopse-gradient-reference-blue)] font-display leading-none font-semibold text-[color:var(--cinopse-accent)] ${
+                  member.image
+                    ? "h-[380px] w-full rounded-[16px]"
+                    : "size-16 rounded-full text-[22px]"
+                }`}
+              >
+                {member.image ? (
+                  <Image
+                    src={member.image}
+                    alt={member.name}
+                    width={420}
+                    height={300}
+                    className="size-full object-cover"
+                  />
+                ) : (
+                  member.initials
+                )}
               </div>
               <div className="mt-4 min-w-0">
                 <h3 className="text-[19px] leading-[1.3] font-medium text-[color:var(--cinopse-ink)]">

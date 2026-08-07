@@ -12,7 +12,7 @@ import {
   getActiveRegistrationOption,
   getRegistrationAmount,
   getRegistrationPricing,
-  registrationCoupons,
+  resolveRegistrationCoupon,
   type RegistrationCoupon,
 } from "@/lib/registration-config"
 import PhoneInput, {
@@ -333,10 +333,7 @@ export function RegistrationPriceComparison({
   }
 
   function applyCoupon() {
-    const code = couponInput.trim().toUpperCase()
-    const coupon = registrationCoupons.find(
-      (item) => item.code.toUpperCase() === code,
-    )
+    const coupon = resolveRegistrationCoupon(couponInput)
 
     if (!coupon) {
       setCouponError("This coupon code is not available.")

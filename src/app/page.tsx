@@ -112,6 +112,7 @@ const committee = {
       name: "Dr Murali Mohan BV",
       role: "President",
       affiliation: "Narayana Health City",
+      image: "/doctor/murali-mohan.jpeg",
     },
     {
       initials: "SK",
@@ -124,6 +125,7 @@ const committee = {
       name: "Dr Vinod Babu Veerapalli",
       role: "Organising Co-Chairperson",
       affiliation: "Dr Mohan's Diabetes Centre",
+      image: "/doctor/vinod-babu.jpeg",
     },
     {
       initials: "SK",
@@ -148,16 +150,19 @@ const committee = {
       initials: "SM",
       name: "Dr Soumya M S",
       caption: "Scientific Committee · Narayana Health City",
+      image: "/doctor/soumya-ms.jpeg",
     },
     {
       initials: "PG",
       name: "Dr Praveen Gangadhara",
       caption: "Scientific Committee · Dr Mohan's Diabetes Centre",
+      image: "/doctor/praveen-gangadhara.jpeg",
     },
     {
       initials: "PM",
       name: "Dr Prathima Murthy",
       caption: "Scientific Committee · Apollo Hospitals",
+      image: "/doctor/prathima-murthy.jpeg",
     },
     {
       initials: "✣",

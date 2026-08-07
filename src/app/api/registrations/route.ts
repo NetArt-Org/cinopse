@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 import {
+  countErpRegistrationsByCouponCode,
   createErpRegistration,
   findErpRegistrationByGoogleEmail,
   updateErpRegistration,
@@ -10,6 +11,7 @@ import { createRazorpayOrder } from "@/lib/razorpay-client"
 import {
   calculateRegistrationTotal,
   getRegistrationAmount,
+  normalizeCouponCode,
   resolveRegistrationCoupon,
 } from "@/lib/registration-config"
 
@@ -80,6 +82,7 @@ export async function POST(request: NextRequest) {
     const erpCategory = erpCategoryByRegistrationCategory[category]
     const couponCode = typeof body.couponCode === "string" ? body.couponCode : ""
     const coupon = resolveRegistrationCoupon(couponCode)
+    const normalizedCouponCode = coupon ? normalizeCouponCode(coupon.code) : ""
 
     if (
       !fullName ||
@@ -110,6 +113,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (coupon?.maxUses) {
+      const couponUsage = await countErpRegistrationsByCouponCode(
+        normalizedCouponCode,
+      )
+
+      if (couponUsage >= coupon.maxUses) {
+        return badRequest(
+          "This coupon code has reached its registration limit.",
+        )
+      }
+    }
+
     const registration = await createErpRegistration({
       full_name: fullName,
       category: erpCategory,
@@ -123,7 +138,7 @@ export async function POST(request: NextRequest) {
         "Google-authenticated registration created from the CINOPSE website.",
         `Category: ${category}. Base amount: ₹${amount}.`,
         `Coupon discount: ₹${discount}.`,
-        coupon ? `Coupon: ${coupon.name} (${coupon.code}).` : "Coupon: none.",
+        coupon ? `Coupon: ${coupon.name} (${normalizedCouponCode}).` : "Coupon: none.",
       ].join(" "),
       amount: payableAmount,
       payment_date: payableAmount > 0 ? "" : toErpDate(),
@@ -133,7 +148,7 @@ export async function POST(request: NextRequest) {
       google_name: user.name,
       google_email: user.email,
       custom_coupon_amount: discount,
-      custom_coupon_code: coupon?.code ?? "",
+      custom_coupon_code: normalizedCouponCode,
       custom_medical_council_number: medicalCouncilNumber,
     })
 

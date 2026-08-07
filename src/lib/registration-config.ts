@@ -24,6 +24,7 @@ export type RegistrationCoupon = {
   code: string
   discount: number
   type?: "fixed" | "full"
+  maxUses?: number
 }
 
 const earlyBirdEndsAt = "2026-09-10T23:59:59+05:30"
@@ -102,16 +103,30 @@ export const registrationCategories: RegistrationCategory[] = [
 ]
 
 export const registrationCoupons: RegistrationCoupon[] = [
+  ...[
+    "CINOPSE-001",
+    "CINOPSE-003",
+    "CINOPSE-005",
+    "CINOPSE-007",
+    "CINOPSE-009",
+    "CINOPSE-011",
+    "CINOPSE-013",
+    "CINOPSE-015",
+    "CINOPSE-017",
+    "CINOPSE-019",
+  ].map((code) => ({
+    name: `${code} full waiver`,
+    code,
+    discount: 0,
+    type: "full" as const,
+    maxUses: 30,
+  })),
   {
-    name: "Sample academic discount",
-    code: "ACADEMIC250",
-    discount: 499,
-  },
-  {
-    name: "Full registration waiver",
-    code: "CINOPSE100OFF",
+    name: "CINOPSE-400 full waiver",
+    code: "CINOPSE-400",
     discount: 0,
     type: "full",
+    maxUses: 400,
   },
 ]
 
@@ -143,14 +158,18 @@ export function getRegistrationAmount(category: string, now = new Date()) {
 }
 
 export function resolveRegistrationCoupon(code: string) {
-  const normalizedCode = code.trim().toUpperCase()
+  const normalizedCode = normalizeCouponCode(code)
   if (!normalizedCode) return null
 
   return (
     registrationCoupons.find(
-      (item) => item.code.toUpperCase() === normalizedCode,
+      (item) => normalizeCouponCode(item.code) === normalizedCode,
     ) ?? null
   )
+}
+
+export function normalizeCouponCode(code: string) {
+  return code.trim().toUpperCase().replace(/\s*-\s*/g, "-")
 }
 
 export function calculateRegistrationTotal(baseAmount: number, coupons: RegistrationCoupon[]) {
