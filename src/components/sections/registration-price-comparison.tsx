@@ -188,12 +188,22 @@ export function RegistrationPriceComparison({
       autoCheckRequested.current = true
       setModalOpen(true)
     }
+    const openRegistrationFromUrl = () => {
+      const params = new URLSearchParams(window.location.search)
+      const shouldOpen = params.get("register") === "1"
+
+      if (shouldOpen) openRegistration()
+    }
 
     window.addEventListener("cinopse:open-registration", openRegistration)
     window.addEventListener("cinopse:view-ticket", openTicketStatus)
+    window.addEventListener("popstate", openRegistrationFromUrl)
+    openRegistrationFromUrl()
+
     return () => {
       window.removeEventListener("cinopse:open-registration", openRegistration)
       window.removeEventListener("cinopse:view-ticket", openTicketStatus)
+      window.removeEventListener("popstate", openRegistrationFromUrl)
     }
   }, [dialogOnly])
 
@@ -1040,9 +1050,9 @@ export function RegistrationPriceComparison({
                       />
                       <Field
                         id="fMcn"
-                        label="Karnataka Medical Council Number"
+                        label="Medical Council Number (MCN)"
                         value={form.medicalCouncilNumber}
-                        placeholder="Enter Karnataka Medical Council number"
+                        placeholder="Enter Medical Council Number"
                         error={errors.medicalCouncilNumber}
                         onChange={(value) =>
                           setForm((current) => ({ ...current, medicalCouncilNumber: value }))
@@ -1064,7 +1074,7 @@ export function RegistrationPriceComparison({
                         ["Mobile", form.phone ?? ""],
                         ["City", form.city],
                         ["Institution", form.institution],
-                        ["KMC", form.medicalCouncilNumber],
+                        ["MCN", form.medicalCouncilNumber],
                           ["Category", selectedLabel],
                           ["Fee window", selectedActiveOption?.name ?? ""],
                       ].map(([label, value]) => (
@@ -1366,7 +1376,7 @@ function RegistrationStatusDetails({
         ["Email", details.email],
         ["Mobile", details.mobile],
         ["City", details.city],
-        ["KMC", details.medicalCouncilNumber],
+        ["MCN", details.medicalCouncilNumber],
         ["Institution / Hospital", details.institution],
       ],
     },
@@ -1706,7 +1716,7 @@ function validateDetails(form: WizardForm) {
     nextErrors.institution = "Please enter your institution or hospital."
   }
   if (!form.medicalCouncilNumber.trim()) {
-    nextErrors.medicalCouncilNumber = "Please enter your Karnataka Medical Council number."
+    nextErrors.medicalCouncilNumber = "Please enter your Medical Council Number."
   }
 
   return nextErrors

@@ -119,6 +119,7 @@ const committee = {
       name: "Dr Santosh KM",
       role: "Organising Chairman",
       affiliation: "Narayana Health City",
+      image: "/doctor/santosh-km.jpeg",
     },
     {
       initials: "VB",
@@ -132,12 +133,14 @@ const committee = {
       name: "Dr Sheetal Kamat",
       role: "Organising Secretary",
       affiliation: "Apollo Hospitals",
+      image: "/doctor/sheetal-kamat.jpeg",
     },
     {
       initials: "KS",
       name: "Dr Karthik SM",
       role: "Organising Treasurer",
       affiliation: "Apollo Hospitals",
+      image: "/doctor/kartik-sm.jpeg",
     },
   ],
   members: [
@@ -145,6 +148,7 @@ const committee = {
       initials: "UH",
       name: "Dr Usha Humbi",
       caption: "Scientific Committee · Narayana Health City",
+      image: "/doctor/usha-humbi.jpeg",
     },
     {
       initials: "SM",
@@ -257,6 +261,7 @@ const associatePartners = {
       name: "Dr. Santosh K M",
       role: "Founder & CEO",
       affiliation: "Narayana Health City",
+      image: "/doctor/santosh-km.jpeg",
       message: founderMessage,
     },
     {
@@ -264,6 +269,7 @@ const associatePartners = {
       name: "Dr. Vinod Babu",
       role: "Chief Financial Officer",
       affiliation: "Dr Mohan's Diabetes Centre",
+      image: "/doctor/vinod-babu.jpeg",
       message: cfoMessage,
     },
     {
@@ -271,6 +277,7 @@ const associatePartners = {
       name: "Dr. Karthik S M",
       role: "Chief Operating Officer",
       affiliation: "Apollo Hospitals",
+      image: "/doctor/kartik-sm.jpeg",
       message: cooMessage,
     },
   ],
