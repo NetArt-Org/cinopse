@@ -121,7 +121,6 @@ export const registrationCoupons: RegistrationCoupon[] = [
     discount: 0,
     type: "full" as const,
     maxUses: 30,
-    aliases: [code.replace("CINOPSE", "CINOPSE-")],
   })),
   {
     name: "CINOPSE400 full waiver",
@@ -129,7 +128,13 @@ export const registrationCoupons: RegistrationCoupon[] = [
     discount: 0,
     type: "full",
     maxUses: 400,
-    aliases: ["CINOPSE-400"],
+  },
+  {
+    name: "CINOPSE_MM full waiver",
+    code: "CINOPSE_MM",
+    discount: 0,
+    type: "full",
+    maxUses: 100,
   },
   {
     name: "CINOPSE50 50% discount",

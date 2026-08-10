@@ -19,6 +19,7 @@ type WhatsAppRegistrationMessage = {
     | "amount"
     | "payment_status"
     | "mobile"
+    | "email"
     | "transaction_id"
     | "custom_registration_id"
   >
@@ -92,6 +93,7 @@ function buildRegistrationMessageBody({
     heading,
     "",
     `Registration ID: ${registration.custom_registration_id || registration.name}`,
+    registration.email ? `Email: ${registration.email}` : "",
     `Category: ${registration.category}`,
     `Amount: ${amount}`,
     `Payment Status: ${paymentStatus}`,
