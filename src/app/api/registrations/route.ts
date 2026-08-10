@@ -3,10 +3,13 @@ import { NextRequest, NextResponse } from "next/server"
 import {
   countErpRegistrationsByCouponCodes,
   createErpRegistration,
+  findErpRegistrationByEmail,
   findErpRegistrationByGoogleEmail,
+  getNextCustomRegistrationId,
   updateErpRegistration,
 } from "@/lib/erpnext-client"
 import { verifyFirebaseIdToken } from "@/lib/firebase-admin-rest"
+import { toIndiaErpDateTime } from "@/lib/india-datetime"
 import { createRazorpayOrder } from "@/lib/razorpay-client"
 import {
   calculateRegistrationTotal,
@@ -20,6 +23,7 @@ import { sendRegistrationWhatsAppNotificationSafely } from "@/lib/whapi-client"
 type RegistrationRequest = {
   fullName?: unknown
   category?: unknown
+  email?: unknown
   mobile?: unknown
   city?: unknown
   hospital?: unknown
@@ -35,14 +39,11 @@ const erpCategoryByRegistrationCategory: Record<string, string> = {
 
 const eventDateLabel = "Sunday, 27 September 2026"
 const venue = "Jawaharlal Nehru Planetarium, Sankey Road, Bengaluru"
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 function getBearerToken(request: NextRequest) {
   const value = request.headers.get("authorization")
   return value?.startsWith("Bearer ") ? value.slice(7) : ""
-}
-
-function toErpDate(date = new Date()) {
-  return date.toISOString().slice(0, 19).replace("T", " ")
 }
 
 function badRequest(message: string) {
@@ -55,7 +56,11 @@ export async function GET(request: NextRequest) {
     if (!idToken) return NextResponse.json({ message: "Sign in is required." }, { status: 401 })
 
     const user = await verifyFirebaseIdToken(idToken)
-    const registration = await findErpRegistrationByGoogleEmail(user.email)
+    const lookupEmail = request.nextUrl.searchParams.get("email")?.trim().toLowerCase() ?? ""
+    const registration =
+      lookupEmail && emailPattern.test(lookupEmail)
+        ? await findErpRegistrationByEmail(lookupEmail)
+        : await findErpRegistrationByGoogleEmail(user.email)
 
     return NextResponse.json({ registration })
   } catch (error) {
@@ -76,6 +81,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as RegistrationRequest
     const fullName = typeof body.fullName === "string" ? body.fullName.trim() : ""
     const category = typeof body.category === "string" ? body.category : ""
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : ""
     const mobile = typeof body.mobile === "string" ? body.mobile.trim() : ""
     const city = typeof body.city === "string" ? body.city.trim() : ""
     const hospital = typeof body.hospital === "string" ? body.hospital.trim() : ""
@@ -91,6 +97,7 @@ export async function POST(request: NextRequest) {
 
     if (
       !fullName ||
+      !emailPattern.test(email) ||
       !mobile ||
       !city ||
       !hospital ||
@@ -120,7 +127,7 @@ export async function POST(request: NextRequest) {
 
     if (coupon?.maxUses) {
       const couponUsage = await countErpRegistrationsByCouponCodes(
-        getCouponUsageCodes(coupon).map(normalizeCouponCode),
+        getCouponUsageCodes(coupon),
       )
 
       if (couponUsage >= coupon.maxUses) {
@@ -130,23 +137,25 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const customRegistrationId = await getNextCustomRegistrationId()
     const registration = await createErpRegistration({
       full_name: fullName,
       category: erpCategory,
       mobile,
-      email: user.email,
+      email,
       city,
       hospital,
-      registration_date: toErpDate(),
+      registration_date: toIndiaErpDateTime(),
       status: "Pending",
       remarks: [
         "Google-authenticated registration created from the CINOPSE website.",
+        `Registration ID: ${customRegistrationId}.`,
         `Category: ${category}. Base amount: ₹${amount}.`,
         `Coupon discount: ₹${discount}.`,
         coupon ? `Coupon: ${coupon.name} (${normalizedCouponCode}).` : "Coupon: none.",
       ].join(" "),
       amount: payableAmount,
-      payment_date: payableAmount > 0 ? "" : toErpDate(),
+      payment_date: payableAmount > 0 ? "" : toIndiaErpDateTime(),
       payment_status: payableAmount > 0 ? "Pending" : "Success",
       transaction_id: "",
       uid: user.uid,
@@ -155,13 +164,14 @@ export async function POST(request: NextRequest) {
       custom_coupon_amount: discount,
       custom_coupon_code: normalizedCouponCode,
       custom_medical_council_number: medicalCouncilNumber,
+      custom_registration_id: customRegistrationId,
     })
 
     if (payableAmount <= 0) {
       const confirmedRegistration = await updateErpRegistration(registration.name, {
         status: "Confirmed",
         payment_status: "Success",
-        payment_date: toErpDate(),
+        payment_date: toIndiaErpDateTime(),
       })
 
       await sendRegistrationWhatsAppNotificationSafely({
@@ -172,6 +182,7 @@ export async function POST(request: NextRequest) {
           mobile,
           amount: payableAmount,
           payment_status: "Success",
+          custom_registration_id: customRegistrationId,
         },
         eventDateLabel,
         venue,
@@ -182,6 +193,7 @@ export async function POST(request: NextRequest) {
           registration: {
             ...confirmedRegistration,
             name: registration.name,
+            custom_registration_id: customRegistrationId,
           },
           payment: null,
         },
@@ -194,7 +206,7 @@ export async function POST(request: NextRequest) {
       receipt: registration.name,
       notes: {
         registration: registration.name,
-        email: user.email,
+        email,
         category: erpCategory,
       },
     })
@@ -208,6 +220,7 @@ export async function POST(request: NextRequest) {
       registration: {
         ...registration,
         transaction_id: order.id,
+        custom_registration_id: customRegistrationId,
       },
       eventDateLabel,
       venue,

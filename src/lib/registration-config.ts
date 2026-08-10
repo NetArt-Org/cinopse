@@ -23,7 +23,7 @@ export type RegistrationCoupon = {
   name: string
   code: string
   discount: number
-  type?: "fixed" | "full" | "payable"
+  type?: "fixed" | "full" | "payable" | "percentage"
   maxUses?: number
   aliases?: string[]
 }
@@ -105,45 +105,54 @@ export const registrationCategories: RegistrationCategory[] = [
 
 export const registrationCoupons: RegistrationCoupon[] = [
   ...[
-    "CINOPSE-001",
-    "CINOPSE-003",
-    "CINOPSE-005",
-    "CINOPSE-007",
-    "CINOPSE-009",
-    "CINOPSE-011",
-    "CINOPSE-013",
-    "CINOPSE-015",
-    "CINOPSE-017",
-    "CINOPSE-019",
+    "CINOPSE001",
+    "CINOPSE003",
+    "CINOPSE005",
+    "CINOPSE007",
+    "CINOPSE009",
+    "CINOPSE011",
+    "CINOPSE013",
+    "CINOPSE015",
+    "CINOPSE017",
+    "CINOPSE019",
   ].map((code) => ({
     name: `${code} full waiver`,
     code,
     discount: 0,
     type: "full" as const,
     maxUses: 30,
+    aliases: [code.replace("CINOPSE", "CINOPSE-")],
   })),
   {
-    name: "CINOPSE-400 full waiver",
-    code: "CINOPSE-400",
+    name: "CINOPSE400 full waiver",
+    code: "CINOPSE400",
     discount: 0,
     type: "full",
     maxUses: 400,
+    aliases: ["CINOPSE-400"],
+  },
+  {
+    name: "CINOPSE50 50% discount",
+    code: "CINOPSE50",
+    discount: 50,
+    type: "percentage",
+    maxUses: 500,
   },
   {
     name: "CINOPSE-TEST-FREE full waiver",
-    code: "CINOPSE-TEST-AX7F9",
+    code: "CINOPSETESTAX7F9",
     discount: 0,
     type: "full",
     maxUses: 2,
-    aliases: ["CINOPSE-TEST-FREE"],
+    aliases: ["CINOPSE-TEST-AX7F9", "CINOPSE-TEST-FREE", "CINOPSETESTFREE"],
   },
   {
     name: "CINOPSE-TEST-ONE pay ₹1",
-    code: "CINOPSE-ONE-AX7F9",
+    code: "CINOPSEONEAX7F9",
     discount: 1,
     type: "payable",
     maxUses: 2,
-    aliases: ["CINOPSE-TEST-ONE"],
+    aliases: ["CINOPSE-ONE-AX7F9", "CINOPSE-TEST-ONE", "CINOPSETESTONE"],
   },
 ]
 
@@ -193,7 +202,7 @@ export function getCouponUsageCodes(coupon: RegistrationCoupon) {
 }
 
 export function normalizeCouponCode(code: string) {
-  return code.trim().toUpperCase().replace(/\s*-\s*/g, "-")
+  return code.trim().toUpperCase().replace(/[\s-]+/g, "")
 }
 
 export function calculateRegistrationTotal(baseAmount: number, coupons: RegistrationCoupon[]) {
@@ -205,6 +214,7 @@ export function calculateRegistrationTotal(baseAmount: number, coupons: Registra
   const discount = coupons.reduce((total, coupon) => {
     if (coupon.type === "full") return total + baseAmount
     if (coupon.type === "payable") return total + Math.max(baseAmount - coupon.discount, 0)
+    if (coupon.type === "percentage") return total + (baseAmount * coupon.discount) / 100
     return total + coupon.discount
   }, 0)
   const payableAmount =

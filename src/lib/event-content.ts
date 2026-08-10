@@ -15,7 +15,7 @@ export const eventContent = {
   venueFull:
     "Jawaharlal Nehru Planetarium, Sri T, Sankey Road, High Grounds, Bengaluru - 560001, Karnataka, India",
   cmeSummit:
-    "CME Summit for Cardio • Renal • Obesity Pulmonary • Sleep Medicine",
+    "CME Summit for Cardio • Neurology • Renal • Obesity Pulmonary • Sleep Medicine",
   registrationStatus: "Registration Opening Soon",
   enquiryPhone: "+91 63817 86183",
   alternatePhone: "+91 99023 40225",

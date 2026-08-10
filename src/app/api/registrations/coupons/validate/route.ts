@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { countErpRegistrationsByCouponCodes } from "@/lib/erpnext-client"
 import {
   getCouponUsageCodes,
-  normalizeCouponCode,
   resolveRegistrationCoupon,
 } from "@/lib/registration-config"
 
@@ -28,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     if (coupon.maxUses) {
       const couponUsage = await countErpRegistrationsByCouponCodes(
-        getCouponUsageCodes(coupon).map(normalizeCouponCode),
+        getCouponUsageCodes(coupon),
       )
 
       if (couponUsage >= coupon.maxUses) {

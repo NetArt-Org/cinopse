@@ -49,6 +49,7 @@ type GoogleProfile = {
 
 type RegistrationLookupDetails = {
   id: string
+  documentName: string
   name: string
   email: string
   mobile: string
@@ -232,7 +233,6 @@ export function RegistrationPriceComparison({
           setForm((current) => ({
             ...current,
             name: current.name || profile.name,
-            email: profile.email,
           }))
           setLookupEmail(profile.email)
           setAuthError("")
@@ -299,7 +299,6 @@ export function RegistrationPriceComparison({
       setForm((current) => ({
         ...current,
         name: current.name || profile.name,
-        email: profile.email,
       }))
       setLookupEmail(profile.email)
     } catch (error) {
@@ -412,6 +411,7 @@ export function RegistrationPriceComparison({
           body: JSON.stringify({
             fullName: form.name,
             category: selectedLabel,
+            email: form.email,
             mobile: form.phone,
             city: form.city,
             hospital: form.institution,
@@ -421,7 +421,7 @@ export function RegistrationPriceComparison({
         })
         const payload = (await response.json()) as {
           message?: string
-          registration?: { name: string }
+          registration?: { name: string; custom_registration_id?: string }
           payment?: {
             keyId: string
             orderId: string
@@ -446,7 +446,7 @@ export function RegistrationPriceComparison({
           toast.success("Registration confirmed.")
         }
 
-        setRegistrationId(payload.registration.name)
+        setRegistrationId(payload.registration.custom_registration_id || payload.registration.name)
         window.dispatchEvent(new Event("cinopse:registration-updated"))
         setErrors({})
         setStep(4)
@@ -475,7 +475,10 @@ export function RegistrationPriceComparison({
     try {
       const { getFirebaseIdToken } = await import("@/lib/firebase-client")
       const idToken = await getFirebaseIdToken()
-      const response = await fetch("/api/registrations", {
+      const query = lookupEmail.trim()
+        ? `?email=${encodeURIComponent(lookupEmail.trim())}`
+        : ""
+      const response = await fetch(`/api/registrations${query}`, {
         headers: { Authorization: `Bearer ${idToken}` },
       })
       const payload = (await response.json()) as {
@@ -498,6 +501,7 @@ export function RegistrationPriceComparison({
           remarks?: string
           custom_coupon_amount?: number | string
           custom_coupon_code?: string
+          custom_registration_id?: string
         } | null
       }
       if (!response.ok) throw new Error(payload.message || "Unable to check your registration.")
@@ -505,7 +509,8 @@ export function RegistrationPriceComparison({
       if (payload.registration) {
         setLookupResult({
           state: "found",
-          id: payload.registration.name,
+          id: payload.registration.custom_registration_id || payload.registration.name,
+          documentName: payload.registration.name,
           name: payload.registration.full_name,
           email: payload.registration.email || payload.registration.google_email || googleProfile?.email || "",
           mobile: payload.registration.mobile || "",
@@ -552,7 +557,7 @@ export function RegistrationPriceComparison({
     } finally {
       setIsCheckingRegistration(false)
     }
-  }, [googleProfile])
+  }, [googleProfile, lookupEmail])
 
   useEffect(() => {
     if (!dialogOnly || !modalOpen || activeView !== "login") return
@@ -584,7 +589,7 @@ export function RegistrationPriceComparison({
           Authorization: `Bearer ${idToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ registrationName: details.id }),
+        body: JSON.stringify({ registrationName: details.documentName }),
       })
       const payload = (await response.json()) as {
         message?: string
@@ -602,7 +607,7 @@ export function RegistrationPriceComparison({
 
       await openRazorpayCheckout({
         idToken,
-        registrationName: details.id,
+        registrationName: details.documentName,
         payment: payload.payment,
         form: {
           name: details.name,
@@ -1014,12 +1019,6 @@ export function RegistrationPriceComparison({
                       placeholder="you@example.com"
                       autoComplete="email"
                       error={errors.email}
-                      readOnly={Boolean(googleProfile)}
-                      hint={
-                        googleProfile
-                          ? "Verified through Google and cannot be changed."
-                          : undefined
-                      }
                       onChange={(value) => setForm((current) => ({ ...current, email: value }))}
                     />
                     <div className="grid gap-3 sm:grid-cols-2">
@@ -1283,12 +1282,10 @@ export function RegistrationPriceComparison({
                   id="lEmail"
                   label="Email"
                   type="email"
-                  value={googleProfile?.email ?? lookupEmail}
+                  value={lookupEmail}
                   placeholder="you@example.com"
                   autoComplete="email"
-                  readOnly
-                  hint="Verified through Google and cannot be changed."
-                  onChange={() => undefined}
+                  onChange={(value) => setLookupEmail(value)}
                 />
                 <button
                   type="button"

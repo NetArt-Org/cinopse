@@ -20,6 +20,7 @@ type WhatsAppRegistrationMessage = {
     | "payment_status"
     | "mobile"
     | "transaction_id"
+    | "custom_registration_id"
   >
   eventDateLabel: string
   venue: string
@@ -90,7 +91,7 @@ function buildRegistrationMessageBody({
     "",
     heading,
     "",
-    `Registration ID: ${registration.name}`,
+    `Registration ID: ${registration.custom_registration_id || registration.name}`,
     `Category: ${registration.category}`,
     `Amount: ${amount}`,
     `Payment Status: ${paymentStatus}`,

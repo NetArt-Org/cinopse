@@ -20,6 +20,7 @@ export type ErpRegistration = {
   custom_coupon_amount?: number | string
   custom_coupon_code?: string
   custom_medical_council_number?: string
+  custom_registration_id?: string
 }
 
 type ErpResponse<T> = {
@@ -141,6 +142,7 @@ export async function createErpRegistration(
     custom_coupon_amount: number
     custom_coupon_code: string
     custom_medical_council_number: string
+    custom_registration_id: string
   },
 ) {
   const response = await erpRequest<ErpRegistration>(
@@ -177,7 +179,7 @@ export async function updateErpRegistration(
   return response.data
 }
 
-export async function findErpRegistrationByGoogleEmail(email: string) {
+async function findErpRegistrationByEmailField(field: "email" | "google_email", email: string) {
   const query = new URLSearchParams({
     fields: JSON.stringify([
       "name",
@@ -197,8 +199,9 @@ export async function findErpRegistrationByGoogleEmail(email: string) {
       "custom_coupon_amount",
       "custom_coupon_code",
       "custom_medical_council_number",
+      "custom_registration_id",
     ]),
-    filters: JSON.stringify([["google_email", "=", email]]),
+    filters: JSON.stringify([[field, "=", email]]),
     order_by: "creation desc",
     limit_page_length: "1",
   })
@@ -209,10 +212,29 @@ export async function findErpRegistrationByGoogleEmail(email: string) {
   return response.data[0] ?? null
 }
 
+export async function findErpRegistrationByGoogleEmail(email: string) {
+  return findErpRegistrationByEmailField("google_email", email)
+}
+
+export async function findErpRegistrationByEmail(email: string) {
+  return findErpRegistrationByEmailField("email", email)
+}
+
 export async function countErpRegistrationsByCouponCode(couponCode: string) {
   const query = new URLSearchParams({
     doctype: registrationDocType,
     filters: JSON.stringify({ custom_coupon_code: couponCode }),
+  })
+  const response = await erpMethodRequest<number>(
+    `/api/method/frappe.client.get_count?${query.toString()}`,
+  )
+
+  return response.message
+}
+
+export async function countErpRegistrations() {
+  const query = new URLSearchParams({
+    doctype: registrationDocType,
   })
   const response = await erpMethodRequest<number>(
     `/api/method/frappe.client.get_count?${query.toString()}`,
@@ -230,4 +252,10 @@ export async function countErpRegistrationsByCouponCodes(couponCodes: string[]) 
   )
 
   return counts.reduce((total, count) => total + count, 0)
+}
+
+export async function getNextCustomRegistrationId() {
+  const registrationCount = await countErpRegistrations()
+
+  return `CINOPSE-${String(registrationCount + 1).padStart(3, "0")}`
 }

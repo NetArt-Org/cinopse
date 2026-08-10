@@ -25,7 +25,7 @@ const navItems = [
 
 const hero: HeroSectionProps = {
   eyebrow:
-    "CME Summit · Cardio · Renal · Obesity · Pulmonary · Sleep Medicine",
+    "CME Summit · Cardio · Neurology · Renal · Obesity · Pulmonary · Sleep Medicine",
   titleWords: ["CINOPSE", "India", "2026"],
   goldWord: "India",
   tagline: [

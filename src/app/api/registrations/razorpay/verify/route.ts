@@ -5,6 +5,7 @@ import {
   updateErpRegistration,
 } from "@/lib/erpnext-client"
 import { verifyFirebaseIdToken } from "@/lib/firebase-admin-rest"
+import { toIndiaErpDateTime } from "@/lib/india-datetime"
 import { verifyRazorpayPaymentSignature } from "@/lib/razorpay-client"
 import { sendRegistrationWhatsAppNotificationSafely } from "@/lib/whapi-client"
 
@@ -18,10 +19,6 @@ type VerifyPaymentRequest = {
 function getBearerToken(request: NextRequest) {
   const value = request.headers.get("authorization")
   return value?.startsWith("Bearer ") ? value.slice(7) : ""
-}
-
-function toErpDate(date = new Date()) {
-  return date.toISOString().slice(0, 19).replace("T", " ")
 }
 
 const eventDateLabel = "Sunday, 27 September 2026"
@@ -69,7 +66,7 @@ export async function POST(request: NextRequest) {
     const updatedRegistration = await updateErpRegistration(registrationName, {
       status: "Confirmed",
       payment_status: "Success",
-      payment_date: toErpDate(),
+      payment_date: toIndiaErpDateTime(),
       transaction_id: paymentId,
     })
 
