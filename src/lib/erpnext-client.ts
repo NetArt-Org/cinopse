@@ -21,6 +21,8 @@ export type ErpRegistration = {
   custom_coupon_code?: string
   custom_medical_council_number?: string
   custom_registration_id?: string
+  google_email?: string
+  uid?: string
 }
 
 type ErpResponse<T> = {
@@ -200,6 +202,8 @@ async function findErpRegistrationByEmailField(field: "email" | "google_email", 
       "custom_coupon_code",
       "custom_medical_council_number",
       "custom_registration_id",
+      "uid",
+      "google_email",
     ]),
     filters: JSON.stringify([[field, "=", email]]),
     order_by: "creation desc",
@@ -210,10 +214,6 @@ async function findErpRegistrationByEmailField(field: "email" | "google_email", 
   )
 
   return response.data[0] ?? null
-}
-
-export async function findErpRegistrationByGoogleEmail(email: string) {
-  return findErpRegistrationByEmailField("google_email", email)
 }
 
 export async function findErpRegistrationByEmail(email: string) {
@@ -258,4 +258,38 @@ export async function getNextCustomRegistrationId() {
   const registrationCount = await countErpRegistrations()
 
   return `CINOPSE-${String(registrationCount + 1).padStart(3, "0")}`
+}
+
+export async function findErpRegistrationByTransactionId(transactionId: string) {
+  const query = new URLSearchParams({
+    fields: JSON.stringify([
+      "name",
+      "full_name",
+      "category",
+      "status",
+      "amount",
+      "payment_status",
+      "registration_date",
+      "mobile",
+      "email",
+      "city",
+      "hospital",
+      "payment_date",
+      "transaction_id",
+      "remarks",
+      "custom_coupon_amount",
+      "custom_coupon_code",
+      "custom_medical_council_number",
+      "custom_registration_id",
+      "google_email",
+    ]),
+    filters: JSON.stringify([["transaction_id", "=", transactionId]]),
+    order_by: "creation desc",
+    limit_page_length: "1",
+  })
+  const response = await erpRequest<ErpRegistration[]>(
+    `/api/resource/${encodeURIComponent(registrationDocType)}?${query.toString()}`,
+  )
+
+  return response.data[0] ?? null
 }

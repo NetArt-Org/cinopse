@@ -115,6 +115,7 @@ declare global {
 }
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+const registrationEmailStorageKey = "cinopse:registration-email"
 
 export function RegistrationPriceComparison({
   audiences,
@@ -182,6 +183,11 @@ export function RegistrationPriceComparison({
       setModalOpen(true)
     }
     const openTicketStatus = () => {
+      const savedRegistrationEmail = window.localStorage
+        .getItem(registrationEmailStorageKey)
+        ?.trim()
+
+      if (savedRegistrationEmail) setLookupEmail(savedRegistrationEmail)
       setActiveView("login")
       setLookupResult(null)
       setStatusOnlyView(true)
@@ -234,7 +240,6 @@ export function RegistrationPriceComparison({
             ...current,
             name: current.name || profile.name,
           }))
-          setLookupEmail(profile.email)
           setAuthError("")
         }
       })
@@ -300,7 +305,6 @@ export function RegistrationPriceComparison({
         ...current,
         name: current.name || profile.name,
       }))
-      setLookupEmail(profile.email)
     } catch (error) {
       const code = typeof error === "object" && error && "code" in error ? String(error.code) : ""
       setAuthError(
@@ -447,6 +451,7 @@ export function RegistrationPriceComparison({
         }
 
         setRegistrationId(payload.registration.custom_registration_id || payload.registration.name)
+        window.localStorage.setItem(registrationEmailStorageKey, form.email.trim().toLowerCase())
         window.dispatchEvent(new Event("cinopse:registration-updated"))
         setErrors({})
         setStep(4)
@@ -473,12 +478,14 @@ export function RegistrationPriceComparison({
     setLookupResult(null)
 
     try {
+      const normalizedLookupEmail = lookupEmail.trim().toLowerCase()
+      if (!normalizedLookupEmail || !emailPattern.test(normalizedLookupEmail)) {
+        throw new Error("Please enter a valid registered email address.")
+      }
+
       const { getFirebaseIdToken } = await import("@/lib/firebase-client")
       const idToken = await getFirebaseIdToken()
-      const query = lookupEmail.trim()
-        ? `?email=${encodeURIComponent(lookupEmail.trim())}`
-        : ""
-      const response = await fetch(`/api/registrations${query}`, {
+      const response = await fetch(`/api/registrations?email=${encodeURIComponent(normalizedLookupEmail)}`, {
         headers: { Authorization: `Bearer ${idToken}` },
       })
       const payload = (await response.json()) as {
@@ -512,7 +519,7 @@ export function RegistrationPriceComparison({
           id: payload.registration.custom_registration_id || payload.registration.name,
           documentName: payload.registration.name,
           name: payload.registration.full_name,
-          email: payload.registration.email || payload.registration.google_email || googleProfile?.email || "",
+          email: payload.registration.email || normalizedLookupEmail,
           mobile: payload.registration.mobile || "",
           city: payload.registration.city || "",
           institution: payload.registration.hospital || "",
@@ -535,9 +542,10 @@ export function RegistrationPriceComparison({
           ),
           registrationDate: formatDisplayDate(payload.registration.registration_date),
         })
+        window.localStorage.setItem(registrationEmailStorageKey, normalizedLookupEmail)
         toast.success("Registration found.")
       } else {
-        const message = "No registration was found for your Google account."
+        const message = "No registration was found for this email address."
         setLookupResult({
           state: "missing",
           message,
@@ -557,7 +565,7 @@ export function RegistrationPriceComparison({
     } finally {
       setIsCheckingRegistration(false)
     }
-  }, [googleProfile, lookupEmail])
+  }, [lookupEmail])
 
   useEffect(() => {
     if (!dialogOnly || !modalOpen || activeView !== "login") return
@@ -1276,7 +1284,7 @@ export function RegistrationPriceComparison({
                   Check your registration
                 </h3>
                 <p className="mt-0 mb-4 text-xs leading-5 font-light text-[color:var(--cinopse-muted)]">
-                  We&apos;ll check the registration linked to your Google account.
+                  We&apos;ll check the registration linked to the email you entered.
                 </p>
                 <Field
                   id="lEmail"
@@ -1400,7 +1408,7 @@ function RegistrationStatusDetails({
           Registration status
         </h3>
         <p className="mt-1.5 text-[13px] leading-5 font-light text-[color:var(--cinopse-muted)]">
-          These are the major details saved against your Google account.
+          These are the major details saved against your registered email.
         </p>
       </div>
 

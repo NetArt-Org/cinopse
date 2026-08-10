@@ -21,6 +21,15 @@ function getBearerToken(request: NextRequest) {
   return value?.startsWith("Bearer ") ? value.slice(7) : ""
 }
 
+function registrationBelongsToUser(
+  registration: Awaited<ReturnType<typeof getErpRegistration>>,
+  user: Awaited<ReturnType<typeof verifyFirebaseIdToken>>,
+) {
+  if (registration.uid) return registration.uid === user.uid
+
+  return !registration.google_email || registration.google_email === user.email
+}
+
 const eventDateLabel = "Sunday, 27 September 2026"
 const venue = "Jawaharlal Nehru Planetarium, Sankey Road, Bengaluru"
 
@@ -45,7 +54,7 @@ export async function POST(request: NextRequest) {
     }
 
     const registration = await getErpRegistration(registrationName)
-    if (registration.email !== user.email) {
+    if (!registrationBelongsToUser(registration, user)) {
       return NextResponse.json({ message: "Registration does not belong to this account." }, { status: 403 })
     }
 
@@ -74,6 +83,17 @@ export async function POST(request: NextRequest) {
       kind: "payment-confirmed",
       registration: {
         ...updatedRegistration,
+        email: updatedRegistration.email || registration.email,
+        mobile: updatedRegistration.mobile || registration.mobile,
+        city: updatedRegistration.city || registration.city,
+        hospital: updatedRegistration.hospital || registration.hospital,
+        amount: updatedRegistration.amount || registration.amount,
+        custom_medical_council_number:
+          updatedRegistration.custom_medical_council_number ||
+          registration.custom_medical_council_number,
+        custom_registration_id:
+          updatedRegistration.custom_registration_id ||
+          registration.custom_registration_id,
         transaction_id: paymentId,
       },
       eventDateLabel,

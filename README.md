@@ -1,5 +1,20 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Environment
+
+```bash
+RAZORPAY_WEBHOOK_SECRET=replace_with_razorpay_webhook_secret
+```
+
+Configure Razorpay webhook URL:
+
+```text
+https://your-domain.com/api/registrations/razorpay/webhook
+```
+
+Enable the `payment.captured` event so ERP registration status is updated even
+if the browser callback fails after a successful payment.
+
 ## Getting Started
 
 First, run the development server:

@@ -16,6 +16,15 @@ function getBearerToken(request: NextRequest) {
   return value?.startsWith("Bearer ") ? value.slice(7) : ""
 }
 
+function registrationBelongsToUser(
+  registration: Awaited<ReturnType<typeof getErpRegistration>>,
+  user: Awaited<ReturnType<typeof verifyFirebaseIdToken>>,
+) {
+  if (registration.uid) return registration.uid === user.uid
+
+  return !registration.google_email || registration.google_email === user.email
+}
+
 export async function POST(request: NextRequest) {
   try {
     const idToken = getBearerToken(request)
@@ -31,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     const registration = await getErpRegistration(registrationName)
-    if (registration.email !== user.email) {
+    if (!registrationBelongsToUser(registration, user)) {
       return NextResponse.json({ message: "Registration does not belong to this account." }, { status: 403 })
     }
 
@@ -55,7 +64,7 @@ export async function POST(request: NextRequest) {
       receipt: registration.name,
       notes: {
         registration: registration.name,
-        email: user.email,
+        email: registration.email || "",
         category: registration.category,
       },
     })

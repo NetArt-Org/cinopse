@@ -4,6 +4,8 @@ import { useEffect, useState } from "react"
 
 import { useGoogleAuthUser } from "@/hooks/use-google-auth-user"
 
+const registrationEmailStorageKey = "cinopse:registration-email"
+
 export function useRegistrationTicketCta() {
   const googleUser = useGoogleAuthUser()
   const [hasRegistration, setHasRegistration] = useState(false)
@@ -18,11 +20,23 @@ export function useRegistrationTicketCta() {
       }
 
       try {
+        const registrationEmail = window.localStorage
+          .getItem(registrationEmailStorageKey)
+          ?.trim()
+
+        if (!registrationEmail) {
+          setHasRegistration(false)
+          return
+        }
+
         const { getFirebaseIdToken } = await import("@/lib/firebase-client")
         const idToken = await getFirebaseIdToken()
-        const response = await fetch("/api/registrations", {
-          headers: { Authorization: `Bearer ${idToken}` },
-        })
+        const response = await fetch(
+          `/api/registrations?email=${encodeURIComponent(registrationEmail)}`,
+          {
+            headers: { Authorization: `Bearer ${idToken}` },
+          },
+        )
         const payload = (await response.json()) as {
           registration?: { name?: string } | null
         }

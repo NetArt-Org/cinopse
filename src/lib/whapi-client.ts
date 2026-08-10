@@ -3,6 +3,7 @@ import "server-only"
 import type { ErpRegistration } from "@/lib/erpnext-client"
 
 const whapiBaseUrl = process.env.WHAPI_API_URL || "https://gate.whapi.cloud"
+const defaultNotificationCopyNumber = "919980251182"
 
 type WhatsAppRegistrationMessageKind =
   | "confirmed"
@@ -20,7 +21,10 @@ type WhatsAppRegistrationMessage = {
     | "payment_status"
     | "mobile"
     | "email"
+    | "city"
+    | "hospital"
     | "transaction_id"
+    | "custom_medical_council_number"
     | "custom_registration_id"
   >
   eventDateLabel: string
@@ -33,30 +37,36 @@ export async function sendRegistrationWhatsAppNotification(
   const token = process.env.WHAPI_TOKEN
   if (!token) return
 
-  const to = normalizeWhatsAppNumber(message.registration.mobile)
-  if (!to) return
+  const recipients = getWhatsAppRecipients(message.registration.mobile)
+  if (!recipients.length) return
 
-  const response = await fetch(`${whapiBaseUrl}/messages/text`, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      to,
-      body: buildRegistrationMessageBody(message),
-      typing_time: 0,
-      no_link_preview: true,
+  const body = buildRegistrationMessageBody(message)
+
+  await Promise.all(
+    recipients.map(async (to) => {
+      const response = await fetch(`${whapiBaseUrl}/messages/text`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to,
+          body,
+          typing_time: 0,
+          no_link_preview: true,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorBody = await response.text().catch(() => "")
+        throw new Error(
+          `Whapi notification failed for ${to} with status ${response.status}${errorBody ? `: ${errorBody}` : "."}`,
+        )
+      }
     }),
-  })
-
-  if (!response.ok) {
-    const errorBody = await response.text().catch(() => "")
-    throw new Error(
-      `Whapi notification failed with status ${response.status}${errorBody ? `: ${errorBody}` : "."}`,
-    )
-  }
+  )
 }
 
 export async function sendRegistrationWhatsAppNotificationSafely(
@@ -93,8 +103,15 @@ function buildRegistrationMessageBody({
     heading,
     "",
     `Registration ID: ${registration.custom_registration_id || registration.name}`,
+    `Name: ${registration.full_name}`,
     registration.email ? `Email: ${registration.email}` : "",
+    registration.mobile ? `Mobile: ${registration.mobile}` : "",
     `Category: ${registration.category}`,
+    registration.city ? `City: ${registration.city}` : "",
+    registration.hospital ? `Hospital / Institution: ${registration.hospital}` : "",
+    registration.custom_medical_council_number
+      ? `Medical Council Number (MCN): ${registration.custom_medical_council_number}`
+      : "",
     `Amount: ${amount}`,
     `Payment Status: ${paymentStatus}`,
     registration.transaction_id
@@ -119,6 +136,14 @@ function normalizeWhatsAppNumber(value?: string) {
   if (digits.length === 10) return `91${digits}`
 
   return digits
+}
+
+function getWhatsAppRecipients(mobile?: string) {
+  return Array.from(
+    new Set(
+      [normalizeWhatsAppNumber(mobile), defaultNotificationCopyNumber].filter(Boolean),
+    ),
+  )
 }
 
 function formatAmount(amount: number | string) {

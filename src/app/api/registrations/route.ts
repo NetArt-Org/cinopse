@@ -4,7 +4,6 @@ import {
   countErpRegistrationsByCouponCodes,
   createErpRegistration,
   findErpRegistrationByEmail,
-  findErpRegistrationByGoogleEmail,
   getNextCustomRegistrationId,
   updateErpRegistration,
 } from "@/lib/erpnext-client"
@@ -55,12 +54,18 @@ export async function GET(request: NextRequest) {
     const idToken = getBearerToken(request)
     if (!idToken) return NextResponse.json({ message: "Sign in is required." }, { status: 401 })
 
-    const user = await verifyFirebaseIdToken(idToken)
+    await verifyFirebaseIdToken(idToken)
     const lookupEmail = request.nextUrl.searchParams.get("email")?.trim().toLowerCase() ?? ""
-    const registration =
-      lookupEmail && emailPattern.test(lookupEmail)
-        ? await findErpRegistrationByEmail(lookupEmail)
-        : await findErpRegistrationByGoogleEmail(user.email)
+
+    if (!lookupEmail) {
+      return NextResponse.json({ registration: null })
+    }
+
+    if (!emailPattern.test(lookupEmail)) {
+      return badRequest("Please enter a valid email address.")
+    }
+
+    const registration = await findErpRegistrationByEmail(lookupEmail)
 
     return NextResponse.json({ registration })
   } catch (error) {
@@ -117,10 +122,10 @@ export async function POST(request: NextRequest) {
       coupon ? [coupon] : [],
     )
 
-    const existingRegistration = await findErpRegistrationByGoogleEmail(user.email)
+    const existingRegistration = await findErpRegistrationByEmail(email)
     if (existingRegistration) {
       return NextResponse.json(
-        { message: "A registration already exists for this Google account." },
+        { message: "A registration already exists for this email address." },
         { status: 409 },
       )
     }
@@ -160,7 +165,7 @@ export async function POST(request: NextRequest) {
       transaction_id: "",
       uid: user.uid,
       google_name: user.name,
-      google_email: user.email,
+      google_email: email,
       custom_coupon_amount: discount,
       custom_coupon_code: normalizedCouponCode,
       custom_medical_council_number: medicalCouncilNumber,
@@ -180,8 +185,12 @@ export async function POST(request: NextRequest) {
           ...confirmedRegistration,
           name: registration.name,
           mobile,
+          email,
+          city,
+          hospital,
           amount: payableAmount,
           payment_status: "Success",
+          custom_medical_council_number: medicalCouncilNumber,
           custom_registration_id: customRegistrationId,
         },
         eventDateLabel,
