@@ -236,10 +236,6 @@ export function RegistrationPriceComparison({
 
         setGoogleProfile(profile)
         if (profile) {
-          setForm((current) => ({
-            ...current,
-            name: current.name || profile.name,
-          }))
           setAuthError("")
         }
       })
@@ -301,10 +297,6 @@ export function RegistrationPriceComparison({
       const { signInWithGoogle } = await import("@/lib/firebase-client")
       const profile = await signInWithGoogle()
       setGoogleProfile(profile)
-      setForm((current) => ({
-        ...current,
-        name: current.name || profile.name,
-      }))
     } catch (error) {
       const code = typeof error === "object" && error && "code" in error ? String(error.code) : ""
       setAuthError(
@@ -1015,7 +1007,7 @@ export function RegistrationPriceComparison({
                       label="Full name"
                       value={form.name}
                       placeholder="Dr. Full Name"
-                      autoComplete="name"
+                      autoComplete="off"
                       error={errors.name}
                       onChange={(value) => setForm((current) => ({ ...current, name: value }))}
                     />

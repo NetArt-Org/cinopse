@@ -137,6 +137,13 @@ export const registrationCoupons: RegistrationCoupon[] = [
     maxUses: 100,
   },
   {
+    name: "CINOPSE_IMA 100% discount",
+    code: "CINOPSE_IMA",
+    discount: 0,
+    type: "full",
+    maxUses: 100,
+  },
+  {
     name: "CINOPSE50 50% discount",
     code: "CINOPSE50",
     discount: 50,
