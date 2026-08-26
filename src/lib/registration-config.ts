@@ -130,6 +130,13 @@ export const registrationCoupons: RegistrationCoupon[] = [
     maxUses: 400,
   },
   {
+    name: "CINOPSE_PG full waiver",
+    code: "CINOPSE_PG",
+    discount: 0,
+    type: "full",
+    maxUses: 250,
+  },
+  {
     name: "CINOPSE_MM full waiver",
     code: "CINOPSE_MM",
     discount: 0,
