@@ -251,10 +251,10 @@ const popularDestination = {
 }
 
 const associatePartners = {
-  eyebrow: "Committee",
-  title: "Organizing Committee",
+  eyebrow: "Trusted By",
+  title: "Associate Partners",
   description:
-    "Core organizing leadership for CINOPSE India 2026.",
+    "Our Associate Partners for CINOPSE India 2026.",
   committee: [
     {
       initials: "SK",
