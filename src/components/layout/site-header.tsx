@@ -3,8 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LogOut, UserRound } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 
 import { MobileNavigation } from "@/components/layout/mobile-navigation"
 import { useRegistrationTicketCta } from "@/hooks/use-registration-ticket-cta"
@@ -14,42 +13,12 @@ export type NavItem = {
   href: string
 }
 
-function GoogleAvatar({ photoUrl }: { photoUrl: string }) {
-  const [failed, setFailed] = useState(false)
-
-  if (failed) {
-    return (
-      <span className="grid size-8 place-items-center rounded-full bg-white/20">
-        <UserRound className="size-4" aria-hidden="true" />
-      </span>
-    )
-  }
-
-  return (
-    <Image
-      src={photoUrl}
-      alt=""
-      width={32}
-      height={32}
-      unoptimized
-      referrerPolicy="no-referrer"
-      onError={() => setFailed(true)}
-      className="size-8 rounded-full object-cover"
-    />
-  )
-}
-
 export function SiteHeader({ items }: { items: NavItem[] }) {
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [accountOpen, setAccountOpen] = useState(false)
-  const accountMenuRef = useRef<HTMLDivElement>(null)
-  const {
-    googleUser,
-    label: registerCtaLabel,
-    openRegistrationOrTicket,
-  } = useRegistrationTicketCta()
+  const { label: registerCtaLabel, openRegistrationOrTicket } =
+    useRegistrationTicketCta()
   const solidHeader = scrolled || pathname !== "/"
 
   useEffect(() => {
@@ -66,31 +35,6 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
-
-  useEffect(() => {
-    function closeAccountMenu(event: MouseEvent) {
-      if (!accountMenuRef.current?.contains(event.target as Node)) {
-        setAccountOpen(false)
-      }
-    }
-
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") setAccountOpen(false)
-    }
-
-    document.addEventListener("mousedown", closeAccountMenu)
-    document.addEventListener("keydown", closeOnEscape)
-    return () => {
-      document.removeEventListener("mousedown", closeAccountMenu)
-      document.removeEventListener("keydown", closeOnEscape)
-    }
-  }, [])
-
-  async function handleLogout() {
-    const { signOutGoogle } = await import("@/lib/firebase-client")
-    await signOutGoogle()
-    setAccountOpen(false)
-  }
 
   return (
     <>
@@ -171,51 +115,6 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
                   →
                 </span>
               </button>
-              {googleUser ? (
-                <div ref={accountMenuRef} className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setAccountOpen((open) => !open)}
-                    aria-expanded={accountOpen}
-                    aria-haspopup="menu"
-                    aria-label="Open account menu"
-                    className="grid size-11 place-items-center rounded-full border border-white/30 text-white transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                  >
-                    {googleUser.photoUrl ? (
-                      <GoogleAvatar
-                        key={googleUser.photoUrl}
-                        photoUrl={googleUser.photoUrl}
-                      />
-                    ) : (
-                      <span className="grid size-8 place-items-center rounded-full bg-white/20">
-                        <UserRound className="size-4" aria-hidden="true" />
-                      </span>
-                    )}
-                  </button>
-                  {accountOpen ? (
-                    <div
-                      role="menu"
-                      className="absolute right-0 mt-3 w-56 rounded-2xl border border-[color:var(--cinopse-border)] bg-white p-2 text-[color:var(--cinopse-text)] shadow-[0_18px_40px_rgba(6,26,58,0.28)]"
-                    >
-                      <div className="border-b border-[color:var(--cinopse-border)] px-3 py-2.5">
-                        <p className="truncate text-xs font-medium">{googleUser.name || "Signed in"}</p>
-                        <p className="mt-1 truncate text-[11px] text-[color:var(--cinopse-text-secondary)]">
-                          {googleUser.email}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={handleLogout}
-                        className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-xs font-medium text-[color:var(--cinopse-primary)] transition-colors hover:bg-[color:var(--cinopse-cream)] focus-visible:outline-2 focus-visible:outline-[color:var(--cinopse-primary)]"
-                      >
-                        <LogOut className="size-4" aria-hidden="true" />
-                        Logout
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
             </div>
 
             <div className="xl:hidden">

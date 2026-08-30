@@ -23,6 +23,7 @@ export type HeroSectionProps = {
   }
   ctaLabel: string
   secondaryCtaLabel: string
+  secondaryCtaHref: string
   meta: HeroMeta[]
   specialties: string[]
   stripItems: string[]
@@ -79,6 +80,7 @@ export function HeroSection({
   logo,
   ctaLabel,
   secondaryCtaLabel,
+  secondaryCtaHref,
   meta,
   specialties,
   stripItems,
@@ -134,7 +136,7 @@ export function HeroSection({
         </div>
 
         <div className="relative z-[2] mx-auto grid w-full max-w-[1160px] grid-cols-1 items-center gap-0 px-7 min-[921px]:grid-cols-[1.08fr_.92fr] min-[921px]:gap-[46px]">
-          <div className="text-center min-[921px]:text-left">
+          <div className="text-left">
             <span className="inline-flex max-w-[88vw] items-center gap-2.5 rounded-full border border-white/20 bg-white/[0.08] px-[18px] py-2.5 text-[11px] leading-normal tracking-[0.14em] text-white/85 backdrop-blur-md">
               <span
                 className="size-[7px] shrink-0 rounded-full bg-[color:var(--cinopse-accent)] animate-[softPulse_2.4s_ease-out_infinite]"
@@ -166,7 +168,7 @@ export function HeroSection({
               })}
             </h1>
 
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-[clamp(14px,1.6vw,18px)] leading-snug font-normal text-white/90 min-[921px]:justify-start">
+            <div className="mt-6 flex flex-wrap items-center justify-start gap-4 text-[clamp(14px,1.6vw,18px)] leading-snug font-normal text-white/90">
               {tagline.map((item, index) => (
                 <span key={item} className="contents">
                   <span
@@ -190,11 +192,11 @@ export function HeroSection({
               ))}
             </div>
 
-            <p className="mx-auto mt-5 max-w-[540px] translate-y-3.5 text-[clamp(13px,1.4vw,15px)] leading-[1.8] font-light text-white/65 opacity-0 animate-[fadeRise_.9s_cubic-bezier(.22,.9,.18,1)_1.5s_forwards] min-[921px]:mx-0">
+            <p className="mt-5 max-w-[540px] translate-y-3.5 text-[clamp(13px,1.4vw,15px)] leading-[1.8] font-light text-white/65 opacity-0 animate-[fadeRise_.9s_cubic-bezier(.22,.9,.18,1)_1.5s_forwards]">
               {description}
             </p>
 
-            <div className="mt-[34px] flex translate-y-3.5 flex-wrap justify-center gap-4 opacity-0 animate-[fadeRise_.9s_cubic-bezier(.22,.9,.18,1)_1.8s_forwards] min-[921px]:justify-start">
+            <div className="mt-[34px] flex translate-y-3.5 flex-wrap justify-start gap-4 opacity-0 animate-[fadeRise_.9s_cubic-bezier(.22,.9,.18,1)_1.8s_forwards]">
               <button
                 type="button"
                 onClick={openRegistrationOrTicket}
@@ -204,7 +206,7 @@ export function HeroSection({
                 <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
               </button>
               <Link
-                href="#about"
+                href={secondaryCtaHref}
                 className="group inline-flex items-center gap-2.5 rounded-full border border-white/25 bg-white/[0.09] px-[30px] py-4 text-[13.5px] leading-none font-medium text-white backdrop-blur-md transition-[transform,background] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:bg-white/15"
               >
                 {secondaryCtaLabel}
@@ -212,7 +214,7 @@ export function HeroSection({
               </Link>
             </div>
 
-            <div className="mt-8 flex translate-y-3.5 flex-wrap justify-center gap-3 opacity-0 animate-[fadeRise_.9s_cubic-bezier(.22,.9,.18,1)_2.1s_forwards] min-[921px]:justify-start">
+            <div className="mt-8 flex translate-y-3.5 flex-wrap justify-start gap-3 opacity-0 animate-[fadeRise_.9s_cubic-bezier(.22,.9,.18,1)_2.1s_forwards]">
               {meta.map((item) => {
                 const Icon = iconMap[item.icon]
                 return (

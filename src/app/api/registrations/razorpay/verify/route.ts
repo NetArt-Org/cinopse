@@ -4,7 +4,6 @@ import {
   getErpRegistration,
   updateErpRegistration,
 } from "@/lib/erpnext-client"
-import { verifyFirebaseIdToken } from "@/lib/firebase-admin-rest"
 import { toIndiaErpDateTime } from "@/lib/india-datetime"
 import { verifyRazorpayPaymentSignature } from "@/lib/razorpay-client"
 import { sendRegistrationWhatsAppNotificationSafely } from "@/lib/whapi-client"
@@ -16,29 +15,11 @@ type VerifyPaymentRequest = {
   razorpay_signature?: unknown
 }
 
-function getBearerToken(request: NextRequest) {
-  const value = request.headers.get("authorization")
-  return value?.startsWith("Bearer ") ? value.slice(7) : ""
-}
-
-function registrationBelongsToUser(
-  registration: Awaited<ReturnType<typeof getErpRegistration>>,
-  user: Awaited<ReturnType<typeof verifyFirebaseIdToken>>,
-) {
-  if (registration.uid) return registration.uid === user.uid
-
-  return !registration.google_email || registration.google_email === user.email
-}
-
 const eventDateLabel = "Sunday, 27 September 2026"
 const venue = "Jawaharlal Nehru Planetarium, Sankey Road, Bengaluru"
 
 export async function POST(request: NextRequest) {
   try {
-    const idToken = getBearerToken(request)
-    if (!idToken) return NextResponse.json({ message: "Sign in is required." }, { status: 401 })
-
-    const user = await verifyFirebaseIdToken(idToken)
     const body = (await request.json()) as VerifyPaymentRequest
     const registrationName =
       typeof body.registrationName === "string" ? body.registrationName.trim() : ""
@@ -54,9 +35,6 @@ export async function POST(request: NextRequest) {
     }
 
     const registration = await getErpRegistration(registrationName)
-    if (!registrationBelongsToUser(registration, user)) {
-      return NextResponse.json({ message: "Registration does not belong to this account." }, { status: 403 })
-    }
 
     if (registration.transaction_id !== orderId) {
       return NextResponse.json({ message: "Payment order does not match this registration." }, { status: 400 })

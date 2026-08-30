@@ -2,61 +2,38 @@
 
 import { useEffect, useState } from "react"
 
-import { useGoogleAuthUser } from "@/hooks/use-google-auth-user"
-
 const registrationEmailStorageKey = "cinopse:registration-email"
 
+/**
+ * Drives the header / footer registration button. Google sign-in has been
+ * removed, so "already registered" is inferred from a locally-saved email
+ * (set once someone completes or looks up a registration on this device).
+ * The ticket view re-verifies against the public API when opened.
+ */
 export function useRegistrationTicketCta() {
-  const googleUser = useGoogleAuthUser()
   const [hasRegistration, setHasRegistration] = useState(false)
 
   useEffect(() => {
-    let cancelled = false
-
-    async function checkExistingRegistration() {
-      if (!googleUser) {
-        setHasRegistration(false)
-        return
-      }
-
+    const syncRegistration = () => {
       try {
-        const registrationEmail = window.localStorage
+        const savedEmail = window.localStorage
           .getItem(registrationEmailStorageKey)
           ?.trim()
-
-        if (!registrationEmail) {
-          setHasRegistration(false)
-          return
-        }
-
-        const { getFirebaseIdToken } = await import("@/lib/firebase-client")
-        const idToken = await getFirebaseIdToken()
-        const response = await fetch(
-          `/api/registrations?email=${encodeURIComponent(registrationEmail)}`,
-          {
-            headers: { Authorization: `Bearer ${idToken}` },
-          },
-        )
-        const payload = (await response.json()) as {
-          registration?: { name?: string } | null
-        }
-
-        if (!cancelled) {
-          setHasRegistration(response.ok && Boolean(payload.registration?.name))
-        }
+        setHasRegistration(Boolean(savedEmail))
       } catch {
-        if (!cancelled) setHasRegistration(false)
+        setHasRegistration(false)
       }
     }
 
-    void checkExistingRegistration()
-    window.addEventListener("cinopse:registration-updated", checkExistingRegistration)
+    syncRegistration()
+    window.addEventListener("cinopse:registration-updated", syncRegistration)
+    window.addEventListener("storage", syncRegistration)
 
     return () => {
-      cancelled = true
-      window.removeEventListener("cinopse:registration-updated", checkExistingRegistration)
+      window.removeEventListener("cinopse:registration-updated", syncRegistration)
+      window.removeEventListener("storage", syncRegistration)
     }
-  }, [googleUser])
+  }, [])
 
   function openRegistrationOrTicket() {
     window.dispatchEvent(
@@ -65,9 +42,8 @@ export function useRegistrationTicketCta() {
   }
 
   return {
-    googleUser,
     hasRegistration,
-    label: googleUser && hasRegistration ? "View Ticket" : "Register Now",
+    label: hasRegistration ? "View Ticket" : "Register Now",
     openRegistrationOrTicket,
   }
 }

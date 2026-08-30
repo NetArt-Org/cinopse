@@ -1,5 +1,6 @@
 import { GsapProvider } from "@/components/layout/gsap-provider"
 import { SiteHeader } from "@/components/layout/site-header"
+import { StickyRegisterBar } from "@/components/layout/sticky-register-bar"
 import { AboutSection } from "@/components/sections/about-section"
 import { AssociatePartnersSection } from "@/components/sections/associate-partners-section"
 import { ConferenceHighlightsSection } from "@/components/sections/conference-highlights-section"
@@ -35,13 +36,14 @@ const hero: HeroSectionProps = {
     "Infinite Possibilities.",
   ],
   description:
-    "A comprehensive multidisciplinary medical conference — case-based discussions, guideline updates, innovations, and hands-on workshops, all under one roof in Bengaluru.",
+    "A multidisciplinary CME summit for Cardio, Renal, Obesity, Pulmonary and Sleep Medicine — Sunday, 27 September 2026, Bengaluru.",
   logo: {
     src: "/logo.jpg",
     alt: "CINOPSE logo",
   },
   ctaLabel: "Register Now",
-  secondaryCtaLabel: "Explore the Conference",
+  secondaryCtaLabel: "View Agenda",
+  secondaryCtaHref: "/#programme",
   meta: [
     {
       title: "Sunday, 27 September 2026",
@@ -212,8 +214,16 @@ const registration = {
     eventDateLabel: "Sunday, 27 September 2026",
     eventDate: "2026-09-27T08:00:00+05:30",
     windowStart: "2026-07-24T00:00:00+05:30",
-    note: "Fees are selected automatically by category and date: Delegate ₹750/₹1,000/₹1,250, PG ₹500/₹750, International ₹2,500.",
+    note: "Delegate fees change automatically by date — ₹750 until September 10, then ₹1,000. PG & Others ₹500, International Delegates ₹2,500.",
     ctaLabel: "Register Now",
+    included: [
+      "Access to all 22 scientific sessions across 10 focus areas",
+      "Entry to case-based discussions and the panel debate",
+      "Hands-on workshop access",
+      "Lunch and refreshments through the day",
+      "Networking access with faculty and fellow delegates",
+      "Post-event access to agenda and session resources",
+    ],
   },
 }
 
@@ -426,6 +436,44 @@ const programme = {
     "Sunday, 27 September 2026 · Jawaharlal Nehru Planetarium, Bengaluru. The detailed scientific programme is available in the agenda PDF.",
   ctaLabel: "Explore the Full Agenda",
   ctaHref: "/agenda",
+  segments: [
+    {
+      segment: "Registration & Welcome",
+      focus: "Check-in, delegate kit collection, opening remarks",
+    },
+    {
+      segment: "Morning Sessions",
+      focus:
+        "Latest Guideline Updates (ADA 2026, EASD, ESC, ACE, AHA, AASM & IOF); GLP-1, Dual & Triple Agonists; Cardio-Renal-Metabolic Syndrome",
+    },
+    {
+      segment: "Mid-Morning",
+      focus:
+        "CGM & Diabetes Technology; Artificial Intelligence in everyday clinical practice",
+    },
+    {
+      segment: "Networking Lunch",
+      focus: "Lunch and informal networking with faculty and fellow delegates",
+    },
+    {
+      segment: "Afternoon Sessions",
+      focus:
+        "MASLD / Fatty Liver Disease; Dyslipidemia Beyond LDL; Hypertension — guidelines to real-world practice",
+    },
+    {
+      segment: "Late Afternoon",
+      focus:
+        "Sleep Disorder and the cardiometabolic risk connection; Osteoporosis & Sarcopenia — healthy aging across specialties",
+    },
+    {
+      segment: "Case Discussions & Panel Debate",
+      focus: "Interactive, real-world clinical case presentations and panel discussion",
+    },
+    {
+      segment: "Workshops & Awards",
+      focus: "Hands-on workshops, Young Investigator Awards and closing remarks",
+    },
+  ],
 }
 
 const footer = {
@@ -474,6 +522,7 @@ export default function Home() {
         </main>
         <SiteFooter {...footer} />
       </GsapProvider>
+      <StickyRegisterBar />
     </div>
   )
 }

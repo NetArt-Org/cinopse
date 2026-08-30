@@ -6,6 +6,11 @@ export type ProgrammeItem = {
   tags?: string[]
 }
 
+export type ProgrammeSegment = {
+  segment: string
+  focus: string
+}
+
 export type ProgrammeSectionProps = {
   eyebrow: string
   title: string
@@ -13,6 +18,7 @@ export type ProgrammeSectionProps = {
   ctaLabel: string
   ctaHref: string
   note?: string
+  segments?: ProgrammeSegment[]
 }
 
 export function ProgrammeSection({
@@ -21,6 +27,7 @@ export function ProgrammeSection({
   description,
   ctaLabel,
   ctaHref,
+  segments,
 }: ProgrammeSectionProps) {
   return (
     <section
@@ -43,7 +50,58 @@ export function ProgrammeSection({
           </p>
         </div>
 
-        <div data-reveal className="mt-8 text-left">
+        {segments?.length ? (
+          <div
+            data-reveal
+            className="mt-12 overflow-x-auto rounded-2xl border border-[color:var(--cinopse-border)] bg-white shadow-[0_16px_40px_rgba(6,26,58,0.1)]"
+          >
+            <table className="w-full min-w-[560px] border-collapse text-left">
+              <caption className="sr-only">
+                Programme at a glance — segments and their focus areas
+              </caption>
+              <thead>
+                <tr className="bg-[color:var(--cinopse-primary)] text-white">
+                  <th
+                    scope="col"
+                    className="w-[36%] border-r border-white/20 px-6 py-4 text-[11px] leading-none font-semibold tracking-[0.14em] uppercase"
+                  >
+                    Segment
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-4 text-[11px] leading-none font-semibold tracking-[0.14em] uppercase"
+                  >
+                    Focus
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {segments.map((row, index) => (
+                  <tr
+                    key={row.segment}
+                    className={
+                      index % 2 === 1
+                        ? "bg-[color:var(--cinopse-cream)]"
+                        : "bg-white"
+                    }
+                  >
+                    <th
+                      scope="row"
+                      className="border-t border-r border-[color:var(--cinopse-border)] px-6 py-4 text-left align-top font-display text-[14px] leading-6 font-semibold text-[color:var(--cinopse-primary)]"
+                    >
+                      {row.segment}
+                    </th>
+                    <td className="border-t border-[color:var(--cinopse-border)] px-6 py-4 align-top text-[13px] leading-6 font-light text-[color:var(--cinopse-text-secondary)]">
+                      {row.focus}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+
+        <div data-reveal className="mt-10 text-left">
           <a
             href={ctaHref}
             className="inline-flex items-center justify-center gap-2 rounded-full bg-[color:var(--cinopse-primary)] px-7 py-4 text-[12.5px] leading-none font-medium text-white transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(27,75,150,0.35)]"

@@ -45,7 +45,7 @@ export function SiteFooter({
   return (
     <footer
       id="contact"
-      className="relative overflow-hidden bg-[color:var(--cinopse-primary-deep)] pt-20 pb-[34px] text-white"
+      className="relative overflow-hidden bg-[color:var(--cinopse-primary-deep)] pt-20 pb-[104px] text-white md:pb-[34px]"
     >
       <div className="absolute bottom-[-260px] left-[-160px] size-[500px] rounded-full bg-[rgba(29,90,180,0.4)] blur-[90px]" />
       <div className="relative z-10 mx-auto grid max-w-[1160px] gap-9 px-7 md:grid-cols-[1.4fr_1fr_1fr] md:gap-[50px]">

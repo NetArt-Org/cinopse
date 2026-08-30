@@ -6,7 +6,6 @@ import type { ReactNode } from "react"
 import { createPortal } from "react-dom"
 import { ArrowRight, Check, X } from "lucide-react"
 import { toast } from "sonner"
-import { GoogleIcon } from "@/components/icons/google-icon"
 import { useRegistrationTicketCta } from "@/hooks/use-registration-ticket-cta"
 import {
   calculateRegistrationTotal,
@@ -29,6 +28,7 @@ export type RegistrationPriceComparisonProps = {
   windowStart: string
   note: string
   ctaLabel: string
+  included?: string[]
   dialogOnly?: boolean
 }
 
@@ -40,11 +40,6 @@ type WizardForm = {
   institution: string
   medicalCouncilNumber: string
   terms: boolean
-}
-
-type GoogleProfile = {
-  name: string
-  email: string
 }
 
 type RegistrationLookupDetails = {
@@ -124,9 +119,9 @@ export function RegistrationPriceComparison({
   windowStart,
   note,
   ctaLabel,
+  included = [],
   dialogOnly = false,
 }: RegistrationPriceComparisonProps) {
-  const [audience, setAudience] = useState(0)
   const initialNow = useMemo(() => new Date(windowStart).getTime(), [windowStart])
   const [now, setNow] = useState(initialNow)
   const [modalOpen, setModalOpen] = useState(false)
@@ -152,11 +147,7 @@ export function RegistrationPriceComparison({
     | { state: "missing"; message: string }
     | null
   >(null)
-  const [googleProfile, setGoogleProfile] = useState<GoogleProfile | null>(null)
-  const [isSigningIn, setIsSigningIn] = useState(false)
-  const [authError, setAuthError] = useState("")
   const autoCheckRequested = useRef(false)
-  const firebaseUnsubscribe = useRef<(() => void) | null>(null)
 
   const deadline = useMemo(() => new Date(eventDate).getTime(), [eventDate])
   const start = initialNow
@@ -187,12 +178,22 @@ export function RegistrationPriceComparison({
         .getItem(registrationEmailStorageKey)
         ?.trim()
 
-      if (savedRegistrationEmail) setLookupEmail(savedRegistrationEmail)
       setActiveView("login")
       setLookupResult(null)
-      setStatusOnlyView(true)
-      setStatusOnlyLoading(true)
-      autoCheckRequested.current = true
+
+      if (savedRegistrationEmail) {
+        // We know the registered email — auto-check and show the ticket status.
+        setLookupEmail(savedRegistrationEmail)
+        setStatusOnlyView(true)
+        setStatusOnlyLoading(true)
+        autoCheckRequested.current = true
+      } else {
+        // No saved email — open the lookup form so they can enter it.
+        setStatusOnlyView(false)
+        setStatusOnlyLoading(false)
+        autoCheckRequested.current = false
+      }
+
       setModalOpen(true)
     }
     const openRegistrationFromUrl = () => {
@@ -220,32 +221,6 @@ export function RegistrationPriceComparison({
     document.body.classList.toggle("overflow-hidden", modalOpen)
 
     return () => document.body.classList.remove("overflow-hidden")
-  }, [dialogOnly, modalOpen])
-
-  useEffect(() => {
-    if (!dialogOnly || !modalOpen) return
-
-    let mounted = true
-
-    void import("@/lib/firebase-client").then(({ observeGoogleUser }) => {
-      if (!mounted) return
-
-      firebaseUnsubscribe.current?.()
-      firebaseUnsubscribe.current = observeGoogleUser((profile) => {
-        if (!mounted) return
-
-        setGoogleProfile(profile)
-        if (profile) {
-          setAuthError("")
-        }
-      })
-    })
-
-    return () => {
-      mounted = false
-      firebaseUnsubscribe.current?.()
-      firebaseUnsubscribe.current = null
-    }
   }, [dialogOnly, modalOpen])
 
   const pricingCategories = useMemo(
@@ -287,28 +262,6 @@ export function RegistrationPriceComparison({
   function closeModal() {
     setModalOpen(false)
     window.setTimeout(() => resetWizard(), 300)
-  }
-
-  async function handleGoogleSignIn() {
-    setIsSigningIn(true)
-    setAuthError("")
-
-    try {
-      const { signInWithGoogle } = await import("@/lib/firebase-client")
-      const profile = await signInWithGoogle()
-      setGoogleProfile(profile)
-    } catch (error) {
-      const code = typeof error === "object" && error && "code" in error ? String(error.code) : ""
-      setAuthError(
-        code === "auth/popup-closed-by-user"
-          ? "Google sign-in was cancelled. Please try again to continue."
-          : error instanceof Error
-            ? error.message
-            : "Unable to sign in with Google. Please try again.",
-      )
-    } finally {
-      setIsSigningIn(false)
-    }
   }
 
   async function applyCoupon() {
@@ -396,12 +349,9 @@ export function RegistrationPriceComparison({
 
       setIsSubmitting(true)
       try {
-        const { getFirebaseIdToken } = await import("@/lib/firebase-client")
-        const idToken = await getFirebaseIdToken()
         const response = await fetch("/api/registrations", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${idToken}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
@@ -432,7 +382,6 @@ export function RegistrationPriceComparison({
         if (payload.payment) {
           toast.info("Registration saved. Complete payment to confirm.")
           await openRazorpayCheckout({
-            idToken,
             registrationName: payload.registration.name,
             payment: payload.payment,
             form,
@@ -475,11 +424,7 @@ export function RegistrationPriceComparison({
         throw new Error("Please enter a valid registered email address.")
       }
 
-      const { getFirebaseIdToken } = await import("@/lib/firebase-client")
-      const idToken = await getFirebaseIdToken()
-      const response = await fetch(`/api/registrations?email=${encodeURIComponent(normalizedLookupEmail)}`, {
-        headers: { Authorization: `Bearer ${idToken}` },
-      })
+      const response = await fetch(`/api/registrations?email=${encodeURIComponent(normalizedLookupEmail)}`)
       const payload = (await response.json()) as {
         message?: string
         registration?: {
@@ -561,7 +506,7 @@ export function RegistrationPriceComparison({
 
   useEffect(() => {
     if (!dialogOnly || !modalOpen || activeView !== "login") return
-    if (!autoCheckRequested.current || !googleProfile || isCheckingRegistration) return
+    if (!autoCheckRequested.current || isCheckingRegistration) return
 
     autoCheckRequested.current = false
     void checkRegistration().finally(() => setStatusOnlyLoading(false))
@@ -569,7 +514,6 @@ export function RegistrationPriceComparison({
     activeView,
     checkRegistration,
     dialogOnly,
-    googleProfile,
     isCheckingRegistration,
     modalOpen,
   ])
@@ -581,12 +525,9 @@ export function RegistrationPriceComparison({
     setRetryPaymentError("")
 
     try {
-      const { getFirebaseIdToken } = await import("@/lib/firebase-client")
-      const idToken = await getFirebaseIdToken()
       const response = await fetch("/api/registrations/razorpay/order", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${idToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ registrationName: details.documentName }),
@@ -606,7 +547,6 @@ export function RegistrationPriceComparison({
       }
 
       await openRazorpayCheckout({
-        idToken,
         registrationName: details.documentName,
         payment: payload.payment,
         form: {
@@ -641,91 +581,64 @@ export function RegistrationPriceComparison({
       <div className="mx-auto max-w-none">
         <div
           data-reveal
-          className="relative z-10 mx-auto mb-7 grid max-w-[430px] grid-cols-3 rounded-full border border-white/15 bg-white/10 p-[5px] sm:max-w-[540px]"
+          className="relative z-10 grid gap-5 md:grid-cols-3"
         >
-          <span
-            className={`absolute top-[5px] bottom-[5px] left-[5px] w-[calc(33.333%-3.33px)] rounded-full bg-white shadow-[0_3px_12px_rgba(6,26,58,0.25)] transition-transform duration-500 ease-[cubic-bezier(.22,.9,.18,1)] ${
-              audience === 1
-                ? "translate-x-[calc(100%+5px)]"
-                : audience === 2
-                  ? "translate-x-[calc(200%+10px)]"
-                  : "translate-x-0"
-            }`}
-          />
-          {audiences.map((item, index) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => setAudience(index)}
-              className={`relative min-w-0 rounded-full px-1 py-3 text-[10px] leading-none font-medium whitespace-nowrap transition-colors duration-300 min-[380px]:text-[10.5px] sm:text-[12px] ${
-                audience === index
-                  ? "text-[color:var(--cinopse-primary)]"
-                  : "text-white/70 hover:text-white"
-              }`}
-              aria-pressed={audience === index}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
-
-        <div
-          data-reveal
-          className="relative z-10 flex flex-wrap justify-center gap-3"
-        >
-          {pricingCategories[audience]?.options.map((phase) => {
-            const isOpen = phase.status === "Open now"
+          {pricingCategories.map((category) => {
+            const activeOption =
+              category.options.find((option) => option.status === "Open now") ??
+              category.options[0]
 
             return (
               <article
-                key={phase.id}
-                className={`relative w-full max-w-[430px] rounded-[14px] border px-4 py-[22px] text-center transition-[background,transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(.22,.9,.18,1)] sm:w-[calc(50%-6px)] lg:w-[300px] ${
-                  isOpen
-                    ? "-translate-y-1 border-white bg-white shadow-[0_16px_32px_rgba(6,26,58,0.28)]"
-                    : "border-white/15 bg-white/[0.07]"
-                }`}
+                key={category.name}
+                className="flex flex-col rounded-[18px] border border-white/12 bg-white p-6 text-left shadow-[0_16px_40px_rgba(6,26,58,0.24)] transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-1 hover:shadow-[0_24px_52px_rgba(6,26,58,0.32)]"
               >
-                <span
-                  data-soft-pulse
-                  className={`absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-[color:var(--cinopse-accent)] px-3 py-1 text-[9px] leading-none font-semibold tracking-[0.1em] whitespace-nowrap text-[color:var(--cinopse-primary-deep)] uppercase animate-[softPulse_2.4s_ease-out_infinite] ${
-                    isOpen ? "opacity-100" : "opacity-0"
-                  }`}
-                >
-                  Open Now
-                </span>
-                <p
-                  className={`m-0 text-[12px] leading-4 font-medium ${
-                    isOpen ? "text-[color:var(--cinopse-primary)]" : "text-white/90"
-                  }`}
-                >
-                  {phase.name}
+                <p className="m-0 text-[14px] leading-5 font-semibold text-[color:var(--cinopse-primary)]">
+                  {category.name}
                 </p>
-                <p
-                  className={`mt-1 mb-[13px] text-[10px] leading-4 font-light ${
-                    isOpen
-                      ? "text-[color:var(--cinopse-muted)]"
-                      : "text-white/50"
-                  }`}
-                >
-                  {phase.window}
+                <p className="mt-1 text-[11px] leading-4 font-light text-[color:var(--cinopse-muted)]">
+                  {category.description}
                 </p>
-                <div className="h-8 overflow-hidden">
-                  <p
-                    key={`${phase.id}-${audience}`}
-                    className={`font-display m-0 animate-[swapIn_0.38s_cubic-bezier(.2,.85,.2,1)] text-2xl leading-8 font-semibold tabular-nums ${
-                      isOpen ? "text-[color:var(--cinopse-primary)]" : "text-white"
-                    }`}
-                  >
-                    {formatPrice(phase.amount)}
-                  </p>
+
+                <div className="mt-4 flex items-baseline gap-1.5">
+                  <span className="font-display text-[34px] leading-none font-semibold tabular-nums text-[color:var(--cinopse-primary)]">
+                    {formatPrice(activeOption.amount)}
+                  </span>
+                  <span className="text-[10.5px] leading-4 font-medium text-[#3f9150]">
+                    {activeOption.status === "Open now" ? "Open now" : activeOption.window}
+                  </span>
                 </div>
-                <p
-                  className={`mt-2.5 text-[9.5px] leading-4 font-normal tracking-[0.06em] ${
-                    isOpen ? "text-[#3f9150]" : "text-white/45"
-                  }`}
+
+                <div className="mt-5 border-t border-[color:var(--cinopse-border)] pt-4">
+                  <p className="m-0 text-[9.5px] leading-none font-semibold tracking-[0.14em] text-[color:var(--cinopse-muted)] uppercase">
+                    What&apos;s included
+                  </p>
+                  <ul className="mt-3 grid gap-2.5">
+                    {included.map((point) => (
+                      <li
+                        key={point}
+                        className="flex items-start gap-2 text-[12px] leading-5 font-light text-[color:var(--cinopse-text-secondary)]"
+                      >
+                        <Check
+                          className="mt-0.5 size-3.5 shrink-0 text-[color:var(--cinopse-accent-deep)]"
+                          aria-hidden="true"
+                        />
+                        <span>{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    window.dispatchEvent(new Event("cinopse:open-registration"))
+                  }
+                  className="group mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[color:var(--cinopse-primary)] px-6 py-3.5 text-[12.5px] leading-none font-medium text-white transition-[transform,box-shadow,background] duration-300 ease-[cubic-bezier(.22,.9,.18,1)] hover:-translate-y-0.5 hover:bg-[color:var(--cinopse-accent)] hover:text-[color:var(--cinopse-primary-deep)] hover:shadow-[0_12px_26px_rgba(6,26,58,0.28)]"
                 >
-                  {phase.status}
-                </p>
+                  Register
+                  <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
+                </button>
               </article>
             )
           })}
@@ -793,36 +706,7 @@ export function RegistrationPriceComparison({
               <X className="size-4" aria-hidden="true" />
             </button>
 
-            {!googleProfile ? (
-              <section className="py-12 text-center" aria-labelledby="google-sign-in-title">
-                <div className="mx-auto mb-5 grid size-14 place-items-center rounded-full bg-[color:var(--cinopse-cream)] shadow-[0_8px_18px_rgba(6,26,58,0.08)]">
-                  <GoogleIcon className="size-6" />
-                </div>
-                <h2
-                  id="google-sign-in-title"
-                  className="font-display m-0 text-2xl leading-tight font-semibold text-[color:var(--cinopse-primary)]"
-                >
-                  Continue with Google
-                </h2>
-                <p className="mx-auto mt-3 max-w-sm text-sm leading-6 font-light text-[color:var(--cinopse-muted)]">
-                  Sign in to start your registration or check an existing registration.
-                </p>
-                <button
-                  type="button"
-                  onClick={handleGoogleSignIn}
-                  disabled={isSigningIn}
-                  className="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-[color:var(--cinopse-border)] bg-white px-6 text-[13px] font-medium text-[color:var(--cinopse-ink)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-[color:var(--cinopse-primary)] hover:shadow-[0_10px_22px_rgba(27,75,150,0.16)] disabled:cursor-wait disabled:opacity-70"
-                >
-                  <GoogleIcon className="size-5" />
-                  {isSigningIn ? "Connecting to Google…" : "Sign in with Google"}
-                </button>
-                {authError ? (
-                  <p role="alert" className="mt-4 text-sm leading-5 text-[#c0392b]">
-                    {authError}
-                  </p>
-                ) : null}
-              </section>
-            ) : foundLookup ? (
+            {foundLookup ? (
               <RegistrationStatusDetails
                 details={foundLookup}
                 onBack={() => {
@@ -1514,12 +1398,10 @@ async function loadRazorpayCheckout() {
 }
 
 async function openRazorpayCheckout({
-  idToken,
   registrationName,
   payment,
   form,
 }: {
-  idToken: string
   registrationName: string
   payment: {
     keyId: string
@@ -1561,7 +1443,6 @@ async function openRazorpayCheckout({
         void fetch("/api/registrations/razorpay/verify", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${idToken}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({

@@ -9,6 +9,7 @@ export type RegistrationFormModalProps = {
   windowStart: string
   note: string
   ctaLabel: string
+  included?: string[]
 }
 
 export function RegistrationFormModal(props: RegistrationFormModalProps) {

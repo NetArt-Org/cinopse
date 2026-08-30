@@ -29,7 +29,6 @@ export type RegistrationCoupon = {
 }
 
 const earlyBirdEndsAt = "2026-09-10T23:59:59+05:30"
-const eventStartsAt = "2026-09-27T00:00:00+05:30"
 const eventEndsAt = "2026-09-27T23:59:59+05:30"
 
 export const registrationCategories: RegistrationCategory[] = [
@@ -52,15 +51,6 @@ export const registrationCategories: RegistrationCategory[] = [
         window: "After September 10 until the event",
         status: "Upcoming",
         startsAt: "2026-09-11T00:00:00+05:30",
-        endsAt: "2026-09-26T23:59:59+05:30",
-      },
-      {
-        id: "delegate-on-site",
-        name: "On-site",
-        amount: 1250,
-        window: "Available only during the event",
-        status: "Upcoming",
-        startsAt: eventStartsAt,
         endsAt: eventEndsAt,
       },
     ],
@@ -75,16 +65,6 @@ export const registrationCategories: RegistrationCategory[] = [
         amount: 500,
         window: "Available throughout",
         status: "Upcoming",
-        endsAt: "2026-09-26T23:59:59+05:30",
-      },
-      {
-        id: "pg-on-site",
-        name: "On-site",
-        amount: 750,
-        window: "During the event",
-        status: "Upcoming",
-        startsAt: eventStartsAt,
-        endsAt: eventEndsAt,
       },
     ],
   },

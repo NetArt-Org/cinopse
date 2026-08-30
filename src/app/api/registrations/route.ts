@@ -7,7 +7,6 @@ import {
   getNextCustomRegistrationId,
   updateErpRegistration,
 } from "@/lib/erpnext-client"
-import { verifyFirebaseIdToken } from "@/lib/firebase-admin-rest"
 import { toIndiaErpDateTime } from "@/lib/india-datetime"
 import { createRazorpayOrder } from "@/lib/razorpay-client"
 import {
@@ -40,21 +39,12 @@ const eventDateLabel = "Sunday, 27 September 2026"
 const venue = "Jawaharlal Nehru Planetarium, Sankey Road, Bengaluru"
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
-function getBearerToken(request: NextRequest) {
-  const value = request.headers.get("authorization")
-  return value?.startsWith("Bearer ") ? value.slice(7) : ""
-}
-
 function badRequest(message: string) {
   return NextResponse.json({ message }, { status: 400 })
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const idToken = getBearerToken(request)
-    if (!idToken) return NextResponse.json({ message: "Sign in is required." }, { status: 401 })
-
-    await verifyFirebaseIdToken(idToken)
     const lookupEmail = request.nextUrl.searchParams.get("email")?.trim().toLowerCase() ?? ""
 
     if (!lookupEmail) {
@@ -79,10 +69,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const idToken = getBearerToken(request)
-    if (!idToken) return NextResponse.json({ message: "Sign in is required." }, { status: 401 })
-
-    const user = await verifyFirebaseIdToken(idToken)
     const body = (await request.json()) as RegistrationRequest
     const fullName = typeof body.fullName === "string" ? body.fullName.trim() : ""
     const category = typeof body.category === "string" ? body.category : ""
@@ -153,7 +139,7 @@ export async function POST(request: NextRequest) {
       registration_date: toIndiaErpDateTime(),
       status: "Pending",
       remarks: [
-        "Google-authenticated registration created from the CINOPSE website.",
+        "Registration created from the CINOPSE website.",
         `Registration ID: ${customRegistrationId}.`,
         `Category: ${category}. Base amount: ₹${amount}.`,
         `Coupon discount: ₹${discount}.`,
@@ -163,8 +149,8 @@ export async function POST(request: NextRequest) {
       payment_date: payableAmount > 0 ? "" : toIndiaErpDateTime(),
       payment_status: payableAmount > 0 ? "Pending" : "Success",
       transaction_id: "",
-      uid: user.uid,
-      google_name: user.name,
+      uid: "",
+      google_name: fullName,
       google_email: email,
       custom_coupon_amount: discount,
       custom_coupon_code: normalizedCouponCode,
