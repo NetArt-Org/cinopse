@@ -6,6 +6,7 @@ import "react-phone-number-input/style.css";
 import "./globals.css";
 
 const META_PIXEL_ID = "2631145093984242";
+const GA_MEASUREMENT_ID = "G-ZJ3GZPFTJQ";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -81,6 +82,19 @@ export default function RootLayout({
       className={`h-full antialiased ${inter.variable} ${fraunces.variable}`}
     >
       <head>
+        {/* Google tag (gtag.js) */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="ga-gtag" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_MEASUREMENT_ID}');`}
+        </Script>
+        {/* End Google tag */}
+
         {/* Meta Pixel Code */}
         <Script id="meta-pixel" strategy="afterInteractive">
           {`!function(f,b,e,v,n,t,s)
