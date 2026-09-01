@@ -160,10 +160,14 @@
   html {
     @apply font-sans;
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
     @apply antialiased;
+    overflow-x: hidden;
+    position: relative;
+    width: 100%;
   }
 
   ::selection {

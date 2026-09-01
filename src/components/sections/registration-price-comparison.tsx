@@ -106,7 +106,21 @@ type RazorpayInstance = {
 declare global {
   interface Window {
     Razorpay?: new (options: RazorpayCheckoutOptions) => RazorpayInstance
+    fbq?: (...args: unknown[]) => void
   }
+}
+
+/**
+ * Fire the Meta Pixel Purchase event. Called only after a payment has been
+ * successfully completed and verified server-side — never on load or refresh.
+ */
+function trackPurchase(value: number) {
+  if (typeof window === "undefined" || typeof window.fbq !== "function") return
+
+  window.fbq("track", "Purchase", {
+    value: Number.isFinite(value) ? value : 0,
+    currency: "INR",
+  })
 }
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
@@ -386,6 +400,8 @@ export function RegistrationPriceComparison({
             payment: payload.payment,
             form,
           })
+          // Payment verified server-side above — safe to fire Purchase.
+          trackPurchase(couponTotal.payableAmount)
           toast.success("Payment successful. Registration confirmed.")
         } else {
           toast.success("Registration confirmed.")
@@ -560,6 +576,8 @@ export function RegistrationPriceComparison({
         },
       })
 
+      // Payment verified server-side above — safe to fire Purchase.
+      trackPurchase(details.amountValue)
       window.dispatchEvent(new Event("cinopse:registration-updated"))
       await checkRegistration()
       toast.success("Payment successful. Registration confirmed.")

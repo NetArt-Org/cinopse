@@ -168,11 +168,11 @@ export function HeroSection({
               })}
             </h1>
 
-            <div className="mt-6 flex flex-wrap items-center justify-start gap-4 text-[clamp(14px,1.6vw,18px)] leading-snug font-normal text-white/90">
+            <div className="mt-6 flex flex-wrap items-center justify-start gap-x-4 gap-y-2 text-[clamp(14px,1.6vw,18px)] leading-none font-normal text-white/90">
               {tagline.map((item, index) => (
                 <span key={item} className="contents">
                   <span
-                    className={`translate-y-3.5 opacity-0 animate-[fadeRise_.8s_cubic-bezier(.22,.9,.18,1)_forwards] ${
+                    className={`[transform:translateY(14px)] opacity-0 animate-[fadeRise_.8s_cubic-bezier(.22,.9,.18,1)_forwards] ${
                       taglineDelays[index] ?? ""
                     } ${
                       index === tagline.length - 1
@@ -184,7 +184,9 @@ export function HeroSection({
                   </span>
                   {index < tagline.length - 1 ? (
                     <span
-                      className="size-[5px] rounded-full bg-[color:var(--cinopse-accent)]"
+                      className={`size-[5px] shrink-0 rounded-full bg-[color:var(--cinopse-accent)] [transform:translateY(14px)] opacity-0 animate-[fadeRise_.8s_cubic-bezier(.22,.9,.18,1)_forwards] ${
+                        taglineDelays[index] ?? ""
+                      }`}
                       aria-hidden="true"
                     />
                   ) : null}
@@ -192,11 +194,11 @@ export function HeroSection({
               ))}
             </div>
 
-            <p className="mt-5 max-w-[540px] translate-y-3.5 text-[clamp(13px,1.4vw,15px)] leading-[1.8] font-light text-white/65 opacity-0 animate-[fadeRise_.9s_cubic-bezier(.22,.9,.18,1)_1.5s_forwards]">
+            <p className="mt-5 max-w-[540px] [transform:translateY(14px)] text-[clamp(13px,1.4vw,15px)] leading-[1.8] font-light text-white/65 opacity-0 animate-[fadeRise_.9s_cubic-bezier(.22,.9,.18,1)_1.5s_forwards]">
               {description}
             </p>
 
-            <div className="mt-[34px] flex translate-y-3.5 flex-wrap justify-start gap-4 opacity-0 animate-[fadeRise_.9s_cubic-bezier(.22,.9,.18,1)_1.8s_forwards]">
+            <div className="mt-[34px] flex [transform:translateY(14px)] flex-wrap justify-start gap-4 opacity-0 animate-[fadeRise_.9s_cubic-bezier(.22,.9,.18,1)_1.8s_forwards]">
               <button
                 type="button"
                 onClick={openRegistrationOrTicket}
@@ -214,7 +216,7 @@ export function HeroSection({
               </Link>
             </div>
 
-            <div className="mt-8 flex translate-y-3.5 flex-wrap justify-start gap-3 opacity-0 animate-[fadeRise_.9s_cubic-bezier(.22,.9,.18,1)_2.1s_forwards]">
+            <div className="mt-8 flex [transform:translateY(14px)] flex-wrap justify-start gap-3 opacity-0 animate-[fadeRise_.9s_cubic-bezier(.22,.9,.18,1)_2.1s_forwards]">
               {meta.map((item) => {
                 const Icon = iconMap[item.icon]
                 return (
