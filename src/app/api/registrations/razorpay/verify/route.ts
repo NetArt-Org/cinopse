@@ -36,10 +36,15 @@ export async function POST(request: NextRequest) {
 
     const registration = await getErpRegistration(registrationName)
 
-    if (registration.transaction_id !== orderId) {
-      return NextResponse.json({ message: "Payment order does not match this registration." }, { status: 400 })
+    // Idempotent: the Razorpay `payment.captured` webhook can confirm this
+    // registration before the browser's verify call arrives. If it's already
+    // marked paid, return success instead of a false "order mismatch" error.
+    if (registration.payment_status === "Success") {
+      return NextResponse.json({ registration })
     }
 
+    // The signature is the authoritative proof that this order + payment are
+    // genuine and issued by Razorpay for our account.
     const isValidPayment = verifyRazorpayPaymentSignature({
       orderId,
       paymentId,
@@ -48,6 +53,17 @@ export async function POST(request: NextRequest) {
 
     if (!isValidPayment) {
       return NextResponse.json({ message: "Payment signature verification failed." }, { status: 400 })
+    }
+
+    // Ensure the payment's order belongs to this registration. `transaction_id`
+    // holds the order id before confirmation, but a webhook that raced ahead may
+    // have already swapped it for the payment id — accept either.
+    if (
+      registration.transaction_id &&
+      registration.transaction_id !== orderId &&
+      registration.transaction_id !== paymentId
+    ) {
+      return NextResponse.json({ message: "Payment order does not match this registration." }, { status: 400 })
     }
 
     const updatedRegistration = await updateErpRegistration(registrationName, {
