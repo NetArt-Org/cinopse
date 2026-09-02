@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import Script from "next/script";
 import { Toaster } from "sonner";
+import { UtmCapture } from "@/components/layout/utm-capture";
 import "react-phone-number-input/style.css";
 import "./globals.css";
 
@@ -121,6 +122,7 @@ fbq('track', 'PageView');`}
             src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
           />
         </noscript>
+        <UtmCapture />
         {children}
         <Toaster richColors position="top-right" closeButton />
       </body>

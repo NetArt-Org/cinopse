@@ -27,6 +27,38 @@ type RegistrationRequest = {
   hospital?: unknown
   medicalCouncilNumber?: unknown
   couponCode?: unknown
+  custom_utm_source?: unknown
+  custom_utm_medium?: unknown
+  custom_utm_campaign?: unknown
+  custom_utm_term?: unknown
+  custom_utm_content?: unknown
+  custom_fbc_lid?: unknown
+}
+
+// UTM / paid-traffic attribution fields, populated only when the visitor
+// arrived through a tagged/paid link (empty for organic traffic).
+const utmFieldNames = [
+  "custom_utm_source",
+  "custom_utm_medium",
+  "custom_utm_campaign",
+  "custom_utm_term",
+  "custom_utm_content",
+  "custom_fbc_lid",
+] as const
+
+function extractUtmFields(body: RegistrationRequest) {
+  // Only include fields that actually arrived (from a tagged/paid URL). Absent
+  // params are omitted entirely, so ERP fields stay empty for organic traffic.
+  const utm: Partial<Record<(typeof utmFieldNames)[number], string>> = {}
+
+  for (const field of utmFieldNames) {
+    const value = body[field]
+    if (typeof value === "string" && value.trim()) {
+      utm[field] = value.trim().slice(0, 500)
+    }
+  }
+
+  return utm
 }
 
 const erpCategoryByRegistrationCategory: Record<string, string> = {
@@ -85,6 +117,7 @@ export async function POST(request: NextRequest) {
     const couponCode = typeof body.couponCode === "string" ? body.couponCode : ""
     const coupon = resolveRegistrationCoupon(couponCode)
     const normalizedCouponCode = coupon ? normalizeCouponCode(coupon.code) : ""
+    const utmFields = extractUtmFields(body)
 
     if (
       !fullName ||
@@ -156,6 +189,7 @@ export async function POST(request: NextRequest) {
       custom_coupon_code: normalizedCouponCode,
       custom_medical_council_number: medicalCouncilNumber,
       custom_registration_id: customRegistrationId,
+      ...utmFields,
     })
 
     if (payableAmount <= 0) {

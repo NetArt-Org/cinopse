@@ -7,6 +7,7 @@ import { createPortal } from "react-dom"
 import { ArrowRight, Check, X } from "lucide-react"
 import { toast } from "sonner"
 import { useRegistrationTicketCta } from "@/hooks/use-registration-ticket-cta"
+import { getStoredUtmParams } from "@/lib/utm"
 import {
   calculateRegistrationTotal,
   getActiveRegistrationOption,
@@ -377,6 +378,7 @@ export function RegistrationPriceComparison({
             hospital: form.institution,
             medicalCouncilNumber: form.medicalCouncilNumber,
             couponCode: appliedCoupon?.code ?? "",
+            ...getStoredUtmParams(),
           }),
         })
         const payload = (await response.json()) as {

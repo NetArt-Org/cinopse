@@ -21,6 +21,12 @@ export type ErpRegistration = {
   custom_coupon_code?: string
   custom_medical_council_number?: string
   custom_registration_id?: string
+  custom_utm_source?: string
+  custom_utm_medium?: string
+  custom_utm_campaign?: string
+  custom_utm_term?: string
+  custom_utm_content?: string
+  custom_fbc_lid?: string
   google_email?: string
   uid?: string
 }
