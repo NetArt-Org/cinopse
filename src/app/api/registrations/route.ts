@@ -13,6 +13,7 @@ import {
   calculateRegistrationTotal,
   getCouponUsageCodes,
   getRegistrationAmount,
+  isRegistrationCouponExpired,
   normalizeCouponCode,
   resolveRegistrationCoupon,
 } from "@/lib/registration-config"
@@ -134,6 +135,10 @@ export async function POST(request: NextRequest) {
 
     if (couponCode.trim() && !coupon) {
       return badRequest("This coupon code is not available.")
+    }
+
+    if (coupon && isRegistrationCouponExpired(coupon)) {
+      return badRequest("This coupon code has expired.")
     }
 
     const { discount, payableAmount } = calculateRegistrationTotal(

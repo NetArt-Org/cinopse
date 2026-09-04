@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { countErpRegistrationsByCouponCodes } from "@/lib/erpnext-client"
 import {
   getCouponUsageCodes,
+  isRegistrationCouponExpired,
   resolveRegistrationCoupon,
 } from "@/lib/registration-config"
 
@@ -23,6 +24,10 @@ export async function POST(request: NextRequest) {
 
     if (!coupon) {
       return badRequest("This coupon code is not available.")
+    }
+
+    if (isRegistrationCouponExpired(coupon)) {
+      return badRequest("This coupon code has expired.")
     }
 
     if (coupon.maxUses) {

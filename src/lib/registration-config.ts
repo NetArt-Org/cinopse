@@ -26,6 +26,8 @@ export type RegistrationCoupon = {
   type?: "fixed" | "full" | "payable" | "percentage"
   maxUses?: number
   aliases?: string[]
+  /** ISO date-time after which the coupon is no longer valid (inclusive up to this instant). */
+  expiresAt?: string
 }
 
 const earlyBirdEndsAt = "2026-09-10T23:59:59+05:30"
@@ -138,6 +140,14 @@ export const registrationCoupons: RegistrationCoupon[] = [
     maxUses: 500,
   },
   {
+    name: "FLAT60 60% discount",
+    code: "FLAT60",
+    discount: 60,
+    type: "percentage",
+    maxUses: 1000,
+    expiresAt: "2026-09-28T23:59:59+05:30",
+  },
+  {
     name: "CINOPSE-TEST-FREE full waiver",
     code: "CINOPSETESTAX7F9",
     discount: 0,
@@ -198,6 +208,16 @@ export function resolveRegistrationCoupon(code: string) {
 
 export function getCouponUsageCodes(coupon: RegistrationCoupon) {
   return Array.from(new Set([coupon.code, ...(coupon.aliases ?? [])]))
+}
+
+export function isRegistrationCouponExpired(
+  coupon: RegistrationCoupon,
+  now = new Date(),
+) {
+  if (!coupon.expiresAt) return false
+
+  const expiry = new Date(coupon.expiresAt).getTime()
+  return Number.isFinite(expiry) && now.getTime() > expiry
 }
 
 export function normalizeCouponCode(code: string) {
