@@ -5,6 +5,7 @@ import {
   updateErpRegistration,
 } from "@/lib/erpnext-client"
 import { createRazorpayOrder } from "@/lib/razorpay-client"
+import { toRazorpayUtmNotes } from "@/lib/registration-config"
 
 type RetryPaymentRequest = {
   registrationName?: unknown
@@ -44,6 +45,7 @@ export async function POST(request: NextRequest) {
         registration: registration.name,
         email: registration.email || "",
         category: registration.category,
+        ...toRazorpayUtmNotes(registration),
       },
     })
 

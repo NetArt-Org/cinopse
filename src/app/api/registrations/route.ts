@@ -16,6 +16,7 @@ import {
   isRegistrationCouponExpired,
   normalizeCouponCode,
   resolveRegistrationCoupon,
+  toRazorpayUtmNotes,
 } from "@/lib/registration-config"
 import { sendRegistrationWhatsAppNotificationSafely } from "@/lib/whapi-client"
 
@@ -242,6 +243,7 @@ export async function POST(request: NextRequest) {
         registration: registration.name,
         email,
         category: erpCategory,
+        ...toRazorpayUtmNotes(utmFields),
       },
     })
 

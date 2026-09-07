@@ -152,7 +152,7 @@ export const registrationCoupons: RegistrationCoupon[] = [
     code: "CINOPSETESTAX7F9",
     discount: 0,
     type: "full",
-    maxUses: 2,
+    maxUses: 10,
     aliases: ["CINOPSE-TEST-AX7F9", "CINOPSE-TEST-FREE", "CINOPSETESTFREE"],
   },
   {
@@ -160,7 +160,7 @@ export const registrationCoupons: RegistrationCoupon[] = [
     code: "CINOPSEONEAX7F9",
     discount: 1,
     type: "payable",
-    maxUses: 2,
+    maxUses: 10,
     aliases: ["CINOPSE-ONE-AX7F9", "CINOPSE-TEST-ONE", "CINOPSETESTONE"],
   },
 ]
@@ -218,6 +218,35 @@ export function isRegistrationCouponExpired(
 
   const expiry = new Date(coupon.expiresAt).getTime()
   return Number.isFinite(expiry) && now.getTime() > expiry
+}
+
+// ERPNext custom field -> Razorpay order `notes` key.
+const utmNoteKeys: Record<string, string> = {
+  custom_utm_source: "utm_source",
+  custom_utm_medium: "utm_medium",
+  custom_utm_campaign: "utm_campaign",
+  custom_utm_term: "utm_term",
+  custom_utm_content: "utm_content",
+  custom_fbc_lid: "fbclid",
+}
+
+/**
+ * Convert the stored `custom_utm_*` fields into a Razorpay `notes` object,
+ * including only the values that are present.
+ */
+export function toRazorpayUtmNotes(
+  fields: Partial<Record<string, unknown>>,
+): Record<string, string> {
+  const notes: Record<string, string> = {}
+
+  for (const [customKey, noteKey] of Object.entries(utmNoteKeys)) {
+    const value = fields[customKey]
+    if (typeof value === "string" && value.trim()) {
+      notes[noteKey] = value.trim()
+    }
+  }
+
+  return notes
 }
 
 export function normalizeCouponCode(code: string) {
