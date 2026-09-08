@@ -810,7 +810,7 @@ export function RegistrationPriceComparison({
                   key={view}
                   type="button"
                   onClick={() => setActiveView(view as "wizard" | "login")}
-                  className={`rounded-full px-2 py-3 text-xs leading-none font-medium transition-[background,color,box-shadow] duration-300 ${
+                  className={`rounded-full px-2 py-3 text-[10.5px] leading-none font-medium transition-[background,color,box-shadow] duration-300 sm:text-xs ${
                     activeView === view
                       ? "bg-[color:var(--cinopse-primary)] text-white shadow-[0_4px_12px_rgba(27,75,150,0.30)]"
                       : "text-[color:var(--cinopse-muted)]"
