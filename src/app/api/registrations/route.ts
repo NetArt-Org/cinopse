@@ -48,19 +48,46 @@ const utmFieldNames = [
   "custom_fbc_lid",
 ] as const
 
-function extractUtmFields(body: RegistrationRequest) {
+type UtmFields = Partial<Record<(typeof utmFieldNames)[number], string>>
+
+function pickUtm(source: Partial<Record<string, unknown>>): UtmFields {
   // Only include fields that actually arrived (from a tagged/paid URL). Absent
   // params are omitted entirely, so ERP fields stay empty for organic traffic.
-  const utm: Partial<Record<(typeof utmFieldNames)[number], string>> = {}
+  const utm: UtmFields = {}
 
   for (const field of utmFieldNames) {
-    const value = body[field]
+    const value = source[field]
     if (typeof value === "string" && value.trim()) {
       utm[field] = value.trim().slice(0, 500)
     }
   }
 
   return utm
+}
+
+function extractUtmFields(body: RegistrationRequest) {
+  return pickUtm(body)
+}
+
+// Fallback: recover UTM from the first-party cookie sent with the request, for
+// paid-ad sessions where client JS couldn't attach the params to the body
+// (in-app browsers, cleared localStorage, redirects, etc.).
+function extractUtmFromCookie(request: NextRequest): UtmFields {
+  try {
+    const raw = request.cookies.get("cinopse_utm")?.value
+    if (!raw) return {}
+
+    let decoded = raw
+    try {
+      decoded = decodeURIComponent(raw)
+    } catch {
+      // Value wasn't URL-encoded; use as-is.
+    }
+
+    return pickUtm(JSON.parse(decoded) as Record<string, unknown>)
+  } catch {
+    return {}
+  }
 }
 
 const erpCategoryByRegistrationCategory: Record<string, string> = {
@@ -119,7 +146,10 @@ export async function POST(request: NextRequest) {
     const couponCode = typeof body.couponCode === "string" ? body.couponCode : ""
     const coupon = resolveRegistrationCoupon(couponCode)
     const normalizedCouponCode = coupon ? normalizeCouponCode(coupon.code) : ""
-    const utmFields = extractUtmFields(body)
+    let utmFields = extractUtmFields(body)
+    if (Object.keys(utmFields).length === 0) {
+      utmFields = extractUtmFromCookie(request)
+    }
 
     if (
       !fullName ||

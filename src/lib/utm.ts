@@ -4,8 +4,16 @@
  * When a visitor arrives from a tagged/paid link (utm_* params or a Facebook
  * `fbclid`), we persist those values so they're still available whenever the
  * visitor later submits the registration form — even after navigating between
- * pages. If the URL carries no tracking params (organic traffic), nothing is
- * stored and the registration's UTM fields stay empty.
+ * pages, bouncing through the payment gateway, or reopening the link in a
+ * different browser.
+ *
+ * Persistence is redundant on purpose (ad traffic is lossy, especially inside
+ * Meta's in-app browsers): values are written to BOTH localStorage and a
+ * first-party cookie. An early inline script in the document head captures on
+ * first paint (before hydration); this module re-captures on mount and reads
+ * from whichever store still has the values. The cookie is also sent with the
+ * same-origin registration request, so the server can recover the values even
+ * if client JS attaches nothing.
  */
 
 export type UtmParams = {
@@ -18,6 +26,8 @@ export type UtmParams = {
 }
 
 const STORAGE_KEY = "cinopse:utm"
+export const UTM_COOKIE_NAME = "cinopse_utm"
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 90 // 90 days
 
 // URL query parameter -> ERPNext custom field name.
 const URL_PARAM_TO_FIELD: Record<string, keyof UtmParams> = {
@@ -31,10 +41,42 @@ const URL_PARAM_TO_FIELD: Record<string, keyof UtmParams> = {
 
 export const UTM_FIELD_NAMES = Object.values(URL_PARAM_TO_FIELD)
 
+function sanitize(parsed: Partial<Record<keyof UtmParams, unknown>>): UtmParams {
+  const result: UtmParams = {}
+  for (const field of UTM_FIELD_NAMES) {
+    const value = parsed[field]
+    if (typeof value === "string" && value.trim()) {
+      result[field] = value.trim()
+    }
+  }
+  return result
+}
+
+function writeCookie(json: string) {
+  try {
+    const secure = window.location.protocol === "https:" ? ";secure" : ""
+    document.cookie = `${UTM_COOKIE_NAME}=${encodeURIComponent(json)};path=/;max-age=${COOKIE_MAX_AGE_SECONDS};samesite=lax${secure}`
+  } catch {
+    // Ignore cookie write failures.
+  }
+}
+
+function readCookie(): UtmParams {
+  try {
+    const match = document.cookie.match(
+      new RegExp(`(?:^|;\\s*)${UTM_COOKIE_NAME}=([^;]+)`),
+    )
+    if (!match) return {}
+    return sanitize(JSON.parse(decodeURIComponent(match[1])))
+  } catch {
+    return {}
+  }
+}
+
 /**
- * Read tracking params from the current URL and persist them, but only if the
- * URL actually contains at least one — so organic visits never overwrite a
- * previously captured campaign, and never populate the fields.
+ * Read tracking params from the current URL and persist them (localStorage +
+ * cookie), but only if the URL actually contains at least one — so organic
+ * visits never overwrite a previously captured campaign.
  */
 export function captureUtmParams() {
   if (typeof window === "undefined") return
@@ -53,36 +95,42 @@ export function captureUtmParams() {
     }
 
     if (hasAny) {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(captured))
+      const json = JSON.stringify(captured)
+      try {
+        window.localStorage.setItem(STORAGE_KEY, json)
+      } catch {
+        // Ignore storage failures (private mode, disabled storage, etc.).
+      }
+      writeCookie(json)
     }
   } catch {
-    // Ignore storage/parsing errors (private mode, disabled storage, etc.).
+    // Ignore parsing errors.
   }
 }
 
 /**
- * Return the stored tracking params (only non-empty, known fields). Empty
- * object when the visitor did not arrive through a tagged/paid link.
+ * Return the stored tracking params, preferring localStorage and falling back
+ * to the cookie. Empty object when the visitor did not arrive through a
+ * tagged/paid link.
  */
 export function getStoredUtmParams(): UtmParams {
   if (typeof window === "undefined") return {}
 
+  let raw: string | null = null
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return {}
-
-    const parsed = JSON.parse(raw) as Partial<Record<keyof UtmParams, unknown>>
-    const result: UtmParams = {}
-
-    for (const field of UTM_FIELD_NAMES) {
-      const value = parsed[field]
-      if (typeof value === "string" && value.trim()) {
-        result[field] = value.trim()
-      }
-    }
-
-    return result
+    raw = window.localStorage.getItem(STORAGE_KEY)
   } catch {
-    return {}
+    raw = null
   }
+
+  if (raw) {
+    try {
+      const fromStorage = sanitize(JSON.parse(raw))
+      if (Object.keys(fromStorage).length) return fromStorage
+    } catch {
+      // Fall through to the cookie.
+    }
+  }
+
+  return readCookie()
 }

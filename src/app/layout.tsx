@@ -83,6 +83,13 @@ export default function RootLayout({
       className={`h-full antialiased ${inter.variable} ${fraunces.variable}`}
     >
       <head>
+        {/* Capture UTM / fbclid as early as possible (before hydration) and
+            persist to BOTH localStorage and a first-party cookie, so paid-ad
+            traffic in in-app browsers / across redirects doesn't lose it. */}
+        <Script id="utm-capture-early" strategy="beforeInteractive">
+          {`(function(){try{var p=new URLSearchParams(window.location.search);var m={utm_source:"custom_utm_source",utm_medium:"custom_utm_medium",utm_campaign:"custom_utm_campaign",utm_term:"custom_utm_term",utm_content:"custom_utm_content",fbclid:"custom_fbc_lid"};var o={},has=false;for(var k in m){var v=p.get(k);if(v){o[m[k]]=v.trim();has=true;}}if(has){var j=JSON.stringify(o);try{localStorage.setItem("cinopse:utm",j);}catch(e){}try{document.cookie="cinopse_utm="+encodeURIComponent(j)+";path=/;max-age=7776000;samesite=lax"+(location.protocol==="https:"?";secure":"");}catch(e){}}}catch(e){}})();`}
+        </Script>
+
         {/* Google tag (gtag.js) */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
