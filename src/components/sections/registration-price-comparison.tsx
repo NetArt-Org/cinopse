@@ -238,6 +238,14 @@ export function RegistrationPriceComparison({
     return () => document.body.classList.remove("overflow-hidden")
   }, [dialogOnly, modalOpen])
 
+  // Warm up the Razorpay Checkout script as soon as the modal opens, so it's
+  // already loaded by the time the user reaches payment — avoids a slow/failed
+  // load at the last step.
+  useEffect(() => {
+    if (!dialogOnly || !modalOpen) return
+    void loadRazorpayCheckout().catch(() => {})
+  }, [dialogOnly, modalOpen])
+
   const pricingCategories = useMemo(
     () => getRegistrationPricing(new Date(now)),
     [now],

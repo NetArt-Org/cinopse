@@ -235,7 +235,8 @@ export async function POST(request: NextRequest) {
         payment_date: toIndiaErpDateTime(),
       })
 
-      await sendRegistrationWhatsAppNotificationSafely({
+      // Fire-and-forget: don't block the response on the WhatsApp call.
+      void sendRegistrationWhatsAppNotificationSafely({
         kind: "confirmed",
         registration: {
           ...confirmedRegistration,
@@ -281,7 +282,8 @@ export async function POST(request: NextRequest) {
       transaction_id: order.id,
     })
 
-    await sendRegistrationWhatsAppNotificationSafely({
+    // Fire-and-forget: don't delay opening Razorpay on the WhatsApp call.
+    void sendRegistrationWhatsAppNotificationSafely({
       kind: "payment-pending",
       registration: {
         ...registration,

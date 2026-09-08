@@ -73,7 +73,8 @@ export async function POST(request: NextRequest) {
       transaction_id: paymentId,
     })
 
-    await sendRegistrationWhatsAppNotificationSafely({
+    // Fire-and-forget: don't delay the success response on the WhatsApp call.
+    void sendRegistrationWhatsAppNotificationSafely({
       kind: "payment-confirmed",
       registration: {
         ...updatedRegistration,

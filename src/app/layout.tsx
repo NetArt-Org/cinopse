@@ -83,6 +83,11 @@ export default function RootLayout({
       className={`h-full antialiased ${inter.variable} ${fraunces.variable}`}
     >
       <head>
+        {/* Warm up Razorpay connections so checkout opens fast at the last step. */}
+        <link rel="preconnect" href="https://checkout.razorpay.com" crossOrigin="" />
+        <link rel="preconnect" href="https://api.razorpay.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
+
         {/* Capture UTM / fbclid as early as possible (before hydration) and
             persist to BOTH localStorage and a first-party cookie, so paid-ad
             traffic in in-app browsers / across redirects doesn't lose it. */}
