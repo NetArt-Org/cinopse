@@ -6,22 +6,25 @@ import { X } from "lucide-react"
 
 /**
  * First-load promotional poster for the Karnataka CINOPSE Association (KCA).
- * The whole poster is a single clickable link to cinopseassociation.in, shown
- * once per browser session. Dismiss via the close icon, overlay click or Escape.
+ * The whole poster (their logo, shown large) is a single clickable link to
+ * cinopseassociation.in. It appears on first load, then not again for 24 hours.
+ * Dismiss via the close icon, overlay click or Escape.
  */
 const TARGET_URL = "https://cinopseassociation.in/"
-const SESSION_KEY = "cinopse:association-popup-seen"
+const STORAGE_KEY = "cinopse:association-popup-last-shown"
+const SHOW_INTERVAL_MS = 24 * 60 * 60 * 1000 // 1 day
 
 export function AssociationPosterPopup() {
   const [open, setOpen] = useState(false)
   const [shown, setShown] = useState(false)
 
-  // Show shortly after first load of the session only (lets the page paint).
+  // Show once, then not again until 24h have passed.
   useEffect(() => {
     try {
-      if (sessionStorage.getItem(SESSION_KEY)) return
+      const last = Number(localStorage.getItem(STORAGE_KEY))
+      if (last && Date.now() - last < SHOW_INTERVAL_MS) return
     } catch {
-      // sessionStorage unavailable — still show once for this page load.
+      // localStorage unavailable — still show once for this page load.
     }
     const timer = window.setTimeout(() => {
       setOpen(true)
@@ -47,7 +50,7 @@ export function AssociationPosterPopup() {
   function close() {
     setShown(false)
     try {
-      sessionStorage.setItem(SESSION_KEY, "1")
+      localStorage.setItem(STORAGE_KEY, String(Date.now()))
     } catch {
       // Ignore storage failures.
     }
@@ -88,47 +91,32 @@ export function AssociationPosterPopup() {
           rel="noopener noreferrer"
           onClick={close}
           aria-label="Visit the Karnataka CINOPSE Association website"
-          className="group block overflow-hidden rounded-2xl shadow-[0_30px_80px_rgba(6,26,58,0.55)] ring-1 ring-white/15"
+          className="group block overflow-hidden rounded-2xl bg-[image:var(--cinopse-gradient-reference-blue)] shadow-[0_30px_80px_rgba(6,26,58,0.55)] ring-1 ring-white/15"
         >
-          {/* Poster: their banner as backdrop with their logo + name */}
-          <div className="relative aspect-[4/5] w-full sm:aspect-[3/4]">
-            <Image
-              src="/images/kca-hero.jpg"
-              alt="Karnataka CINOPSE Association"
-              fill
-              priority
-              sizes="(max-width: 640px) 90vw, 448px"
-              className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
-            />
-            {/* Legibility wash */}
-            <div className="absolute inset-0 bg-[image:linear-gradient(180deg,rgba(6,26,58,0.55)_0%,rgba(6,26,58,0.35)_42%,rgba(6,26,58,0.9)_100%)]" />
+          {/* Poster: their logo shown large */}
+          <div className="flex flex-col items-center px-8 pt-10 pb-9 text-center">
+            <p className="text-[10px] font-semibold tracking-[0.24em] text-[color:var(--cinopse-accent)] uppercase">
+              In Collaboration With
+            </p>
 
-            <div className="absolute inset-0 flex flex-col items-center justify-between px-6 py-9 text-center">
-              <span className="grid size-28 place-items-center rounded-full bg-white p-2.5 shadow-[0_12px_30px_rgba(6,26,58,0.45)]">
-                <Image
-                  src="/images/cinopseassociation-logo.png"
-                  alt="Karnataka CINOPSE Association logo"
-                  width={479}
-                  height={451}
-                  className="size-full object-contain"
-                />
-              </span>
+            <span className="mt-6 grid aspect-square w-full max-w-[260px] place-items-center rounded-full bg-white p-6 shadow-[0_18px_44px_rgba(6,26,58,0.5)] transition-transform duration-500 ease-out group-hover:scale-[1.03]">
+              <Image
+                src="/images/cinopseassociation-logo.png"
+                alt="Karnataka CINOPSE Association logo"
+                width={479}
+                height={451}
+                priority
+                className="size-full object-contain"
+              />
+            </span>
 
-              <div>
-                <p className="text-[10px] font-semibold tracking-[0.22em] text-[color:var(--cinopse-accent)] uppercase">
-                  In Collaboration With
-                </p>
-                <h2 className="font-display mt-2 text-2xl leading-tight font-semibold text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
-                  Karnataka CINOPSE
-                  <br />
-                  Association
-                </h2>
-                <span className="mt-4 inline-flex items-center gap-1.5 text-[12px] font-medium text-white/90 transition-transform duration-300 group-hover:translate-x-0.5">
-                  Tap to visit
-                  <span aria-hidden="true">→</span>
-                </span>
-              </div>
-            </div>
+            <h2 className="font-display mt-7 text-2xl leading-tight font-semibold text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.4)]">
+              Karnataka CINOPSE Association
+            </h2>
+            <span className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-medium text-white/85 transition-transform duration-300 group-hover:translate-x-0.5">
+              Tap to visit
+              <span aria-hidden="true">→</span>
+            </span>
           </div>
         </a>
       </div>
