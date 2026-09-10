@@ -1,16 +1,14 @@
 "use client"
 
+import Image from "next/image"
 import { useEffect, useState } from "react"
 import { X } from "lucide-react"
 
 /**
- * First-load promotional popup for the CiNOPSE Association site. Shows a
- * clickable poster (opens cinopseassociation.in), once per browser session.
- * Dismiss via the close icon, clicking the overlay, or Escape.
- *
- * To change the poster, replace `public/images/association-poster.jpg`.
+ * First-load promotional poster for the Karnataka CINOPSE Association (KCA).
+ * The whole poster is a single clickable link to cinopseassociation.in, shown
+ * once per browser session. Dismiss via the close icon, overlay click or Escape.
  */
-const POSTER_SRC = "/images/association-poster.jpg"
 const TARGET_URL = "https://cinopseassociation.in/"
 const SESSION_KEY = "cinopse:association-popup-seen"
 
@@ -53,7 +51,6 @@ export function AssociationPosterPopup() {
     } catch {
       // Ignore storage failures.
     }
-    // Let the fade-out finish before unmounting.
     window.setTimeout(() => setOpen(false), 250)
   }
 
@@ -63,7 +60,7 @@ export function AssociationPosterPopup() {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="CiNOPSE Association"
+      aria-label="Karnataka CINOPSE Association"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) close()
       }}
@@ -80,9 +77,9 @@ export function AssociationPosterPopup() {
           type="button"
           onClick={close}
           aria-label="Close"
-          className="absolute -top-3 -right-3 z-10 grid size-9 place-items-center rounded-full bg-white text-[color:var(--cinopse-primary)] shadow-[0_6px_18px_rgba(6,26,58,0.35)] transition-transform duration-200 hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="absolute -top-3 -right-3 z-10 grid size-9 place-items-center rounded-full bg-white text-[color:var(--cinopse-primary)] shadow-[0_6px_18px_rgba(6,26,58,0.4)] transition-[transform,background] duration-200 hover:rotate-90 hover:bg-[color:var(--cinopse-accent)] hover:text-[color:var(--cinopse-primary-deep)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
-          <X className="size-5" aria-hidden="true" />
+          <X className="size-4" aria-hidden="true" />
         </button>
 
         <a
@@ -90,15 +87,49 @@ export function AssociationPosterPopup() {
           target="_blank"
           rel="noopener noreferrer"
           onClick={close}
-          className="block overflow-hidden rounded-2xl shadow-[0_30px_80px_rgba(6,26,58,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          aria-label="Visit the Karnataka CINOPSE Association website"
+          className="group block overflow-hidden rounded-2xl shadow-[0_30px_80px_rgba(6,26,58,0.55)] ring-1 ring-white/15"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={POSTER_SRC}
-            alt="Visit the CiNOPSE Association"
-            onError={close}
-            className="block h-auto max-h-[85vh] w-full object-contain"
-          />
+          {/* Poster: their banner as backdrop with their logo + name */}
+          <div className="relative aspect-[4/5] w-full sm:aspect-[3/4]">
+            <Image
+              src="/images/kca-hero.jpg"
+              alt="Karnataka CINOPSE Association"
+              fill
+              priority
+              sizes="(max-width: 640px) 90vw, 448px"
+              className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
+            />
+            {/* Legibility wash */}
+            <div className="absolute inset-0 bg-[image:linear-gradient(180deg,rgba(6,26,58,0.55)_0%,rgba(6,26,58,0.35)_42%,rgba(6,26,58,0.9)_100%)]" />
+
+            <div className="absolute inset-0 flex flex-col items-center justify-between px-6 py-9 text-center">
+              <span className="grid size-28 place-items-center rounded-full bg-white p-2.5 shadow-[0_12px_30px_rgba(6,26,58,0.45)]">
+                <Image
+                  src="/images/cinopseassociation-logo.png"
+                  alt="Karnataka CINOPSE Association logo"
+                  width={479}
+                  height={451}
+                  className="size-full object-contain"
+                />
+              </span>
+
+              <div>
+                <p className="text-[10px] font-semibold tracking-[0.22em] text-[color:var(--cinopse-accent)] uppercase">
+                  In Collaboration With
+                </p>
+                <h2 className="font-display mt-2 text-2xl leading-tight font-semibold text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+                  Karnataka CINOPSE
+                  <br />
+                  Association
+                </h2>
+                <span className="mt-4 inline-flex items-center gap-1.5 text-[12px] font-medium text-white/90 transition-transform duration-300 group-hover:translate-x-0.5">
+                  Tap to visit
+                  <span aria-hidden="true">→</span>
+                </span>
+              </div>
+            </div>
+          </div>
         </a>
       </div>
     </div>
