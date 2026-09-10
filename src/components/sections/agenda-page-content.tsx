@@ -20,7 +20,7 @@ export function AgendaPageContent() {
 
         <div className="mb-6 flex flex-wrap gap-3">
           <a
-            href="/agenda.pdf"
+            href="/cinopse-agenda.pdf"
             download
             className="inline-flex items-center justify-center rounded-full bg-[color:var(--cinopse-primary)] px-6 py-3 text-[12.5px] font-medium text-white transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_26px_rgba(27,75,150,0.35)]"
           >
@@ -30,7 +30,7 @@ export function AgendaPageContent() {
 
         <div className="overflow-hidden rounded-[18px] border border-[color:var(--cinopse-border)] bg-white shadow-[0_18px_42px_rgba(12,40,84,0.12)]">
           <iframe
-            src="/agenda.pdf"
+            src="/cinopse-agenda.pdf"
             title="Cinopse India Medical Summit Pvt Ltd agenda PDF"
             className="h-[78vh] min-h-[640px] w-full"
           />
