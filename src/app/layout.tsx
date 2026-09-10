@@ -27,38 +27,38 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.cinopse.in"),
   title: {
-    default: "CiNOPSE India 2026",
-    template: "%s | CiNOPSE India 2026",
+    default: "Cinopse India Medical Summit Pvt Ltd",
+    template: "%s | Cinopse India Medical Summit Pvt Ltd",
   },
   description:
-    "CiNOPSE India 2026 is a multidisciplinary medical conference for cardio, renal, obesity, pulmonary and sleep medicine, taking place on Sunday, 27 September 2026 at Jawaharlal Nehru Planetarium, Bengaluru.",
+    "Cinopse India Medical Summit Pvt Ltd is a multidisciplinary medical conference for cardio, renal, obesity, pulmonary and sleep medicine, taking place on Sunday, 27 September 2026 at Jawaharlal Nehru Planetarium, Bengaluru.",
   keywords: [
-    "CiNOPSE India 2026",
+    "Cinopse India Medical Summit Pvt Ltd",
     "medical conference Bengaluru",
     "cardio renal obesity pulmonary sleep medicine",
     "CME summit India",
     "Jawaharlal Nehru Planetarium Bengaluru",
   ],
-  authors: [{ name: "CiNOPSE India" }],
-  creator: "CiNOPSE India",
-  publisher: "CiNOPSE India",
+  authors: [{ name: "Cinopse India" }],
+  creator: "Cinopse India",
+  publisher: "Cinopse India",
   icons: {
     icon: "/logo.jpg",
     shortcut: "/logo.jpg",
     apple: "/logo.jpg",
   },
   openGraph: {
-    title: "CiNOPSE India 2026",
+    title: "Cinopse India Medical Summit Pvt Ltd",
     description:
       "A multidisciplinary CME summit for cardio, renal, obesity, pulmonary and sleep medicine on Sunday, 27 September 2026 in Bengaluru.",
     url: "https://www.cinopse.in",
-    siteName: "CiNOPSE India 2026",
+    siteName: "Cinopse India Medical Summit Pvt Ltd",
     images: [
       {
         url: "/logo.jpg",
         width: 512,
         height: 512,
-        alt: "CiNOPSE India 2026 logo",
+        alt: "Cinopse India Medical Summit Pvt Ltd logo",
       },
     ],
     locale: "en_IN",
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "CiNOPSE India 2026",
+    title: "Cinopse India Medical Summit Pvt Ltd",
     description:
       "A multidisciplinary CME summit on Sunday, 27 September 2026 at Jawaharlal Nehru Planetarium, Bengaluru.",
     images: ["/logo.jpg"],

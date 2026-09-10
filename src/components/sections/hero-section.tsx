@@ -145,7 +145,7 @@ export function HeroSection({
               {eyebrow}
             </span>
 
-            <h1 className="font-display mt-7 text-[clamp(34px,5.2vw,68px)] leading-[1.04] font-semibold tracking-[-0.02em] min-[921px]:whitespace-nowrap">
+            <h1 className="font-display mt-7 text-[clamp(30px,4.6vw,58px)] leading-[1.06] font-semibold tracking-[-0.02em]">
               {titleWords.map((word, index) => {
                 const isGold = word === goldWord
                 return (

@@ -80,13 +80,13 @@ export const privacyPolicy: PolicyPage = {
   eyebrow: "Compliance",
   title: "Privacy Policy",
   summary:
-    "This policy explains how CINOPSE India 2026 collects and uses registration, communication, and payment-related information for the conference.",
+    "This policy explains how Cinopse India Medical Summit Pvt Ltd collects and uses registration, communication, and payment-related information for the conference.",
   updated: "05 August 2026",
   sections: [
     {
       title: "Conference Details",
       paragraphs: [
-        "CINOPSE India 2026 is a multidisciplinary medical conference scheduled for Sunday, 27 September 2026 at Jawaharlal Nehru Planetarium, Sankey Road, Bengaluru.",
+        "Cinopse India Medical Summit Pvt Ltd is a multidisciplinary medical conference scheduled for Sunday, 27 September 2026 at Jawaharlal Nehru Planetarium, Sankey Road, Bengaluru.",
         "The conference covers cardio, renal, obesity, pulmonary, sleep medicine, metabolic medicine, guideline updates, case-based discussions, innovation, and hands-on learning.",
       ],
     },
@@ -132,7 +132,7 @@ export const refundPolicy: PolicyPage = {
   eyebrow: "Payments",
   title: "Refund Policy",
   summary:
-    "This policy explains the general refund handling for CINOPSE India 2026 registrations and Razorpay payments.",
+    "This policy explains the general refund handling for Cinopse India Medical Summit Pvt Ltd registrations and Razorpay payments.",
   updated: "05 August 2026",
   sections: [
     {
@@ -180,13 +180,13 @@ export const termsAndConditions: PolicyPage = {
   eyebrow: "Legal",
   title: "Terms & Conditions",
   summary:
-    "These terms apply to use of the CINOPSE India 2026 website and registration for the conference.",
+    "These terms apply to use of the Cinopse India Medical Summit Pvt Ltd website and registration for the conference.",
   updated: "05 August 2026",
   sections: [
     {
       title: "Conference Participation",
       paragraphs: [
-        "CINOPSE India 2026 is a multidisciplinary medical conference for physicians, researchers, academicians, allied healthcare professionals, postgraduate trainees, and related healthcare participants.",
+        "Cinopse India Medical Summit Pvt Ltd is a multidisciplinary medical conference for physicians, researchers, academicians, allied healthcare professionals, postgraduate trainees, and related healthcare participants.",
         "By registering, participants agree to provide accurate information and follow event instructions shared by CINOPSE India.",
       ],
     },

@@ -12,9 +12,9 @@ import {
 } from "@/lib/policy-pages"
 
 export const metadata: Metadata = {
-  title: "Refund Policy — CINOPSE India 2026",
+  title: "Refund Policy — Cinopse India Medical Summit Pvt Ltd",
   description:
-    "Refund policy for CINOPSE India 2026 registration payments and coupon-based registrations.",
+    "Refund policy for Cinopse India Medical Summit Pvt Ltd registration payments and coupon-based registrations.",
 }
 
 export default function RefundPolicyPage() {

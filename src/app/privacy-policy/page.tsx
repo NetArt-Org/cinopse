@@ -12,9 +12,9 @@ import {
 } from "@/lib/policy-pages"
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — CINOPSE India 2026",
+  title: "Privacy Policy — Cinopse India Medical Summit Pvt Ltd",
   description:
-    "Privacy policy for CINOPSE India 2026 registrations, payments, and website use.",
+    "Privacy policy for Cinopse India Medical Summit Pvt Ltd registrations, payments, and website use.",
 }
 
 export default function PrivacyPolicyPage() {

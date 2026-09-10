@@ -90,8 +90,8 @@ function buildRegistrationMessageBody({
     kind === "payment-pending" ? "Pending" : registration.payment_status || "Success"
   const heading =
     kind === "payment-pending"
-      ? "Your CINOPSE India 2026 registration has been received."
-      : "Your CINOPSE India 2026 registration is confirmed."
+      ? "Your Cinopse India Medical Summit Pvt Ltd registration has been received."
+      : "Your Cinopse India Medical Summit Pvt Ltd registration is confirmed."
   const nextStep =
     kind === "payment-pending"
       ? "Please complete your payment to confirm your registration."

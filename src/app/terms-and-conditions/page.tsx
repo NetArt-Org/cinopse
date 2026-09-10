@@ -12,9 +12,9 @@ import {
 } from "@/lib/policy-pages"
 
 export const metadata: Metadata = {
-  title: "Terms & Conditions — CINOPSE India 2026",
+  title: "Terms & Conditions — Cinopse India Medical Summit Pvt Ltd",
   description:
-    "Terms and conditions for CINOPSE India 2026 website use, registration, payments, and participation.",
+    "Terms and conditions for Cinopse India Medical Summit Pvt Ltd website use, registration, payments, and participation.",
 }
 
 export default function TermsAndConditionsPage() {

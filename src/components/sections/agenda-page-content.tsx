@@ -10,7 +10,7 @@ export function AgendaPageContent() {
             </span>
           </div>
           <h1 className="font-display mt-6 max-w-4xl text-[clamp(28px,4vw,48px)] leading-tight font-semibold tracking-[-0.02em] text-[color:var(--cinopse-ink)]">
-            CINOPSE India 2026 Agenda
+            Cinopse India Medical Summit Pvt Ltd Agenda
           </h1>
           <p className="mt-5 max-w-2xl text-[clamp(16px,1.4vw,18px)] leading-8 text-[color:var(--cinopse-text-secondary)]">
             The official agenda PDF is shown below. Download the file for
@@ -31,7 +31,7 @@ export function AgendaPageContent() {
         <div className="overflow-hidden rounded-[18px] border border-[color:var(--cinopse-border)] bg-white shadow-[0_18px_42px_rgba(12,40,84,0.12)]">
           <iframe
             src="/agenda.pdf"
-            title="CINOPSE India 2026 agenda PDF"
+            title="Cinopse India Medical Summit Pvt Ltd agenda PDF"
             className="h-[78vh] min-h-[640px] w-full"
           />
         </div>

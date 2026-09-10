@@ -1,10 +1,10 @@
 export const eventContent = {
-  name: "CINOPSE INDIA 2026",
+  name: "Cinopse India Medical Summit Pvt Ltd",
   title: "CINOPSE 2026",
   theme: "The Beginning",
   tagline: "One Place, One Agenda, One Vision, Infinite Possibilities",
   description:
-    "CINOPSE INDIA 2026 brings together leading experts for a comprehensive, multidisciplinary conference case based discussions, innovations, and hands on workshops.",
+    "Cinopse India Medical Summit Pvt Ltd brings together leading experts for a comprehensive, multidisciplinary conference case based discussions, innovations, and hands on workshops.",
   mission:
     "Together, we aim to exchange knowledge, inspire collaboration, and drive innovations transforming the future of health care.",
   conferenceType: "A Comprehensive Multidisciplinary Medical Conference",

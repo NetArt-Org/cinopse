@@ -12,9 +12,9 @@ import {
 } from "@/lib/policy-pages"
 
 export const metadata: Metadata = {
-  title: "Full Agenda — CINOPSE India 2026",
+  title: "Full Agenda — Cinopse India Medical Summit Pvt Ltd",
   description:
-    "Official agenda PDF for CINOPSE India 2026 at Jawaharlal Nehru Planetarium, Bengaluru.",
+    "Official agenda PDF for Cinopse India Medical Summit Pvt Ltd at Jawaharlal Nehru Planetarium, Bengaluru.",
 }
 
 export default function AgendaPage() {
