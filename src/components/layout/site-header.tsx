@@ -72,8 +72,7 @@ export function SiteHeader({ items }: { items: NavItem[] }) {
                   CINOPSE INDIA MEDICAL SUMMIT PVT LTD
                 </span>
                 <span className="block max-w-[220px] font-sans text-[6.5px] leading-[1.25] font-medium tracking-[0.07em] text-white/62 uppercase sm:max-w-[280px] sm:text-[7.5px] min-[1120px]:max-w-none min-[1120px]:text-[8.5px]">
-                  Combined Initiative for Nurturing Outcomes through Precision
-                  Medicine with Scientific Evidence
+                  Collaboration with Karnataka Cinopse Association
                 </span>
               </span>
             </Link>
