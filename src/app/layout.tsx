@@ -3,7 +3,6 @@ import { Fraunces, Inter } from "next/font/google";
 import Script from "next/script";
 import { Toaster } from "sonner";
 import { UtmCapture } from "@/components/layout/utm-capture";
-import { AssociationPosterPopup } from "@/components/layout/association-poster-popup";
 import "react-phone-number-input/style.css";
 import "./globals.css";
 
@@ -136,7 +135,6 @@ fbq('track', 'PageView');`}
           />
         </noscript>
         <UtmCapture />
-        <AssociationPosterPopup />
         {children}
         <Toaster richColors position="top-right" closeButton />
       </body>
