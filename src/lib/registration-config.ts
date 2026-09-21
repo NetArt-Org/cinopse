@@ -86,58 +86,12 @@ export const registrationCategories: RegistrationCategory[] = [
 ]
 
 export const registrationCoupons: RegistrationCoupon[] = [
-  ...[
-    "CINOPSE001",
-    "CINOPSE003",
-    "CINOPSE005",
-    "CINOPSE007",
-    "CINOPSE009",
-    "CINOPSE011",
-    "CINOPSE013",
-    "CINOPSE015",
-    "CINOPSE017",
-    "CINOPSE019",
-  ].map((code) => ({
-    name: `${code} full waiver`,
-    code,
-    discount: 0,
-    type: "full" as const,
-    maxUses: 30,
-  })),
   {
-    name: "CINOPSE400 full waiver",
-    code: "CINOPSE400",
+    name: "CINOPSE_OFFICIAL full waiver",
+    code: "CINOPSE_OFFICIAL",
     discount: 0,
     type: "full",
-    maxUses: 400,
-  },
-  {
-    name: "CINOPSE_PG full waiver",
-    code: "CINOPSE_PG",
-    discount: 0,
-    type: "full",
-    maxUses: 250,
-  },
-  {
-    name: "CINOPSE_MM full waiver",
-    code: "CINOPSE_MM",
-    discount: 0,
-    type: "full",
-    maxUses: 250,
-  },
-  {
-    name: "CINOPSE_IMA 100% discount",
-    code: "CINOPSE_IMA",
-    discount: 0,
-    type: "full",
-    maxUses: 100,
-  },
-  {
-    name: "CINOPSE50 50% discount",
-    code: "CINOPSE50",
-    discount: 50,
-    type: "percentage",
-    maxUses: 500,
+    maxUses: 200,
   },
   {
     name: "FLAT60 60% discount",
