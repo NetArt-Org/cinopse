@@ -28,13 +28,6 @@ export function AgendaPageContent() {
           </a>
         </div>
 
-        <div className="overflow-hidden rounded-[18px] border border-[color:var(--cinopse-border)] bg-white shadow-[0_18px_42px_rgba(12,40,84,0.12)]">
-          <iframe
-            src="/cinopse-agenda.pdf"
-            title="Cinopse India Medical Summit Pvt Ltd agenda PDF"
-            className="h-[78vh] min-h-[640px] w-full"
-          />
-        </div>
       </div>
     </main>
   )
